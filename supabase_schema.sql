@@ -306,3 +306,42 @@ on conflict (id) do update set
 
 -- Reset sequence to avoid id conflicts on future inserts
 select setval(pg_get_serial_sequence('public.products', 'id'), coalesce(max(id), 1)) from public.products;
+
+-- ==============================================================================
+-- 9. SEED DATA: Admin and Dummy Users
+-- ==============================================================================
+-- Note: This requires the pgcrypto extension to hash passwords.
+create extension if not exists pgcrypto;
+
+-- 1. Insert Admin User
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) values (
+  '00000000-0000-0000-0000-000000000000', 'a1111111-1111-1111-1111-111111111111', 'authenticated', 'authenticated', 'admin@netplusenterprises.com', crypt('Admin@2024', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"admin", "status":"approved", "name":"System Admin"}', now(), now()
+) on conflict (id) do nothing;
+
+-- 2. Insert Dummy Retailer 1
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) values (
+  '00000000-0000-0000-0000-000000000000', 'b2222222-2222-2222-2222-222222222222', 'authenticated', 'authenticated', 'retailer1@example.com', crypt('Retailer@123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"retailer", "status":"approved", "store_name":"Apollo Pharmacy", "city":"Mumbai", "phone":"9876543210"}', now(), now()
+) on conflict (id) do nothing;
+
+-- 3. Insert Dummy Retailer 2
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) values (
+  '00000000-0000-0000-0000-000000000000', 'c3333333-3333-3333-3333-333333333333', 'authenticated', 'authenticated', 'retailer2@example.com', crypt('Retailer@123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"retailer", "status":"pending", "store_name":"Wellness Forever", "city":"Pune", "phone":"9123456780"}', now(), now()
+) on conflict (id) do nothing;
+
+-- The trigger "handle_new_user" will automatically copy these users into the public.cust_detail table!
+
+-- ==============================================================================
+-- 10. SEED DATA: public.users (For manual tracking if needed)
+-- ==============================================================================
+insert into public.users (id, name, email, password, role, status)
+values 
+  ('a1111111-1111-1111-1111-111111111111', 'System Admin', 'admin@netplusenterprises.com', 'Admin@2024', 'admin', 'approved'),
+  ('b2222222-2222-2222-2222-222222222222', 'Retailer 1', 'retailer1@example.com', 'Retailer@123', 'retailer', 'approved'),
+  ('c3333333-3333-3333-3333-333333333333', 'Retailer 2', 'retailer2@example.com', 'Retailer@123', 'retailer', 'pending')
+on conflict (id) do nothing;
