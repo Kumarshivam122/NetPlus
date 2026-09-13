@@ -16,6 +16,7 @@
     "html2pdf.js": "^0.14.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.34.0",
+    "net-plus-workspace": "file:..",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-error-boundary": "^6.1.5",

@@ -78,7 +78,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// Optional: Serve Frontend if in production and built
+// Handle 404 for API routes not found
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, message: 'API Route Not Found' });
+});
+
+// Serve Frontend if in production and built
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
@@ -86,11 +91,6 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
     res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
 }
-
-// Handle 404 for API routes not found
-app.use('/api', (req, res) => {
-  res.status(404).json({ success: false, message: 'API Route Not Found' });
-});
 
 // Global Error Handler
 app.use(errorHandler);
