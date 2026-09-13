@@ -87,7 +87,7 @@ app.use('/api', (req, res) => {
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
-  app.get('*', (req, res) => {
+  app.get(/.*/, (req, res) => {
     res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
 }
