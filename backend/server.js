@@ -88,7 +88,7 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
 }
 
 // Handle 404 for API routes not found
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   res.status(404).json({ success: false, message: 'API Route Not Found' });
 });
 
