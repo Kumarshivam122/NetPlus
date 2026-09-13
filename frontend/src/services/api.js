@@ -1,7 +1,7 @@
 import { setSessionCookie, getSessionCookie, clearSessionCookie } from '../utils/cookie';
 
 // Use relative /api path in production (unified hosting), fallback to localhost in dev
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+const API_URL = import.meta.env.VITE_API_URL || 'https://netplus-6l8r.onrender.com/api';
 
 // Helper for making authenticated fetch requests
 async function fetchWithAuth(url, options = {}) {

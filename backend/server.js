@@ -25,8 +25,8 @@ app.use(helmet());
 
 // CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []) // If not specified, disallow all in prod until configured
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+  ? (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, 'https://net-plus-neon.vercel.app'] : ['https://net-plus-neon.vercel.app']) 
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'https://net-plus-neon.vercel.app'];
 
 app.use(cors({
   origin: function (origin, callback) {
