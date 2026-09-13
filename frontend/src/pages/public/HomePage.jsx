@@ -96,17 +96,32 @@ export default function HomePage() {
       {/* ── HERO BANNER ── */}
       <section className="hero-banner-section">
         <div className="container">
-          <div className="hero-banner-wrapper animate-fade-up">
-            <button className="banner-nav-btn prev" onClick={prevBanner}>
+          <div className="hero-banner-wrapper animate-fade-up" style={{ overflow: 'hidden', position: 'relative' }}>
+            <button className="banner-nav-btn prev" onClick={prevBanner} style={{ zIndex: 10 }}>
               <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }}/>
             </button>
-            <img 
-              src={banners[currentBanner]} 
-              alt="Wholesale Medicines Banner" 
-              className="hero-banner-img animate-fade-in" 
-              key={currentBanner}
-            />
-            <button className="banner-nav-btn next" onClick={nextBanner}>
+            
+            <div 
+              style={{
+                display: 'flex',
+                transition: 'transform 0.5s ease-in-out',
+                transform: `translateX(-${currentBanner * 100}%)`,
+                height: '100%',
+                width: '100%'
+              }}
+            >
+              {banners.map((banner, index) => (
+                <img 
+                  key={index}
+                  src={banner} 
+                  alt={`Wholesale Medicines Banner ${index + 1}`} 
+                  className="hero-banner-img"
+                  style={{ flex: '0 0 100%', width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ))}
+            </div>
+
+            <button className="banner-nav-btn next" onClick={nextBanner} style={{ zIndex: 10 }}>
               <ChevronRight size={24} />
             </button>
             <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
