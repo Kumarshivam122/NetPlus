@@ -1,21 +1,89 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertTriangle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { COMPANY } from '../../data/store';
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', botField: '' });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "NET PLUS Medical Wholesale & Distribution",
+    "image": "https://netplus-seven.vercel.app/netLogo.jpeg",
+    "@id": "https://netplus-seven.vercel.app",
+    "url": "https://netplus-seven.vercel.app",
+    "telephone": COMPANY.phone,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": COMPANY.address,
+      "addressLocality": "Dhanbad",
+      "addressRegion": "JH",
+      "addressCountry": "IN"
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "opens": "09:00",
+      "closes": "19:00"
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSent(true);
+    setError(null);
+    
+    // Honeypot check for spam protection
+    if (form.botField) {
+      setSent(true); // Silently discard but pretend it was successful for bots
+      return;
+    }
+
+    // Basic inline validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    const phoneRegex = /^\+?[0-9\-\s]{10,15}$/;
+    if (!phoneRegex.test(form.phone)) {
+      setError("Please enter a valid phone number (10-15 digits).");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Simulate API call for now (since there is no /api/contact endpoint in backend)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setSent(true);
+    } catch (err) {
+      setError("Failed to send message. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="page-wrapper">
+      <Helmet>
+        <title>Contact Us | NET PLUS Medical Wholesale</title>
+        <meta name="description" content="Reach out to NET PLUS for any queries, support, or wholesale order inquiries. We are here Mon-Sat, 9AM to 7PM." />
+        <link rel="canonical" href="https://netplus-seven.vercel.app/contact" />
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      </Helmet>
+      
       <Navbar />
+      
       <section className="page-hero" id="contact-hero" style={{ background: '#fff' }}>
         <div className="container">
           <span className="accent-tag">Get In Touch</span>
@@ -60,43 +128,57 @@ export default function ContactPage() {
                   <CheckCircle size={48} style={{ color: 'var(--green)' }} />
                   <h3 style={{ fontWeight: 800 }}>Message Sent!</h3>
                   <p>Our team will get back to you within 24 business hours.</p>
-                  <button className="btn btn-primary" onClick={() => { setSent(false); setForm({ name:'',email:'',phone:'',subject:'',message:'' }); }}>
+                  <button className="btn btn-primary" onClick={() => { setSent(false); setForm({ name:'',email:'',phone:'',subject:'',message:'', botField: '' }); }}>
                     Send Another
                   </button>
                 </div>
               ) : (
                 <>
                   <h3 style={{ color: 'var(--navy)', marginBottom: '1.5rem', fontWeight: 800 }}>Send a Message</h3>
+                  
+                  {error && (
+                    <div style={{ padding: '0.875rem', background: '#fef2f2', color: '#b91c1c', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.9rem', fontWeight: '500' }}>
+                      <AlertTriangle size={18} /> {error}
+                    </div>
+                  )}
+
                   <form onSubmit={handleSubmit}>
+                    {/* Honeypot field for spam bots */}
+                    <input type="text" style={{ display: 'none' }} tabIndex="-1" autoComplete="off" value={form.botField} onChange={e => setForm({...form, botField: e.target.value})} />
+                    
                     <div className="grid grid-2">
                       <div className="form-group">
-                        <label className="form-label">Your Name *</label>
-                        <input className="form-control" required placeholder="Full name"
+                        <label className="form-label" htmlFor="contact-name">Your Name *</label>
+                        <input id="contact-name" className="form-control" required placeholder="Full name"
                           value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Phone Number *</label>
-                        <input className="form-control" required placeholder="+91 XXXXX XXXXX" type="tel"
+                        <label className="form-label" htmlFor="contact-phone">Phone Number *</label>
+                        <input id="contact-phone" className="form-control" required placeholder="+91 XXXXX XXXXX" type="tel"
                           value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Email Address *</label>
-                      <input className="form-control" required type="email" placeholder="your@email.com"
+                      <label className="form-label" htmlFor="contact-email">Email Address *</label>
+                      <input id="contact-email" className="form-control" required type="email" placeholder="your@email.com"
                         value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Subject</label>
-                      <input className="form-control" placeholder="What is this regarding?"
+                      <label className="form-label" htmlFor="contact-subject">Subject</label>
+                      <input id="contact-subject" className="form-control" placeholder="What is this regarding?"
                         value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Message *</label>
-                      <textarea className="form-control" required placeholder="Write your message here..." rows={5}
+                      <label className="form-label" htmlFor="contact-message">Message *</label>
+                      <textarea id="contact-message" className="form-control" required placeholder="Write your message here..." rows={5}
                         value={form.message} onChange={e => setForm({...form, message: e.target.value})} />
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }} id="contact-submit-btn">
-                      <Send size={16} /> Send Message
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', opacity: loading ? 0.7 : 1 }} id="contact-submit-btn" disabled={loading}>
+                      {loading ? (
+                        <div className="spinner" style={{ width: '16px', height: '16px', borderTopColor: '#fff', margin: '0 auto' }} />
+                      ) : (
+                        <><Send size={16} /> Send Message</>
+                      )}
                     </button>
                   </form>
                 </>

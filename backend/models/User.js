@@ -19,8 +19,6 @@ function formatUser(row) {
     shopPhotoUrl: row.shop_photo_url,
     resetOtp: row.reset_otp,
     resetOtpExpiry: row.reset_otp_expiry,
-    gstinFileName: row.gstin_file_name,
-    gstinFileUrl: row.gstin_file_url,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -42,7 +40,7 @@ const User = {
 
   async findById(id, options = {}) {
     const cols = options.excludePassword
-      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, gstin_file_name, gstin_file_url, created_at, updated_at'
+      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
       : '*';
     const { rows } = await pool.query(`SELECT ${cols} FROM users WHERE id = $1`, [id]);
     return formatUser(rows[0] || null);
@@ -50,7 +48,7 @@ const User = {
 
   async find(query = {}, options = {}) {
     const cols = options.excludePassword
-      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, gstin_file_name, gstin_file_url, created_at, updated_at'
+      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
       : '*';
     const { rows } = await pool.query(`SELECT ${cols} FROM users ORDER BY created_at DESC`);
     return formatUsers(rows);
@@ -83,8 +81,7 @@ const User = {
       'store_address', 'city', 'state', 'pincode',
       'owner_name', 'phone', 'alternate_phone',
       'licence_file_name', 'licence_file_url',
-      'shop_photo_name', 'shop_photo_url',
-      'gstin_file_name', 'gstin_file_url',
+      'shop_photo_name', 'shop_photo_url'
     ];
 
     // Map camelCase frontend keys to snake_case DB columns
@@ -98,9 +95,7 @@ const User = {
       licenceFileName: 'licence_file_name',
       licenceFileUrl: 'licence_file_url',
       shopPhotoName: 'shop_photo_name',
-      shopPhotoUrl: 'shop_photo_url',
-      gstinFileName: 'gstin_file_name',
-      gstinFileUrl: 'gstin_file_url',
+      shopPhotoUrl: 'shop_photo_url'
     };
 
     const setClauses = [];

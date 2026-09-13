@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Award, Users, MapPin, Shield, Building, Package, Users2, Heart } from 'lucide-react';
 import Navbar from '../../components/Navbar';
@@ -8,6 +9,11 @@ import { COMPANY } from '../../data/store';
 export default function AboutPage() {
   return (
     <div className="page-wrapper" style={{ background: '#fff' }}>
+      <Helmet>
+        <title>About Us | NET PLUS Medical Wholesale</title>
+        <meta name="description" content="Learn about NET PLUS ENTERPRISES, Maharashtra's leading B2B pharmaceutical wholesale and distribution company with over 15 years of trust." />
+        <link rel="canonical" href="https://netplus-seven.vercel.app/about" />
+      </Helmet>
       <Navbar />
 
       {/* ── NEW HERO SECTION (Reference Image Style) ── */}

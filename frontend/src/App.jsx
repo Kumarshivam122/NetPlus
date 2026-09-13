@@ -1,39 +1,41 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { CartProvider } from './context/CartContext';
 import ScrollToTop from './components/ScrollToTop';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Public pages
-import HomePage        from './pages/public/HomePage';
-import AboutPage       from './pages/public/AboutPage';
-import ProductsPage    from './pages/public/ProductsPage';
-import BrandsPage      from './pages/public/BrandsPage';
-import ServicesPage    from './pages/public/ServicesPage';
-import ContactPage     from './pages/public/ContactPage';
-import LoginPage       from './pages/auth/LoginPage';
-import RegisterPage    from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+const HomePage        = React.lazy(() => import('./pages/public/HomePage'));
+const AboutPage       = React.lazy(() => import('./pages/public/AboutPage'));
+const ProductsPage    = React.lazy(() => import('./pages/public/ProductsPage'));
+const BrandsPage      = React.lazy(() => import('./pages/public/BrandsPage'));
+const ServicesPage    = React.lazy(() => import('./pages/public/ServicesPage'));
+const ContactPage     = React.lazy(() => import('./pages/public/ContactPage'));
+const LoginPage       = React.lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage    = React.lazy(() => import('./pages/auth/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/auth/ForgotPasswordPage'));
 
 // Retailer Portal
-import RetailerDashboard from './pages/portal/RetailerDashboard';
-import RetailerProducts  from './pages/portal/RetailerProducts';
-import RetailerOrders from './pages/portal/RetailerOrders';
-import RetailerCart from './pages/portal/RetailerCart';
+const RetailerDashboard = React.lazy(() => import('./pages/portal/RetailerDashboard'));
+const RetailerProducts  = React.lazy(() => import('./pages/portal/RetailerProducts'));
+const RetailerOrders = React.lazy(() => import('./pages/portal/RetailerOrders'));
+const RetailerCart = React.lazy(() => import('./pages/portal/RetailerCart'));
 
 // Admin Portal
-import AdminDashboard     from './pages/admin/AdminDashboard';
-import AdminVerifications from './pages/admin/AdminVerifications';
-import AdminUsers         from './pages/admin/AdminUsers';
-import AdminCustDetails   from './pages/admin/AdminCustDetails';
-import AdminProducts      from './pages/admin/AdminProducts';
-import AdminOrders        from './pages/admin/AdminOrders';
-import AdminCoupons       from './pages/admin/AdminCoupons';
+const AdminDashboard     = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminVerifications = React.lazy(() => import('./pages/admin/AdminVerifications'));
+const AdminUsers         = React.lazy(() => import('./pages/admin/AdminUsers'));
+const AdminCustDetails   = React.lazy(() => import('./pages/admin/AdminCustDetails'));
+const AdminProducts      = React.lazy(() => import('./pages/admin/AdminProducts'));
+const AdminOrders        = React.lazy(() => import('./pages/admin/AdminOrders'));
+const AdminCoupons       = React.lazy(() => import('./pages/admin/AdminCoupons'));
 
 // Pending page
-import PendingPage from './pages/auth/PendingPage';
-import OnboardingPage from './pages/portal/OnboardingPage';
+const PendingPage = React.lazy(() => import('./pages/auth/PendingPage'));
+const OnboardingPage = React.lazy(() => import('./pages/portal/OnboardingPage'));
 
 // Protected Route wrappers
 function RequireAuth({ children, allowedRoles }) {
@@ -66,103 +68,109 @@ function RequireOnboarding({ children }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <ToastProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
-              {/* Public */}
-              <Route path="/"         element={<HomePage />} />
-              <Route path="/about"    element={<AboutPage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/brands"   element={<BrandsPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/contact"  element={<ContactPage />} />
+    <HelmetProvider>
+      <AuthProvider>
+        <CartProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <ErrorBoundary>
+                <Suspense fallback={<div className="loading-overlay"><div className="spinner" /></div>}>
+                  <Routes>
+                    {/* Public */}
+                    <Route path="/"         element={<HomePage />} />
+                    <Route path="/about"    element={<AboutPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/brands"   element={<BrandsPage />} />
+                    <Route path="/services" element={<ServicesPage />} />
+                    <Route path="/contact"  element={<ContactPage />} />
 
-              {/* Auth */}
-              <Route path="/login"    element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/pending"  element={<PendingPage />} />
-              <Route path="/onboarding" element={
-                <RequireOnboarding>
-                  <OnboardingPage />
-                </RequireOnboarding>
-              } />
+                    {/* Auth */}
+                    <Route path="/login"    element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/pending"  element={<PendingPage />} />
+                    <Route path="/onboarding" element={
+                      <RequireOnboarding>
+                        <OnboardingPage />
+                      </RequireOnboarding>
+                    } />
 
-              {/* Retailer Portal */}
-              <Route path="/portal" element={
-                <RequireAuth allowedRoles={['retailer']}>
-                  <RequireApproved>
-                    <RetailerDashboard />
-                  </RequireApproved>
-                </RequireAuth>
-              } />
-              <Route path="/portal/products" element={
-                <RequireAuth allowedRoles={['retailer']}>
-                  <RequireApproved>
-                    <RetailerProducts />
-                  </RequireApproved>
-                </RequireAuth>
-              } />
-              <Route path="/portal/orders" element={
-                <RequireAuth allowedRoles={['retailer']}>
-                  <RequireApproved>
-                    <RetailerOrders />
-                  </RequireApproved>
-                </RequireAuth>
-              } />
-              <Route path="/portal/cart" element={
-                <RequireAuth allowedRoles={['retailer']}>
-                  <RequireApproved>
-                    <RetailerCart />
-                  </RequireApproved>
-                </RequireAuth>
-              } />
+                    {/* Retailer Portal */}
+                    <Route path="/portal" element={
+                      <RequireAuth allowedRoles={['retailer']}>
+                        <RequireApproved>
+                          <RetailerDashboard />
+                        </RequireApproved>
+                      </RequireAuth>
+                    } />
+                    <Route path="/portal/products" element={
+                      <RequireAuth allowedRoles={['retailer']}>
+                        <RequireApproved>
+                          <RetailerProducts />
+                        </RequireApproved>
+                      </RequireAuth>
+                    } />
+                    <Route path="/portal/orders" element={
+                      <RequireAuth allowedRoles={['retailer']}>
+                        <RequireApproved>
+                          <RetailerOrders />
+                        </RequireApproved>
+                      </RequireAuth>
+                    } />
+                    <Route path="/portal/cart" element={
+                      <RequireAuth allowedRoles={['retailer']}>
+                        <RequireApproved>
+                          <RetailerCart />
+                        </RequireApproved>
+                      </RequireAuth>
+                    } />
 
-              {/* Admin Portal */}
-              <Route path="/admin" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </RequireAuth>
-              } />
-              <Route path="/admin/verifications" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminVerifications />
-                </RequireAuth>
-              } />
-              <Route path="/admin/users" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminUsers />
-                </RequireAuth>
-              } />
-              <Route path="/admin/customers" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminCustDetails />
-                </RequireAuth>
-              } />
-              <Route path="/admin/products" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminProducts />
-                </RequireAuth>
-              } />
-              <Route path="/admin/orders" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminOrders />
-                </RequireAuth>
-              } />
-              <Route path="/admin/coupons" element={
-                <RequireAuth allowedRoles={['admin']}>
-                  <AdminCoupons />
-                </RequireAuth>
-              } />
+                    {/* Admin Portal */}
+                    <Route path="/admin" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminDashboard />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/verifications" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminVerifications />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/users" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminUsers />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/customers" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminCustDetails />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/products" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminProducts />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/orders" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminOrders />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/coupons" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminCoupons />
+                      </RequireAuth>
+                    } />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
-        </ToastProvider>
-      </CartProvider>
-    </AuthProvider>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </BrowserRouter>
+          </ToastProvider>
+        </CartProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }

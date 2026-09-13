@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, Shield, Truck, Clock, Star, ChevronRight,
@@ -91,6 +92,12 @@ export default function HomePage() {
 
   return (
     <div className="page-wrapper">
+      <Helmet>
+        <title>NET PLUS | Medical Wholesale & Distribution</title>
+        <meta name="description" content="Trusted B2B pharmaceutical supplier for registered medical shops and pharmacies. Access wholesale prices, live stock, and seamless ordering." />
+        <link rel="canonical" href="https://netplus-seven.vercel.app/" />
+        <link rel="preload" href="/banner.jpg" as="image" />
+      </Helmet>
       <Navbar />
 
       {/* ── HERO BANNER ── */}

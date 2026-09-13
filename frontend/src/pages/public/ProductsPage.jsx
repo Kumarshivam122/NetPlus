@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Lock, ArrowRight, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
@@ -38,6 +39,11 @@ export default function ProductsPage() {
   };
   return (
     <div className="page-wrapper">
+      <Helmet>
+        <title>Wholesale Pharmaceutical Products | NET PLUS</title>
+        <meta name="description" content="Browse 18,000+ pharmaceutical products across 10+ therapeutic categories at wholesale prices. Exclusive for verified medical shops." />
+        <link rel="canonical" href="https://netplus-seven.vercel.app/products" />
+      </Helmet>
       <Navbar />
       <section className="page-hero" id="products-hero" style={{ background: '#fff' }}>
         <div className="container">
