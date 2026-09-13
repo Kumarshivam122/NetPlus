@@ -6,7 +6,7 @@
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
+    "install:all": "npm install --prefix frontend && npm install --prefix backend",
     "build": "npm run build --prefix frontend",
     "start:prod": "NODE_ENV=production npm start --prefix backend"
   },
