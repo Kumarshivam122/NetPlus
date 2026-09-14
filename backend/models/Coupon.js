@@ -1,4 +1,4 @@
-const pool = require('../db/pool');
+const supabase = require('../db/supabase');
 
 function formatCoupon(row) {
   if (!row) return null;
@@ -15,75 +15,79 @@ function formatCoupon(row) {
 
 const Coupon = {
   async find(query = {}) {
-    let sql = 'SELECT * FROM coupons';
-    const params = [];
-    const conditions = [];
+    let q = supabase.from('coupons').select('*');
 
     if (query.isActive !== undefined) {
-      params.push(query.isActive);
-      conditions.push(`is_active = $${params.length}`);
+      q = q.eq('is_active', query.isActive);
     }
     if (query.isVisible !== undefined) {
-      params.push(query.isVisible);
-      conditions.push(`is_visible = $${params.length}`);
+      q = q.eq('is_visible', query.isVisible);
     }
 
-    if (conditions.length > 0) {
-      sql += ' WHERE ' + conditions.join(' AND ');
-    }
-    sql += ' ORDER BY created_at DESC';
-
-    const { rows } = await pool.query(sql, params);
-    return rows.map(formatCoupon);
+    const { data, error } = await q.order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map(formatCoupon);
   },
 
   async findByCode(code) {
-    const { rows } = await pool.query('SELECT * FROM coupons WHERE code = $1', [code]);
-    return formatCoupon(rows[0] || null);
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('code', code)
+      .single();
+    
+    // Supabase .single() throws PGRST116 if no rows found
+    if (error && error.code !== 'PGRST116') throw error;
+    return formatCoupon(data || null);
   },
 
   async create(data) {
-    const { rows } = await pool.query(
-      `INSERT INTO coupons (code, discount_percentage, is_active, is_visible)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [data.code, data.discountPercentage, data.isActive !== false, data.isVisible !== false]
-    );
-    return formatCoupon(rows[0]);
+    const { data: result, error } = await supabase
+      .from('coupons')
+      .insert([{
+        code: data.code,
+        discount_percentage: data.discountPercentage,
+        is_active: data.isActive !== false,
+        is_visible: data.isVisible !== false
+      }])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return formatCoupon(result);
   },
 
   async update(id, data) {
-    const setClauses = [];
-    const values = [];
+    const updateData = {};
 
-    if (data.code !== undefined) {
-      values.push(data.code);
-      setClauses.push(`code = $${values.length}`);
-    }
-    if (data.discountPercentage !== undefined) {
-      values.push(data.discountPercentage);
-      setClauses.push(`discount_percentage = $${values.length}`);
-    }
-    if (data.isActive !== undefined) {
-      values.push(data.isActive);
-      setClauses.push(`is_active = $${values.length}`);
-    }
-    if (data.isVisible !== undefined) {
-      values.push(data.isVisible);
-      setClauses.push(`is_visible = $${values.length}`);
-    }
+    if (data.code !== undefined) updateData.code = data.code;
+    if (data.discountPercentage !== undefined) updateData.discount_percentage = data.discountPercentage;
+    if (data.isActive !== undefined) updateData.is_active = data.isActive;
+    if (data.isVisible !== undefined) updateData.is_visible = data.isVisible;
 
-    if (setClauses.length === 0) return null;
+    if (Object.keys(updateData).length === 0) return null;
+    updateData.updated_at = new Date().toISOString();
 
-    values.push(id);
-    const sql = `UPDATE coupons SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`;
-    
-    const { rows } = await pool.query(sql, values);
-    return formatCoupon(rows[0]);
+    const { data: result, error } = await supabase
+      .from('coupons')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return formatCoupon(result || null);
   },
 
   async delete(id) {
-    const { rowCount } = await pool.query('DELETE FROM coupons WHERE id = $1', [id]);
-    return rowCount > 0;
+    const { error, count } = await supabase
+      .from('coupons')
+      .delete({ count: 'exact' })
+      .eq('id', id);
+      
+    if (error) throw error;
+    return count > 0;
   }
 };
 

@@ -7,11 +7,11 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
-const pool = require('./db/pool');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
+const supabase = require('./db/supabase');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -95,13 +95,14 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
 // Global Error Handler
 app.use(errorHandler);
 
-// Connect to PostgreSQL and start server
+// Connect to Supabase and start server
 const server = app.listen(PORT, async () => {
   try {
-    await pool.query('SELECT 1');
-    logger.info(`✅ Connected to PostgreSQL. 🚀 Server running on port ${PORT}`);
+    const { error } = await supabase.from('users').select('id').limit(1);
+    if (error && error.code !== 'PGRST116') throw error;
+    logger.info(`✅ Connected to Supabase. 🚀 Server running on port ${PORT}`);
   } catch (err) {
-    logger.error('❌ Error connecting to PostgreSQL: ' + err.message);
+    logger.error('❌ Error connecting to Supabase: ' + err.message);
   }
 });
 
@@ -111,8 +112,7 @@ const gracefulShutdown = () => {
   server.close(async () => {
     logger.info('Closed out remaining connections');
     try {
-      await pool.end();
-      logger.info('PostgreSQL pool closed');
+      logger.info('Supabase client shutdown complete');
       process.exit(0);
     } catch (err) {
       logger.error('Error during shutdown', err);

@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 const { sendOTPEmail, sendWelcomeEmail, sendVerificationEmail } = require('../utils/email');
-const pool = require('../db/pool');
 
 const router = express.Router();
 
@@ -23,7 +22,7 @@ router.post('/register', async (req, res) => {
 
     // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins
 
     const user = await User.create({
       name,
@@ -34,11 +33,8 @@ router.post('/register', async (req, res) => {
     });
 
     if (user) {
-      // Save the OTP using the reset_otp fields for verification
-      await pool.query(
-        'UPDATE users SET reset_otp = $1, reset_otp_expiry = $2 WHERE id = $3',
-        [otp, otpExpiry, user._id]
-      );
+      // Save the OTP using the saveOtp function
+      await User.saveOtp(user.email, otp, otpExpiry);
 
       // Send verification email
       sendVerificationEmail(user.email, otp).catch(console.error);
@@ -69,31 +65,24 @@ router.post('/verify-email', async (req, res) => {
       return res.status(400).json({ message: 'Email and OTP are required' });
     }
 
-    const { rows } = await pool.query(
-      'SELECT id, reset_otp, reset_otp_expiry, name FROM users WHERE email = $1',
-      [email]
-    );
+    const user = await User.findOne({ email });
 
-    if (rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const user = rows[0];
-
     // Check if OTP matches and hasn't expired
-    if (user.reset_otp !== otp) {
+    if (user.resetOtp !== otp) {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    if (new Date() > new Date(user.reset_otp_expiry)) {
+    if (new Date() > new Date(user.resetOtpExpiry)) {
       return res.status(400).json({ message: 'OTP has expired' });
     }
 
     // OTP is valid, mark as onboarding and clear OTP
-    await pool.query(
-      "UPDATE users SET status = 'onboarding', reset_otp = NULL, reset_otp_expiry = NULL WHERE id = $1",
-      [user.id]
-    );
+    await User.update(user._id, { status: 'onboarding' });
+    await User.clearOtp(email);
 
     // Send the welcome email since they are now fully registered
     sendWelcomeEmail(email, user.name).catch(console.error);
@@ -195,7 +184,7 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins
 
     await User.saveOtp(email, otp, expiry);
     

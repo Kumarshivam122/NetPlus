@@ -1,4 +1,4 @@
-const pool = require('../db/pool');
+const supabase = require('../db/supabase');
 
 function formatProduct(row) {
   if (!row) return null;
@@ -20,81 +20,95 @@ function formatProducts(rows) {
 
 const Product = {
   async find(query = {}) {
-    const { rows } = await pool.query('SELECT * FROM products ORDER BY name ASC');
-    return formatProducts(rows);
+    let q = supabase.from('products').select('*');
+    // Apply query filters here if needed in the future
+
+    const { data, error } = await q.order('name', { ascending: true });
+    
+    if (error) throw error;
+    return formatProducts(data || []);
   },
 
   async findById(id) {
-    const { rows } = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-    return formatProduct(rows[0] || null);
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return formatProduct(data || null);
   },
 
   async create(data) {
-    const { rows } = await pool.query(
-      `INSERT INTO products (name, generic, manufacturer, category, price, mrp, tax_included, tax_percent, unit, stock, rx, image_url, pricing)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-       RETURNING *`,
-      [
-        data.name,
-        data.generic,
-        data.manufacturer,
-        data.category,
-        data.price,
-        data.mrp,
-        data.taxIncluded !== undefined ? data.taxIncluded : true,
-        data.taxPercent || 0,
-        data.unit || 'Strip/10',
-        data.stock || 0,
-        data.rx || false,
-        data.imageUrl || null,
-        data.pricing ? JSON.stringify(data.pricing) : null
-      ]
-    );
-    return formatProduct(rows[0]);
+    const insertData = {
+      name: data.name,
+      generic: data.generic,
+      manufacturer: data.manufacturer,
+      category: data.category,
+      price: data.price,
+      mrp: data.mrp,
+      tax_included: data.taxIncluded !== undefined ? data.taxIncluded : true,
+      tax_percent: data.taxPercent || 0,
+      unit: data.unit || 'Strip/10',
+      stock: data.stock || 0,
+      rx: data.rx || false,
+      image_url: data.imageUrl || null,
+      pricing: data.pricing ? (typeof data.pricing === 'object' ? data.pricing : JSON.parse(data.pricing)) : null
+    };
+
+    const { data: result, error } = await supabase
+      .from('products')
+      .insert([insertData])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return formatProduct(result);
   },
 
   async deleteOne(query) {
     const id = query._id || query.id;
-    await pool.query('DELETE FROM products WHERE id = $1', [id]);
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+      
+    if (error) throw error;
   },
 
   async update(id, data) {
-    const { rows } = await pool.query(
-      `UPDATE products 
-       SET name = COALESCE($1, name),
-           generic = COALESCE($2, generic),
-           manufacturer = COALESCE($3, manufacturer),
-           category = COALESCE($4, category),
-           price = COALESCE($5, price),
-           mrp = COALESCE($6, mrp),
-           tax_included = COALESCE($7, tax_included),
-           tax_percent = COALESCE($8, tax_percent),
-           unit = COALESCE($9, unit),
-           stock = COALESCE($10, stock),
-           rx = COALESCE($11, rx),
-           image_url = COALESCE($12, image_url),
-           pricing = COALESCE($13, pricing),
-           updated_at = NOW()
-       WHERE id = $14
-       RETURNING *`,
-      [
-        data.name !== undefined ? data.name : null,
-        data.generic !== undefined ? data.generic : null,
-        data.manufacturer !== undefined ? data.manufacturer : null,
-        data.category !== undefined ? data.category : null,
-        data.price !== undefined ? data.price : null,
-        data.mrp !== undefined ? data.mrp : null,
-        data.taxIncluded !== undefined ? data.taxIncluded : null,
-        data.taxPercent !== undefined ? data.taxPercent : null,
-        data.unit !== undefined ? data.unit : null,
-        data.stock !== undefined ? data.stock : null,
-        data.rx !== undefined ? data.rx : null,
-        data.imageUrl !== undefined ? data.imageUrl : null,
-        data.pricing ? JSON.stringify(data.pricing) : null,
-        id
-      ]
-    );
-    return formatProduct(rows[0] || null);
+    const updateData = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.generic !== undefined) updateData.generic = data.generic;
+    if (data.manufacturer !== undefined) updateData.manufacturer = data.manufacturer;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.mrp !== undefined) updateData.mrp = data.mrp;
+    if (data.taxIncluded !== undefined) updateData.tax_included = data.taxIncluded;
+    if (data.taxPercent !== undefined) updateData.tax_percent = data.taxPercent;
+    if (data.unit !== undefined) updateData.unit = data.unit;
+    if (data.stock !== undefined) updateData.stock = data.stock;
+    if (data.rx !== undefined) updateData.rx = data.rx;
+    if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
+    if (data.pricing !== undefined) updateData.pricing = typeof data.pricing === 'object' ? data.pricing : JSON.parse(data.pricing);
+
+    if (Object.keys(updateData).length > 0) {
+      updateData.updated_at = new Date().toISOString();
+    } else {
+      return this.findById(id);
+    }
+
+    const { data: result, error } = await supabase
+      .from('products')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return formatProduct(result || null);
   },
 };
 

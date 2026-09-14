@@ -1,4 +1,4 @@
-const pool = require('../db/pool');
+const supabase = require('../db/supabase');
 
 function addIdAlias(row) {
   if (!row) return null;
@@ -25,74 +25,103 @@ function addIdAliasAll(rows) {
 
 const Order = {
   async find(query = {}) {
-    const { rows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
-    return addIdAliasAll(rows);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    return addIdAliasAll(data || []);
   },
 
   async findById(id) {
-    const { rows } = await pool.query('SELECT * FROM orders WHERE id = $1', [id]);
-    return addIdAlias(rows[0] || null);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return addIdAlias(data || null);
   },
 
   async findByUserId(userId) {
-    const { rows } = await pool.query(
-      'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
-      [userId]
-    );
-    return addIdAliasAll(rows);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    return addIdAliasAll(data || []);
   },
 
   async create(data) {
-    const { rows } = await pool.query(
-      `INSERT INTO orders (order_id, user_id, user_name, items, note, status, discount_code, discount_amount, total_amount)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING *`,
-      [
-        data.orderId || 'ORD-' + Date.now(),
-        data.userId,
-        data.userName,
-        JSON.stringify(data.items || []),
-        data.note || '',
-        data.status || 'pending',
-        data.discountCode || null,
-        data.discountAmount || 0,
-        data.totalAmount || 0,
-      ]
-    );
-    return addIdAlias(rows[0]);
+    const insertData = {
+      order_id: data.orderId || 'ORD-' + Date.now(),
+      user_id: data.userId,
+      user_name: data.userName,
+      items: data.items || [],
+      note: data.note || '',
+      status: data.status || 'pending',
+      discount_code: data.discountCode || null,
+      discount_amount: data.discountAmount || 0,
+      total_amount: data.totalAmount || 0,
+    };
+
+    const { data: result, error } = await supabase
+      .from('orders')
+      .insert([insertData])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return addIdAlias(result);
   },
 
   async updateStatus(id, status) {
-    const { rows } = await pool.query(
-      'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
-      [status, id]
-    );
-    return addIdAlias(rows[0] || null);
+    const { data: result, error } = await supabase
+      .from('orders')
+      .update({ status: status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    return addIdAlias(result || null);
   },
 
   async cancelOrder(id, role, userId) {
-    // If retailer, they can only cancel their own pending orders
     if (role === 'retailer') {
-      const { rows } = await pool.query(
-        "UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = $1 AND user_id = $2 AND status = 'pending' RETURNING *",
-        [id, userId]
-      );
-      if (rows.length === 0) {
+      const { data: result, error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .select()
+        .single();
+        
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!result) {
         throw new Error('Order not found or cannot be cancelled');
       }
-      return addIdAlias(rows[0]);
+      return addIdAlias(result);
     }
     
-    // If admin, they can cancel any order
     if (role === 'admin') {
-      const { rows } = await pool.query(
-        "UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = $1 RETURNING *",
-        [id]
-      );
-      if (rows.length === 0) {
+      const { data: result, error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!result) {
         throw new Error('Order not found');
       }
-      return addIdAlias(rows[0]);
+      return addIdAlias(result);
     }
     
     throw new Error('Unauthorized role for cancellation');
