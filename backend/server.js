@@ -11,7 +11,8 @@ const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
 const supabase = require('./db/supabase');
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config(); // Load backend/.env
+dotenv.config({ path: path.join(__dirname, '../.env') }); // Load root .env (does not overwrite existing)
 
 const app = express();
 const PORT = process.env.PORT || 5000;

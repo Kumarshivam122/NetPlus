@@ -1,7 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
 const path = require('path');
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config(); // Load backend/.env
+dotenv.config({ path: path.join(__dirname, '../../.env') }); // Load root .env (does not overwrite existing)
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 // Use the service role key if available for backend admin bypass, fallback to anon key
