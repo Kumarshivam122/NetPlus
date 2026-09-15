@@ -87,7 +87,7 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/register" className="footer-link">Register Your Shop</Link></li>
               <li><Link to="/login"    className="footer-link">Login to Portal</Link></li>
-              <li><Link to="/portal"   className="footer-link">Browse Wholesale Prices</Link></li>
+              <li><Link to="/portal"   className="footer-link">Browse PTR (Price to Retailer)</Link></li>
               <li><Link to="/contact" className="footer-link">Submit Enquiry</Link></li>
               <li><Link to="/pending"  className="footer-link">Check Registration Status</Link></li>
             </ul>

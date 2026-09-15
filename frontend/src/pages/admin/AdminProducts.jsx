@@ -28,6 +28,7 @@ export default function AdminProducts() {
   const defaultProdState = {
     name: '', generic: '', manufacturer: '', category: 'antibiotics',
     inStock: true, rx: true, taxIncluded: true, taxPercent: 0,
+    discount: 0,
     imageUrl: '',
     pricing: {
       Strips:  { active: true,  size: '10', price: '', mrp: '' },
@@ -81,6 +82,7 @@ export default function AdminProducts() {
       unit: `${firstActiveUnitKey.slice(0, -1)}/${newProd.pricing[firstActiveUnitKey].size}`,
       taxIncluded: newProd.taxIncluded,
       taxPercent: parseFloat(newProd.taxPercent) || 0,
+      discount: parseFloat(newProd.discount) || 0,
       imageUrl: newProd.imageUrl,
     };
 
@@ -130,6 +132,9 @@ export default function AdminProducts() {
     const matchCat = category === 'all' || p.category === category;
     return matchSearch && matchCat;
   });
+
+  const uniqueGenerics = [...new Set(products.map(p => p.generic).filter(Boolean))].sort();
+  const uniqueManufacturers = [...new Set(products.map(p => p.manufacturer).filter(Boolean))].sort();
 
   return (
     <div className="portal-layout" id="admin-products">
@@ -199,6 +204,7 @@ export default function AdminProducts() {
                           setNewProd({
                             name: p.name, generic: p.generic, manufacturer: p.manufacturer, category: p.category,
                             inStock: p.stock > 0, rx: p.rx, taxIncluded: p.taxIncluded, taxPercent: p.taxPercent || 0,
+                            discount: p.discount || 0,
                             imageUrl: p.imageUrl || '',
                             pricing: mergedPricing
                           });
@@ -290,16 +296,22 @@ export default function AdminProducts() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Generic Composition *</label>
-                    <input className="form-control" required placeholder="e.g. Amoxicillin + Clavulanic"
+                    <input className="form-control" required placeholder="e.g. Amoxicillin + Clavulanic" list="generics-list"
                       value={newProd.generic} onChange={e => setNewProd({...newProd, generic: e.target.value})} id="new-prod-generic" />
+                    <datalist id="generics-list">
+                      {uniqueGenerics.map(g => <option key={g} value={g} />)}
+                    </datalist>
                   </div>
                 </div>
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
                     <label className="form-label">Manufacturer *</label>
-                    <input className="form-control" required placeholder="e.g. Cipla, Sun Pharma"
+                    <input className="form-control" required placeholder="e.g. Cipla, Sun Pharma" list="manufacturers-list"
                       value={newProd.manufacturer} onChange={e => setNewProd({...newProd, manufacturer: e.target.value})} id="new-prod-mfr" />
+                    <datalist id="manufacturers-list">
+                      {uniqueManufacturers.map(m => <option key={m} value={m} />)}
+                    </datalist>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Category</label>
@@ -372,7 +384,7 @@ export default function AdminProducts() {
                           })} />
                       </div>
                       <div style={{ flex:1 }}>
-                        <input className="form-control" type="number" step="0.01" min="0" placeholder="Wholesale Price (₹)"
+                        <input className="form-control" type="number" step="0.01" min="0" placeholder="PTR (₹)"
                           disabled={!newProd.pricing[unitKey].active} required={newProd.pricing[unitKey].active}
                           value={newProd.pricing[unitKey].price}
                           onChange={e => setNewProd({
@@ -413,6 +425,14 @@ export default function AdminProducts() {
                     <label htmlFor="new-prod-rx" style={{ fontSize:'.88rem', fontWeight:600, color:'var(--navy)', cursor:'pointer' }}>
                       Requires Prescription (Rx)
                     </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-2" style={{ gap:'1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Discount Percentage (%)</label>
+                    <input className="form-control" type="number" min="0" step="0.1" placeholder="e.g. 15"
+                      value={newProd.discount} onChange={e => setNewProd({...newProd, discount: e.target.value})} id="new-prod-discount" />
                   </div>
                 </div>
               </div>

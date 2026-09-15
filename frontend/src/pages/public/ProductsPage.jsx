@@ -26,22 +26,22 @@ export default function ProductsPage() {
   const handleActionClick = (e) => {
     e.preventDefault();
     if (!user) {
-      navigate('/login');
+      navigate('/register');
     } else if (user.role === 'admin') {
-      navigate('/admin');
+      navigate('/admin/products');
     } else if (user.status === 'pending') {
       navigate('/pending');
     } else if (!user.storeName) {
       navigate('/onboarding');
     } else {
-      navigate('/retailer');
+      navigate('/portal/products');
     }
   };
   return (
     <div className="page-wrapper">
       <Helmet>
         <title>Wholesale Pharmaceutical Products | NET PLUS</title>
-        <meta name="description" content="Browse 18,000+ pharmaceutical products across 10+ therapeutic categories at wholesale prices. Exclusive for verified medical shops." />
+        <meta name="description" content="Browse 18,000+ pharmaceutical products across 10+ therapeutic categories at PTR (Price to Retailer). Exclusive for verified medical shops." />
         <link rel="canonical" href="https://netplus-seven.vercel.app/products" />
       </Helmet>
       <Navbar />
@@ -51,7 +51,7 @@ export default function ProductsPage() {
           <h1 className="page-hero-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 800 }}>Product Categories</h1>
           <p className="page-hero-sub" style={{ color: 'var(--gray-500)', fontSize: '1.1rem' }}>
             18,000+ pharmaceutical products across 10+ therapeutic categories.
-            Wholesale prices are <strong style={{ color: 'var(--teal-dark)' }}>private</strong> — visible only to approved retailers.
+            PTR (Price to Retailer) is <strong style={{ color: 'var(--teal-dark)' }}>private</strong> — visible only to approved retailers.
           </p>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default function ProductsPage() {
       <section className="section" style={{ background: 'var(--off-white)', paddingTop: '2rem' }} id="products-cta">
         <div className="container" style={{ textAlign: 'center' }}>
           <div className="section-header">
-            <h2 className="section-title">Want Access to Wholesale Prices?</h2>
+            <h2 className="section-title">Want Access to PTR (Price to Retailer)?</h2>
             <p className="section-subtitle">Register your medical shop and get verified to unlock the full catalog.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>

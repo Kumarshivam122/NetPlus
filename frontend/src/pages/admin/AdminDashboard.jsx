@@ -36,6 +36,22 @@ export default function AdminDashboard() {
 
   const recentRegistrations = [...users].reverse().slice(0, 5);
 
+  const productDemand = {};
+  orders.forEach(order => {
+    const items = order.items || [{ productName: order.productName, quantity: order.quantity }];
+    items.forEach(item => {
+      if (item.productName) {
+        if (!productDemand[item.productName]) productDemand[item.productName] = 0;
+        productDemand[item.productName] += Number(item.quantity || 1);
+      }
+    });
+  });
+
+  const topProducts = Object.entries(productDemand)
+    .map(([name, qty]) => ({ name, qty }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+
   return (
     <div className="portal-layout" id="admin-dashboard">
       <PortalSidebar title="Admin Panel" />
@@ -131,6 +147,36 @@ export default function AdminDashboard() {
                 <Link to="/admin/users"     className="btn btn-primary btn-sm" style={{ justifyContent:'center' }} id="admin-dash-users">Manage Retailers</Link>
                 <Link to="/admin/orders" className="btn btn-outline btn-sm"  style={{ justifyContent:'center' }} id="admin-dash-enq">View Orders</Link>
               </div>
+            </div>
+          </div>
+
+          {/* Top Products Row */}
+          <div className="grid grid-3" style={{ gap:'1.5rem', marginBottom:'2rem' }}>
+            <div className="card" style={{ padding:'1.5rem', gridColumn:'span 3' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
+                <h4 style={{ color:'var(--navy)' }}>Most Demanded Products</h4>
+                <Package size={16} style={{ color:'var(--teal)' }} />
+              </div>
+              {topProducts.length === 0 ? (
+                <p style={{ color:'var(--gray-400)', textAlign:'center', padding:'2rem' }}>No orders yet.</p>
+              ) : (
+                <table className="data-table">
+                  <thead><tr><th>Product Name</th><th>Total Quantity Ordered</th></tr></thead>
+                  <tbody>
+                    {topProducts.map((p, idx) => (
+                      <tr key={idx}>
+                        <td style={{ fontWeight:600, color:'var(--navy)' }}>
+                          {idx === 0 && <span style={{ marginRight:'8px' }}>🥇</span>}
+                          {idx === 1 && <span style={{ marginRight:'8px' }}>🥈</span>}
+                          {idx === 2 && <span style={{ marginRight:'8px' }}>🥉</span>}
+                          {p.name}
+                        </td>
+                        <td style={{ fontWeight:800, color:'var(--teal)', fontFamily:'var(--font-display)' }}>{p.qty} units</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

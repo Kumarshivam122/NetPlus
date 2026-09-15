@@ -3,10 +3,29 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { BRANDS } from '../../data/store';
 import { Search, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export default function BrandsPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleActionClick = (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/register');
+    } else if (user.role === 'admin') {
+      navigate('/admin/products');
+    } else if (user.status === 'pending') {
+      navigate('/pending');
+    } else if (!user.storeName) {
+      navigate('/onboarding');
+    } else {
+      navigate('/portal/products');
+    }
+  };
 
   const brandLogos = {
     'Cipla': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Cipla_logo.svg/320px-Cipla_logo.svg.png',
@@ -86,7 +105,7 @@ export default function BrandsPage() {
           </h2>
           <div className="brands-showcase-grid">
             {filteredBrands.map((b, i) => (
-              <div key={b.id} className="brand-showcase-card animate-fade-up" style={{ animationDelay: `${i*0.05}s` }}>
+              <div key={b.id} className="brand-showcase-card animate-fade-up" style={{ animationDelay: `${i*0.05}s` }} onClick={handleActionClick}>
                 <div className="brand-logo-container">
                   <img 
                     src={brandLogos[b.name] || `https://logo.clearbit.com/${domainFallbacks[b.name]}`} 

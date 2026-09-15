@@ -55,15 +55,15 @@ export default function HomePage() {
   const handleActionClick = (e) => {
     e.preventDefault();
     if (!user) {
-      navigate('/login');
+      navigate('/register');
     } else if (user.role === 'admin') {
-      navigate('/admin');
+      navigate('/admin/products');
     } else if (user.status === 'pending') {
       navigate('/pending');
     } else if (!user.storeName) {
       navigate('/onboarding');
     } else {
-      navigate('/retailer');
+      navigate('/portal/products');
     }
   };
 
@@ -144,7 +144,7 @@ export default function HomePage() {
     <div className="page-wrapper">
       <Helmet>
         <title>NET PLUS | Medical Wholesale & Distribution</title>
-        <meta name="description" content="Trusted B2B pharmaceutical supplier for registered medical shops and pharmacies. Access wholesale prices, live stock, and seamless ordering." />
+        <meta name="description" content="Trusted B2B pharmaceutical supplier for registered medical shops and pharmacies. Access PTR (Price to Retailer), live stock, and seamless ordering." />
         <link rel="canonical" href="https://netplus-seven.vercel.app/" />
         <link rel="preload" href="/banner.jpg" as="image" />
       </Helmet>
@@ -276,14 +276,14 @@ export default function HomePage() {
           <div className="section-header animate-fade-up">
             <span className="section-tag">How It Works</span>
             <h2 className="section-title">For Medical Shop Owners</h2>
-            <p className="section-subtitle">Get verified and access exclusive wholesale prices in 4 simple steps</p>
+            <p className="section-subtitle">Get verified and access exclusive PTR (Price to Retailer) in 4 simple steps</p>
           </div>
           <div className="how-grid">
             {[
               { step: '01', icon: '📝', title: 'Register',          desc: 'Fill in your shop details — name, address, licence, and upload your documents.' },
               { step: '02', icon: '🔍', title: 'Verification',       desc: 'Our team reviews your drug licence, shop photo, and submitted documents.' },
               { step: '03', icon: '✅', title: 'Get Approved',       desc: 'Receive approval notification. Your retailer portal access is activated.' },
-              { step: '04', icon: '🛒', title: 'Order Wholesale',    desc: 'Browse our full catalog with wholesale prices and place orders instantly.' },
+              { step: '04', icon: '🛒', title: 'Order Wholesale',    desc: 'Browse our full catalog with PTR (Price to Retailer) and place orders instantly.' },
             ].map((s, i) => (
               <div key={i} className="how-card animate-fade-up" style={{ animationDelay: `${i * 0.15}s` }}>
                 <div className="how-step">{s.step}</div>
@@ -391,12 +391,12 @@ export default function HomePage() {
               <div className="portal-cta-badge"><Lock size={14} /> Private B2B Portal</div>
               <h2 className="portal-cta-title">Wholesale Access for Registered Retailers Only</h2>
               <p className="portal-cta-desc">
-                Medical wholesale prices, stock availability, and ordering are exclusively
+                Medical PTR (Price to Retailer), stock availability, and ordering are exclusively
                 available to approved medical shops. Register and get verified to unlock access.
               </p>
               <div className="portal-cta-features">
                 {[
-                  { icon: '💊', text: 'Real-time wholesale prices' },
+                  { icon: '💊', text: 'Real-time PTR (Price to Retailer)' },
                   { icon: '📦', text: 'Live stock availability' },
                   { icon: '📋', text: 'One-click order system' },
                   { icon: '🚚', text: 'Doorstep delivery' },
