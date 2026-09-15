@@ -45,7 +45,10 @@ function Particle({ style }) {
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [currentBanner, setCurrentBanner] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -65,16 +68,63 @@ export default function HomePage() {
   };
 
   const banners = ['/banner.jpg', '/banner2.jpg', '/banner3.jpg', '/banner4.jpg'];
+  const extendedBanners = [banners[banners.length - 1], ...banners, banners[0]];
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentBanner((prev) => (prev + 1) % banners.length);
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => prev + 1);
     }, 5000);
     return () => clearInterval(timer);
-  }, [banners.length]);
+  }, []);
 
-  const nextBanner = () => setCurrentBanner((prev) => (prev + 1) % banners.length);
-  const prevBanner = () => setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+  const nextBanner = () => {
+    if (currentIndex >= extendedBanners.length - 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev + 1);
+  };
+  
+  const prevBanner = () => {
+    if (currentIndex <= 0) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev - 1);
+  };
+
+  const handleTransitionEnd = () => {
+    if (currentIndex === 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(extendedBanners.length - 2);
+    } else if (currentIndex === extendedBanners.length - 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+    }
+  };
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      nextBanner();
+    } else if (isRightSwipe) {
+      prevBanner();
+    }
+    // Clear touch states to prevent double sliding
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
 
   const displayCategories = CATEGORIES.filter(c => c.id !== 'all');
 
@@ -107,29 +157,51 @@ export default function HomePage() {
             <button className="banner-nav-btn prev" onClick={prevBanner}>
               <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }}/>
             </button>
-            <img 
-              src={banners[currentBanner]} 
-              alt="Wholesale Medicines Banner" 
-              className="hero-banner-img animate-fade-in" 
-              key={currentBanner}
-            />
+            <div 
+              className="hero-banner-track"
+              style={{ 
+                transform: `translateX(-${currentIndex * 100}%)`,
+                transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {extendedBanners.map((banner, index) => (
+                <img 
+                  key={index}
+                  src={banner} 
+                  alt={`Wholesale Medicines Banner ${index}`} 
+                  className="hero-banner-img" 
+                />
+              ))}
+            </div>
             <button className="banner-nav-btn next" onClick={nextBanner}>
               <ChevronRight size={24} />
             </button>
             <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
-              {banners.map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setCurrentBanner(i)}
-                  style={{ 
-                    width: i === currentBanner ? '24px' : '8px', 
-                    height: '8px', 
-                    borderRadius: '4px', 
-                    background: i === currentBanner ? 'var(--teal)' : 'rgba(0,0,0,0.2)',
-                    border: 'none', cursor: 'pointer', transition: 'var(--transition)'
-                  }} 
-                />
-              ))}
+              {banners.map((_, i) => {
+                const isActive = (currentIndex === 0 && i === banners.length - 1) || 
+                                 (currentIndex === extendedBanners.length - 1 && i === 0) || 
+                                 (currentIndex - 1 === i);
+                return (
+                  <button 
+                    key={i} 
+                    onClick={() => {
+                      setIsTransitioning(true);
+                      setCurrentIndex(i + 1);
+                    }}
+                    style={{ 
+                      width: isActive ? '24px' : '8px', 
+                      height: '8px', 
+                      borderRadius: '4px', 
+                      background: isActive ? 'var(--teal)' : 'rgba(0,0,0,0.2)',
+                      border: 'none', cursor: 'pointer', transition: 'var(--transition)'
+                    }} 
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
