@@ -14,29 +14,38 @@ const generateToken = (id) => {
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    const userExists = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-      role: 'retailer',
-      status: 'unverified'
-    });
+    if (user) {
+      // If the user exists but hasn't completed their full profile
+      // 'unverified' = hasn't verified email, 'onboarding' = verified email but incomplete profile
+      if (user.status === 'unverified' || user.status === 'onboarding') {
+        // Reset their status and update their credentials so they can restart registration
+        await User.update(user._id, { name, status: 'unverified' });
+        await User.updatePassword(email, password);
+        user = await User.findById(user._id);
+      } else {
+        // If status is 'pending', 'approved', or 'rejected', they already completed their profile
+        return res.status(400).json({ message: 'An account with this email already exists.' });
+      }
+    } else {
+      user = await User.create({
+        name,
+        email,
+        password,
+        role: 'retailer',
+        status: 'unverified'
+      });
+    }
 
     if (user) {
       // Save the OTP using the saveOtp function
       await User.saveOtp(user.email, otp, otpExpiry);
 
-      // Send verification email
+      // Send verification email (this will still use the password in .env)
       sendVerificationEmail(user.email, otp).catch(console.error);
 
       res.status(201).json({

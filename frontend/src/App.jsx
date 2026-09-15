@@ -23,6 +23,7 @@ const RetailerDashboard = React.lazy(() => import('./pages/portal/RetailerDashbo
 const RetailerProducts  = React.lazy(() => import('./pages/portal/RetailerProducts'));
 const RetailerOrders = React.lazy(() => import('./pages/portal/RetailerOrders'));
 const RetailerCart = React.lazy(() => import('./pages/portal/RetailerCart'));
+const RetailerRequest = React.lazy(() => import('./pages/portal/RetailerRequest'));
 
 // Admin Portal
 const AdminDashboard     = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -122,6 +123,13 @@ export default function App() {
                       <RequireAuth allowedRoles={['retailer']}>
                         <RequireApproved>
                           <RetailerCart />
+                        </RequireApproved>
+                      </RequireAuth>
+                    } />
+                    <Route path="/portal/request" element={
+                      <RequireAuth allowedRoles={['retailer', 'admin']}>
+                        <RequireApproved>
+                          <RetailerRequest />
                         </RequireApproved>
                       </RequireAuth>
                     } />

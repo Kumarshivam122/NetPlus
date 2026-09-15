@@ -5,15 +5,15 @@ const transport = nodemailer.createTransport({
   port: process.env.SMTP_PORT || 465,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER || "netplusenterprises@gmail.com",
-    pass: process.env.SMTP_PASS
+    user: process.env.EMAIL_USER || process.env.SMTP_USER || "netplusenterprisesdhn@gmail.com",
+    pass: process.env.EMAIL_PASS || process.env.SMTP_PASS
   }
 });
 
 const sendOTPEmail = async (to, otp) => {
   const mailOptions = {
     from: '"Net Plus Admin" <admin@netplusenterprises.com>',
-    to: 'netplusenterprises@gmail.com', // Routed to main email for testing
+    to: to,
     subject: 'Your Password Reset OTP',
     html: `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -52,7 +52,7 @@ const sendOTPEmail = async (to, otp) => {
 const sendWelcomeEmail = async (to, name) => {
   const mailOptions = {
     from: '"Net Plus Admin" <admin@netplusenterprises.com>',
-    to: 'netplusenterprises@gmail.com', // Routed to main email for testing
+    to: to,
     subject: 'Welcome to NET PLUS ENTERPRISES!',
     html: `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -90,7 +90,7 @@ const sendWelcomeEmail = async (to, name) => {
 const sendVerificationEmail = async (to, otp) => {
   const mailOptions = {
     from: '"Net Plus Admin" <admin@netplusenterprises.com>',
-    to: 'netplusenterprises@gmail.com', // Routed to main email for testing
+    to: to,
     subject: 'Verify your NET PLUS Account',
     html: `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -126,4 +126,68 @@ const sendVerificationEmail = async (to, otp) => {
   }
 };
 
-module.exports = { sendOTPEmail, sendWelcomeEmail, sendVerificationEmail };
+const sendContactEmail = async (contactData) => {
+  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprisesdhn@gmail.com';
+  const { name, email, phone, subject, message } = contactData;
+
+  const mailOptions = {
+    from: '"Net Plus Contact Form" <admin@netplusenterprises.com>',
+    to: adminEmail,
+    replyTo: email,
+    subject: `New Contact Query: ${subject || 'General Inquiry'}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd;">
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
+        <hr />
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${message}</p>
+      </div>
+    `
+  };
+
+  try {
+    await transport.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error("Error sending contact email:", error);
+    return false;
+  }
+};
+
+const sendRequestEmail = async (requestData) => {
+  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprisesdhn@gmail.com';
+  const { medicineName, email, phone, notes } = requestData;
+
+  const mailOptions = {
+    from: '"Net Plus Request Portal" <admin@netplusenterprises.com>',
+    to: adminEmail,
+    replyTo: email,
+    subject: `New Medicine Request: ${medicineName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd;">
+        <h2>New Medicine Request</h2>
+        <p><strong>Medicine Name:</strong> ${medicineName}</p>
+        <p><strong>User Email:</strong> ${email}</p>
+        <p><strong>User Phone:</strong> ${phone}</p>
+        <hr />
+        <p><strong>Additional Notes:</strong></p>
+        <p style="white-space: pre-wrap;">${notes || 'None'}</p>
+      </div>
+    `
+  };
+
+  try {
+    await transport.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error("Error sending request email:", error);
+    return false;
+  }
+};
+
+module.exports = { sendOTPEmail, sendWelcomeEmail, sendVerificationEmail, sendContactEmail, sendRequestEmail };
+

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ClipboardList, Users, LogOut,
-  ChevronLeft, ChevronRight, Bell, Menu, Shield, Store, Home, UserCheck, ShoppingBag, Tag
+  ChevronLeft, ChevronRight, Bell, Menu, Shield, Store, Home, UserCheck, ShoppingBag, Tag, MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -13,6 +13,7 @@ const RETAILER_NAV = [
   { to: '/portal/products',    icon: Package,          label: 'Browse Products' },
   { to: '/portal/cart',        icon: ShoppingBag,      label: 'Cart' },
   { to: '/portal/orders',      icon: ClipboardList,    label: 'My Orders' },
+  { to: '/portal/request',     icon: MessageSquare,    label: 'Request Medicine' },
 ];
 
 const ADMIN_NAV = [

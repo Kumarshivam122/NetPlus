@@ -60,10 +60,24 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      // Simulate API call for now (since there is no /api/contact endpoint in backend)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setSent(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queries/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          subject: form.subject,
+          message: form.message
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSent(true);
+      } else {
+        setError(data.message || "Failed to send message. Please try again later.");
+      }
     } catch (err) {
       setError("Failed to send message. Please try again later.");
     } finally {
