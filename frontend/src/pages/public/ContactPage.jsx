@@ -15,9 +15,9 @@ export default function ContactPage() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "NET PLUS Medical Wholesale & Distribution",
-    "image": "https://netplus-seven.vercel.app/netLogo.jpeg",
-    "@id": "https://netplus-seven.vercel.app",
-    "url": "https://netplus-seven.vercel.app",
+    "image": `${import.meta.env.VITE_BASE_URL}/netLogo.jpeg`,
+    "@id": `${import.meta.env.VITE_BASE_URL}`,
+    "url": `${import.meta.env.VITE_BASE_URL}`,
     "telephone": COMPANY.phone,
     "address": {
       "@type": "PostalAddress",
@@ -90,7 +90,7 @@ export default function ContactPage() {
       <Helmet>
         <title>Contact Us | NET PLUS Medical Wholesale</title>
         <meta name="description" content="Reach out to NET PLUS for any queries, support, or wholesale order inquiries. We are here Mon-Sat, 9AM to 7PM." />
-        <link rel="canonical" href="https://netplus-seven.vercel.app/contact" />
+        <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/contact`} />
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
         </script>

@@ -42,7 +42,7 @@ export default function ProductsPage() {
       <Helmet>
         <title>Wholesale Pharmaceutical Products | NET PLUS</title>
         <meta name="description" content="Browse 18,000+ pharmaceutical products across 10+ therapeutic categories at PTR (Price to Retailer). Exclusive for verified medical shops." />
-        <link rel="canonical" href="https://netplus-seven.vercel.app/products" />
+        <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/products`} />
       </Helmet>
       <Navbar />
       <section className="page-hero" id="products-hero" style={{ background: '#fff' }}>

@@ -145,7 +145,7 @@ export default function HomePage() {
       <Helmet>
         <title>NET PLUS | Medical Wholesale & Distribution</title>
         <meta name="description" content="Trusted B2B pharmaceutical supplier for registered medical shops and pharmacies. Access PTR (Price to Retailer), live stock, and seamless ordering." />
-        <link rel="canonical" href="https://netplus-seven.vercel.app/" />
+        <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/`} />
         <link rel="preload" href="/banner.jpg" as="image" />
       </Helmet>
       <Navbar />

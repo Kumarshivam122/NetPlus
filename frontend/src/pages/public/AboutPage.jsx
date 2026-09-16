@@ -12,7 +12,7 @@ export default function AboutPage() {
       <Helmet>
         <title>About Us | NET PLUS Medical Wholesale</title>
         <meta name="description" content="Learn about NET PLUS ENTERPRISES, Maharashtra's leading B2B pharmaceutical wholesale and distribution company with over 15 years of trust." />
-        <link rel="canonical" href="https://netplus-seven.vercel.app/about" />
+        <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/about`} />
       </Helmet>
       <Navbar />
 
