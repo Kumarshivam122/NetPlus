@@ -45,6 +45,10 @@ function Particle({ style }) {
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -61,6 +65,65 @@ export default function HomePage() {
     } else {
       navigate('/portal/products');
     }
+  };
+
+  const banners = ['/banner.jpg', '/banner2.jpg', '/banner3.jpg', '/banner4.jpg'];
+  const extendedBanners = [banners[banners.length - 1], ...banners, banners[0]];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => prev + 1);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextBanner = () => {
+    if (currentIndex >= extendedBanners.length - 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev + 1);
+  };
+  
+  const prevBanner = () => {
+    if (currentIndex <= 0) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev - 1);
+  };
+
+  const handleTransitionEnd = () => {
+    if (currentIndex === 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(extendedBanners.length - 2);
+    } else if (currentIndex === extendedBanners.length - 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+    }
+  };
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      nextBanner();
+    } else if (isRightSwipe) {
+      prevBanner();
+    }
+    // Clear touch states to prevent double sliding
+    setTouchStart(null);
+    setTouchEnd(null);
   };
 
   const displayCategories = CATEGORIES.filter(c => c.id !== 'all');
@@ -86,65 +149,103 @@ export default function HomePage() {
         <link rel="preload" href="/banner.jpg" as="image" />
       </Helmet>
       <Navbar />
-      <main>
-      {/* ── HERO SECTION ── */}
-      <section className="hero-section" style={{ background: 'var(--off-white)', padding: '5rem 0', textAlign: 'center', borderBottom: '1px solid var(--gray-200)' }}>
+
+      {/* ── HERO BANNER ── */}
+      <section className="hero-banner-section">
         <div className="container">
-          <span className="accent-tag" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>NET PLUS ENTERPRISES</span>
-          <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, color: 'var(--navy)', marginBottom: '1.5rem', lineHeight: 1.1, maxWidth: '800px', margin: '0 auto 1.5rem' }}>
-            Wholesale Pharmaceutical Distributor
-          </h1>
-          <p style={{ fontSize: '1.15rem', color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
-            Supplying 500+ registered pharmacies and medical shops across Jharkhand with 18,000+ authentic medicines at competitive PTR.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="https://wa.me/917979466949?text=Hi%20NetPlus,%20I%20have%20an%20enquiry" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg" style={{ background: '#25D366', borderColor: '#25D366', color: '#fff' }}>
-              WhatsApp Enquiry
-            </a>
-            <a href="tel:+917979466949" className="btn btn-outline btn-lg" style={{ color: 'var(--navy)', borderColor: 'var(--navy)' }}>
-              <Phone size={18} /> Call Us
-            </a>
+          <div className="hero-banner-wrapper animate-fade-up">
+            <button className="banner-nav-btn prev" onClick={prevBanner}>
+              <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }}/>
+            </button>
+            <div 
+              className="hero-banner-track"
+              style={{ 
+                transform: `translateX(-${currentIndex * 100}%)`,
+                transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {extendedBanners.map((banner, index) => (
+                <img 
+                  key={index}
+                  src={banner} 
+                  alt={`Wholesale Medicines Banner ${index}`} 
+                  className="hero-banner-img" 
+                />
+              ))}
+            </div>
+            <button className="banner-nav-btn next" onClick={nextBanner}>
+              <ChevronRight size={24} />
+            </button>
+            <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
+              {banners.map((_, i) => {
+                const isActive = (currentIndex === 0 && i === banners.length - 1) || 
+                                 (currentIndex === extendedBanners.length - 1 && i === 0) || 
+                                 (currentIndex - 1 === i);
+                return (
+                  <button 
+                    key={i} 
+                    onClick={() => {
+                      setIsTransitioning(true);
+                      setCurrentIndex(i + 1);
+                    }}
+                    style={{ 
+                      width: isActive ? '24px' : '8px', 
+                      height: '8px', 
+                      borderRadius: '4px', 
+                      background: isActive ? 'var(--teal)' : 'rgba(0,0,0,0.2)',
+                      border: 'none', cursor: 'pointer', transition: 'var(--transition)'
+                    }} 
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── TRUST STRIP ── */}
-      <section className="trust-strip" style={{ background: '#fff', borderBottom: '1px solid var(--gray-200)' }}>
+      {/* ── QUICK ACTION CARDS ── */}
+      <section className="quick-actions-section">
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', padding: '1.5rem 0' }}>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: '1 1 200px' }}>
-              <Shield size={24} color="var(--teal)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--gray-500)', textTransform: 'uppercase' }}>Drug License No.</div>
-                <div style={{ fontWeight: 600, color: 'var(--navy)' }}>JHA/03/20/00346</div>
+          <div className="quick-actions-grid">
+            <Link to="/products" className="qa-card" style={{ background: '#e6f7ec' }}>
+              <div className="qa-icon" style={{ color: '#22A355' }}>💊</div>
+              <div className="qa-content">
+                <div className="qa-title">Buy Medicines & Essentials</div>
+                <div className="qa-subtitle" style={{ color: '#166534' }}>NEXT DAY DELIVERY</div>
               </div>
-            </div>
+              <ChevronRight size={20} className="qa-arrow" />
+            </Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: '1 1 200px' }}>
-              <Lock size={24} color="var(--teal)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--gray-500)', textTransform: 'uppercase' }}>GSTIN</div>
-                <div style={{ fontWeight: 600, color: 'var(--navy)' }}>20AAMFN7788P1Z5</div>
+            <Link to="/portal" className="qa-card" style={{ background: '#fdf6db' }}>
+              <div className="qa-icon" style={{ color: '#d97706' }}>🩺</div>
+              <div className="qa-content">
+                <div className="qa-title">Register Your Shop</div>
+                <div className="qa-subtitle" style={{ color: '#92400e' }}>APPLY NOW</div>
               </div>
-            </div>
+              <ChevronRight size={20} className="qa-arrow" />
+            </Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: '1 1 200px' }}>
-              <Star size={24} color="var(--teal)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--gray-500)', textTransform: 'uppercase' }}>Legacy</div>
-                <div style={{ fontWeight: 600, color: 'var(--navy)' }}>15+ Years in Business</div>
+            <Link to="/products" className="qa-card" style={{ background: '#fce8f3' }}>
+              <div className="qa-icon" style={{ color: '#db2777' }}>✂️</div>
+              <div className="qa-content">
+                <div className="qa-title">Surgical Supplies</div>
+                <div className="qa-subtitle" style={{ color: '#9d174d' }}>BULK PRICING</div>
               </div>
-            </div>
+              <ChevronRight size={20} className="qa-arrow" />
+            </Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: '1 1 200px' }}>
-              <Truck size={24} color="var(--teal)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--gray-500)', textTransform: 'uppercase' }}>Delivery SLA</div>
-                <div style={{ fontWeight: 600, color: 'var(--navy)' }}>Next-Day Dispatch</div>
+            <Link to="/products" className="qa-card" style={{ background: '#fae8e4' }}>
+              <div className="qa-icon" style={{ color: '#ea580c' }}>🛡️</div>
+              <div className="qa-content">
+                <div className="qa-title">Generic Alternatives</div>
+                <div className="qa-subtitle" style={{ color: '#9a3412' }}>EXPLORE CATALOG</div>
               </div>
-            </div>
-
+              <ChevronRight size={20} className="qa-arrow" />
+            </Link>
           </div>
         </div>
       </section>
@@ -376,7 +477,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      </main>
       <Footer />
 
       <style>{`
@@ -515,6 +615,9 @@ export default function HomePage() {
           grid-template-columns: repeat(4, 1fr);
           gap: 1.5rem;
           position: relative;
+        }
+        .how-grid-3 {
+          grid-template-columns: repeat(3, 1fr);
         }
         .how-card {
           background: #fff;
