@@ -15,6 +15,10 @@ function formatUser(row) {
     alternatePhone: row.alternate_phone,
     licenceFileName: row.licence_file_name,
     licenceFileUrl: row.licence_file_url,
+    licenceFile2Name: row.licence_file2_name,
+    licenceFile2Url: row.licence_file2_url,
+    gstinFileName: row.gstin_file_name,
+    gstinFileUrl: row.gstin_file_url,
     shopPhotoName: row.shop_photo_name,
     shopPhotoUrl: row.shop_photo_url,
     resetOtp: row.reset_otp,
@@ -45,7 +49,7 @@ const User = {
 
   async findById(id, options = {}) {
     const cols = options.excludePassword
-      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
+      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, licence_file2_name, licence_file2_url, gstin_file_name, gstin_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
       : '*';
       
     const { data, error } = await supabase
@@ -60,7 +64,7 @@ const User = {
 
   async find(query = {}, options = {}) {
     const cols = options.excludePassword
-      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
+      ? 'id, name, email, role, status, store_name, store_type, licence_no, gstin, store_address, city, state, pincode, owner_name, phone, alternate_phone, licence_file_name, licence_file_url, licence_file2_name, licence_file2_url, gstin_file_name, gstin_file_url, shop_photo_name, shop_photo_url, created_at, updated_at'
       : '*';
       
     const { data, error } = await supabase
@@ -99,6 +103,8 @@ const User = {
       'store_address', 'city', 'state', 'pincode',
       'owner_name', 'phone', 'alternate_phone',
       'licence_file_name', 'licence_file_url',
+      'licence_file2_name', 'licence_file2_url',
+      'gstin_file_name', 'gstin_file_url',
       'shop_photo_name', 'shop_photo_url'
     ];
 
@@ -111,6 +117,10 @@ const User = {
       alternatePhone: 'alternate_phone',
       licenceFileName: 'licence_file_name',
       licenceFileUrl: 'licence_file_url',
+      licenceFile2Name: 'licence_file2_name',
+      licenceFile2Url: 'licence_file2_url',
+      gstinFileName: 'gstin_file_name',
+      gstinFileUrl: 'gstin_file_url',
       shopPhotoName: 'shop_photo_name',
       shopPhotoUrl: 'shop_photo_url'
     };

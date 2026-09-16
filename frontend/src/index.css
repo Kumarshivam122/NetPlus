@@ -255,7 +255,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .modal-footer { padding: 1rem 2rem 1.75rem; display: flex; gap: 0.75rem; justify-content: flex-end; }
 
 /* ── Tables ── */
-.table-wrapper { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid #e2e8f0; }
+.table-wrapper { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow-x: auto; border: 1px solid #e2e8f0; }
 .data-table    { width: 100%; border-collapse: collapse; }
 .data-table th {
   background: var(--navy);
@@ -307,6 +307,9 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 1.5rem;
+}
+@media (max-width: 480px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 }
 
 .product-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; }
@@ -484,8 +487,8 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 button { cursor: pointer; }
 
 /* ── Responsive sidebar ── */
-@media (max-width:1024px) { .sidebar { width: 220px; } .portal-main { margin-left: 220px; } }
-@media (max-width:768px)  { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .portal-main { margin-left: 0; } .portal-content { padding: 1rem; } }
+@media (max-width:1024px) { .sidebar { width: 220px; } .portal-main { margin-left: 220px; width: calc(100% - 220px); max-width: calc(100% - 220px); } }
+@media (max-width:768px)  { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .portal-main { margin-left: 0; width: 100%; max-width: 100%; margin-top: 60px; } .portal-content { padding: 1rem; } }
 
 /* ── Info notice ── */
 .info-notice { display:flex; align-items:flex-start; gap:.6rem; background:var(--cyan); border:1px solid rgba(0,184,169,0.2); border-radius:var(--radius-md); padding:.85rem; font-size:.82rem; color:var(--navy-light); line-height:1.5; }
@@ -607,4 +610,39 @@ button { cursor: pointer; }
 }
 .title-year {
   color: var(--teal-dark);
+}
+
+/* ── Mobile Responsiveness Fixes (Phase 2) ── */
+@media (max-width: 768px) {
+  /* Prevent iOS Safari auto-zoom on inputs */
+  .form-control {
+    font-size: 16px !important;
+  }
+  
+  /* Fix 100vh issue on mobile browsers (address bar overlap) */
+  .portal-layout, .portal-main, .page-wrapper {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .sidebar {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ensure tap targets are at least 44x44px */
+  .btn-sm {
+    min-height: 44px;
+    padding: 0.6rem 1.2rem;
+  }
+  .banner-nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  /* Improve product grid spacing on very narrow screens */
+  .products-grid {
+    gap: 0.75rem;
+  }
 }

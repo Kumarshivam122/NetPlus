@@ -867,7 +867,7 @@ export default function HomePage() {
           .professional-categories-grid { grid-template-columns: repeat(2, 1fr); }
           .portal-cta-card { padding: 2rem; }
           .contact-strip-divider { display: none; }
-          .contact-strip-grid { gap: 1.5rem; }
+          .contact-strip-grid { gap: 1rem; flex-direction: column; }
         }
       `}</style>
     </div>

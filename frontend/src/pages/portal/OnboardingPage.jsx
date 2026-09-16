@@ -189,13 +189,13 @@ export default function OnboardingPage() {
             <div className="onb-row">
               <div className="form-group">
                 <label className="form-label">Phone Number *</label>
-                <input className="form-control" type="tel" placeholder="10-digit mobile" maxLength={10}
+                <input className="form-control" type="tel" inputMode="tel" placeholder="10-digit mobile" maxLength={10}
                   value={form.phone} onChange={e => setF('phone', e.target.value.replace(/\D/g, '').slice(0, 10))} id="onb-phone" />
                 {errors.phone && <div className="field-error">{errors.phone}</div>}
               </div>
               <div className="form-group">
                 <label className="form-label">Alternate Phone</label>
-                <input className="form-control" type="tel" placeholder="Optional" maxLength={10}
+                <input className="form-control" type="tel" inputMode="tel" placeholder="Optional" maxLength={10}
                   value={form.alternatePhone} onChange={e => setF('alternatePhone', e.target.value.replace(/\D/g, '').slice(0, 10))} id="onb-alt-phone" />
               </div>
             </div>
@@ -459,6 +459,10 @@ export default function OnboardingPage() {
         @media (max-width: 768px) {
           .auth-page { padding: 1rem; }
           .onb-row-3 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+          .onb-row { grid-template-columns: 1fr; }
+          .onb-row-3 { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

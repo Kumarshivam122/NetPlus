@@ -57,35 +57,53 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
           <div style={{ gridColumn:'span 2' }}>
             <div className="detail-section-title"><FileText size={14} /> Submitted Documents</div>
             <div style={{ display:'flex', gap:'1rem', flexWrap:'wrap' }}>
-              {(u.licenceFileName || u.licenceFileUrl) && (
-                <div className="doc-thumb">
-                  <FileText size={28} style={{ color:'var(--teal)' }} />
-                  <div className="doc-thumb-name">Drug Licence</div>
-                  <div className="doc-thumb-file">{u.licenceFileName || 'Document'}</div>
-                  {u.licenceFileUrl && (
-                    <a href={u.licenceFileUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
-                      View File <ExternalLink size={12} />
-                    </a>
-                  )}
-                </div>
-              )}
-              {(u.shopPhotoName || u.shopPhotoUrl) && (
-                <div className="doc-thumb">
-                  <Store size={28} style={{ color:'var(--navy)' }} />
-                  <div className="doc-thumb-name">Shop Photo</div>
-                  <div className="doc-thumb-file">{u.shopPhotoName || 'Photo'}</div>
-                  {u.shopPhotoUrl && (
-                    <a href={u.shopPhotoUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
-                      View Photo <ExternalLink size={12} />
-                    </a>
-                  )}
-                </div>
-              )}
-              {!u.licenceFileName && !u.licenceFileUrl && !u.shopPhotoName && !u.shopPhotoUrl && (
-                <p style={{ color:'var(--gray-400)', fontSize:'.85rem' }}>No documents uploaded</p>
-              )}
+              <div className="doc-thumb">
+                <FileText size={28} style={{ color: u.licenceFileName ? 'var(--teal)' : 'var(--gray-300)' }} />
+                <div className="doc-thumb-name">Drug Licence</div>
+                <div className="doc-thumb-file">{u.licenceFileName || 'Not Uploaded'}</div>
+                {u.licenceFileUrl && (
+                  <a href={u.licenceFileUrl} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    View File <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+              
+              <div className="doc-thumb">
+                <FileText size={28} style={{ color: u.licenceFile2Name ? 'var(--teal)' : 'var(--gray-300)' }} />
+                <div className="doc-thumb-name">Drug Licence (Page 2)</div>
+                <div className="doc-thumb-file">{u.licenceFile2Name || 'Not Uploaded'}</div>
+                {u.licenceFile2Url && (
+                  <a href={u.licenceFile2Url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    View File <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+
+              <div className="doc-thumb">
+                <FileText size={28} style={{ color: u.gstinFileName ? 'var(--teal)' : 'var(--gray-300)' }} />
+                <div className="doc-thumb-name">GSTIN Document</div>
+                <div className="doc-thumb-file">{u.gstinFileName || 'Not Uploaded'}</div>
+                {u.gstinFileUrl && (
+                  <a href={u.gstinFileUrl} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    View File <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+
+              <div className="doc-thumb">
+                <Store size={28} style={{ color: u.shopPhotoName ? 'var(--navy)' : 'var(--gray-300)' }} />
+                <div className="doc-thumb-name">Shop Photo</div>
+                <div className="doc-thumb-file">{u.shopPhotoName || 'Not Uploaded'}</div>
+                {u.shopPhotoUrl && (
+                  <a href={u.shopPhotoUrl} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    View Photo <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -151,6 +151,7 @@ router.put('/profile', protect, async (req, res) => {
         'storeAddress', 'city', 'state', 'pincode',
         'ownerName', 'phone', 'alternatePhone',
         'licenceFileName', 'licenceFileUrl',
+        'licenceFile2Name', 'licenceFile2Url',
         'shopPhotoName', 'shopPhotoUrl',
         'gstinFileName', 'gstinFileUrl'
       ];

@@ -79,22 +79,8 @@ export async function apiSimpleSignUp({ name, email, password }) {
 // Wait, OnboardingPage might still use apiSignUp if it submits the full profile form.
 export async function apiSignUp(formData) {
   try {
-    let licenceFileUrl = '';
-    let shopPhotoUrl = '';
-
-    if (formData.licenceFile && formData.licenceFile instanceof File) {
-      licenceFileUrl = await apiUploadDocument(formData.licenceFile);
-    } else if (formData.licenceFile && typeof formData.licenceFile === 'string') {
-      licenceFileUrl = formData.licenceFile;
-    }
-    if (formData.shopPhoto && formData.shopPhoto instanceof File) {
-      shopPhotoUrl = await apiUploadDocument(formData.shopPhoto);
-    }
-
     const profileData = {
-      ...formData,
-      licenceFileUrl,
-      shopPhotoUrl,
+      ...formData
     };
 
     const data = await fetchWithAuth('/auth/profile', {
