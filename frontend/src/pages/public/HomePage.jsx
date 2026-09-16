@@ -173,7 +173,10 @@ export default function HomePage() {
                   key={index}
                   src={banner} 
                   alt={`Wholesale Medicines Banner ${index}`} 
-                  className="hero-banner-img" 
+                  className="hero-banner-img"
+                  width="1200"
+                  height="400"
+                  loading={index === 0 ? "eager" : "lazy"}
                 />
               ))}
             </div>
