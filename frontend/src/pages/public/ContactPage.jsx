@@ -97,7 +97,7 @@ export default function ContactPage() {
       </Helmet>
       
       <Navbar />
-      
+      <main>
       <section className="page-hero" id="contact-hero" style={{ background: '#fff' }}>
         <div className="container">
           <span className="accent-tag">Get In Touch</span>
@@ -201,6 +201,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      </main>
       <Footer />
       <style>{`
         .page-hero { padding: 6rem 0 4rem; text-align: center; }

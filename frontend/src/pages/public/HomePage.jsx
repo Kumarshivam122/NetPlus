@@ -149,7 +149,7 @@ export default function HomePage() {
         <link rel="preload" href="/banner.jpg" as="image" />
       </Helmet>
       <Navbar />
-
+      <main>
       {/* ── HERO BANNER ── */}
       <section className="hero-banner-section">
         <div className="container">
@@ -477,6 +477,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      </main>
       <Footer />
 
       <style>{`

@@ -60,6 +60,7 @@ export default function BrandsPage() {
   return (
     <div className="page-wrapper">
       <Navbar />
+      <main>
       <section className="brands-hero">
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '4rem', flexWrap: 'wrap' }}>
           <div className="brands-hero-content" style={{ flex: '1 1 500px' }}>
@@ -136,6 +137,7 @@ export default function BrandsPage() {
           </div>
         </div>
       </section>
+      </main>
       <Footer />
       <style>{`
         .brands-hero { padding: 5rem 0; background: #fff; position: relative; overflow: hidden; }
