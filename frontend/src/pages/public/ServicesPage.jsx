@@ -7,7 +7,6 @@ export default function ServicesPage() {
   return (
     <div className="page-wrapper">
       <Navbar />
-      <main>
       <section className="page-hero" id="services-hero" style={{ background: '#fff' }}>
         <div className="container">
           <span className="accent-tag">What We Offer</span>
@@ -30,7 +29,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-      </main>
       <Footer />
       <style>{`
         .page-hero { padding: 6rem 0 4rem; text-align: center; }

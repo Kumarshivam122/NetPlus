@@ -15,7 +15,7 @@ export default function AboutPage() {
         <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/about`} />
       </Helmet>
       <Navbar />
-      <main>
+
       {/* ── NEW HERO SECTION (Reference Image Style) ── */}
       <section className="section" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="container">
@@ -207,7 +207,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      </main>
       <Footer />
 
       <style>{`

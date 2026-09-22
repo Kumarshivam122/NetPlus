@@ -45,7 +45,6 @@ export default function ProductsPage() {
         <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/products`} />
       </Helmet>
       <Navbar />
-      <main>
       <section className="page-hero" id="products-hero" style={{ background: '#fff' }}>
         <div className="container">
           <span className="accent-tag">Our Catalog</span>
@@ -96,7 +95,6 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      </main>
       <Footer />
       <style>{`
         .page-hero { padding: 6rem 0 4rem; text-align: center; }

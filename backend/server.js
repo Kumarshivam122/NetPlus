@@ -17,6 +17,9 @@ dotenv.config({ path: path.join(__dirname, '../.env') }); // Load root .env (doe
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy (Render, Vercel, etc.) so req.protocol returns 'https' correctly
+app.set('trust proxy', 1);
+
 // Request logging (morgan integrates with winston)
 const morganFormat = process.env.NODE_ENV !== 'production' ? 'dev' : 'combined';
 app.use(morgan(morganFormat, { stream: { write: message => logger.info(message.trim()) } }));

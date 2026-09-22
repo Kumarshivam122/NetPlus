@@ -285,12 +285,14 @@ export default function HomePage() {
               { step: '03', icon: '✅', title: 'Get Approved',       desc: 'Receive approval notification. Your retailer portal access is activated.' },
               { step: '04', icon: '🛒', title: 'Order Wholesale',    desc: 'Browse our full catalog with PTR (Price to Retailer) and place orders instantly.' },
             ].map((s, i) => (
-              <div key={i} className="how-card animate-fade-up" style={{ animationDelay: `${i * 0.15}s` }}>
-                <div className="how-step">{s.step}</div>
-                <div className="how-icon">{s.icon}</div>
-                <h4 className="how-title">{s.title}</h4>
-                <p className="how-desc">{s.desc}</p>
-                {i < 3 && <div className="how-arrow"><ChevronRight size={20} /></div>}
+              <div key={i} className={`how-card how-card-${i} animate-fade-up`} style={{ animationDelay: `${i * 0.15}s`, zIndex: 4 - i }}>
+                <div className="how-card-inner">
+                  <div className="how-step">{s.step}</div>
+                  <div className="how-icon">{s.icon}</div>
+                  <h4 className="how-title">{s.title}</h4>
+                  <p className="how-desc">{s.desc}</p>
+                </div>
+                {i < 3 && <div className="how-connector"><ChevronRight size={16} /></div>}
               </div>
             ))}
           </div>
@@ -611,25 +613,54 @@ export default function HomePage() {
         /* ── How it works ── */
         .how-section { background: var(--off-white); }
         .how-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1.5rem;
+          display: flex;
+          align-items: stretch;
           position: relative;
+          padding: 0 1rem;
         }
-        .how-grid-3 {
-          grid-template-columns: repeat(3, 1fr);
+        .how-grid::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 5%;
+          right: 5%;
+          height: 3px;
+          background: linear-gradient(90deg, var(--teal), rgba(13,148,136,0.15));
+          border-radius: 2px;
+          z-index: 0;
+          transform: translateY(-50%);
         }
         .how-card {
+          position: relative;
+          flex: 1;
+          min-width: 0;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: default;
+        }
+        /* Each card overlaps the previous one — negative margin pulls them together */
+        .how-card-1 { margin-left: -28px; }
+        .how-card-2 { margin-left: -28px; }
+        .how-card-3 { margin-left: -28px; }
+        .how-card:hover {
+          z-index: 10 !important;
+          transform: translateY(-10px) scale(1.04);
+        }
+        .how-card-inner {
           background: #fff;
           border-radius: var(--radius-xl);
           padding: 2rem 1.5rem;
           text-align: center;
           box-shadow: var(--shadow-sm);
           border: 1px solid var(--gray-100);
-          transition: var(--transition);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          height: 100%;
           position: relative;
+          z-index: 1;
         }
-        .how-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-6px); }
+        .how-card:hover .how-card-inner {
+          box-shadow: 0 20px 40px rgba(13, 148, 136, 0.15), 0 8px 16px rgba(0,0,0,0.08);
+          border-color: var(--teal);
+        }
         .how-step {
           display: inline-block;
           font-family: var(--font-display); font-size: 2.5rem; font-weight: 900;
@@ -641,14 +672,26 @@ export default function HomePage() {
         .how-icon { font-size: 2rem; margin-bottom: 0.75rem; }
         .how-title { color: var(--navy); font-size: 1.05rem; margin-bottom: 0.5rem; }
         .how-desc  { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
-        .how-arrow {
-          position: absolute; right: -20px; top: 50%;
+        .how-connector {
+          position: absolute;
+          right: -6px;
+          top: 50%;
           transform: translateY(-50%);
-          color: var(--teal); background: #fff;
-          border-radius: 50%; box-shadow: var(--shadow-sm);
-          width: 36px; height: 36px;
-          display: flex; align-items: center; justify-content: center;
-          z-index: 2;
+          width: 28px;
+          height: 28px;
+          background: var(--teal);
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+          transition: all 0.3s ease;
+        }
+        .how-card:hover .how-connector {
+          transform: translateY(-50%) scale(1.15);
+          box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
         }
 
         /* ── Categories ── */
@@ -858,15 +901,22 @@ export default function HomePage() {
           .hero-container { grid-template-columns: 1fr; }
           .hero-visual { display: none; }
           .stats-grid { grid-template-columns: repeat(2, 1fr); }
-          .how-grid { grid-template-columns: repeat(2, 1fr); }
-          .how-arrow { display: none; }
+          .how-grid { flex-wrap: wrap; gap: 1rem; }
+          .how-grid::before { display: none; }
+          .how-card-1, .how-card-2, .how-card-3 { margin-left: 0; }
+          .how-card { flex: 0 0 calc(50% - 0.5rem); }
+          .how-connector { display: none; }
           .professional-categories-grid { grid-template-columns: repeat(3, 1fr); }
           .portal-cta-card { grid-template-columns: 1fr; }
           .portal-cta-visual { display: none; }
         }
         @media (max-width: 640px) {
           .stats-grid { grid-template-columns: repeat(2, 1fr); }
-          .how-grid { grid-template-columns: 1fr; }
+          .how-grid { flex-direction: column; gap: 1rem; }
+          .how-card { flex: 1 1 100%; }
+          .how-card-1, .how-card-2, .how-card-3 { margin-left: 0; margin-top: -16px; }
+          .how-card-0 { margin-top: 0; }
+          .how-connector { display: none; }
           .professional-categories-grid { grid-template-columns: repeat(2, 1fr); }
           .portal-cta-card { padding: 2rem; }
           .contact-strip-divider { display: none; }

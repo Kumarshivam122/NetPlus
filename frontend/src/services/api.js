@@ -199,6 +199,23 @@ export async function apiUploadDocument(file) {
   }
 }
 
+export async function apiUploadProductImage(file) {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await fetchWithAuth('/upload/product-image', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    return { success: true, url: response?.url || '' };
+  } catch (err) {
+    console.error('Product Image Upload Error:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function apiGetAllUsers() {
   try {
     const users = await fetchWithAuth('/users');

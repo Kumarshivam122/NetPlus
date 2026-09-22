@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
-import { apiGetProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct } from '../../services/api';
+import { apiGetProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct, apiUploadProductImage } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminProducts() {
@@ -22,6 +22,10 @@ export default function AdminProducts() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageMode, setImageMode] = useState('upload'); // 'upload' or 'url'
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [editingId, setEditingId] = useState(null);
 
@@ -323,17 +327,127 @@ export default function AdminProducts() {
                   </div>
                 </div>
 
-                <div className="grid grid-2" style={{ gap:'1rem' }}>
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label className="form-label">Image URL (Optional)</label>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.5rem' }}>
+                    <label className="form-label" style={{ margin: 0 }}>Product Image (Optional)</label>
+                    <div style={{ display: 'flex', gap: '2px', background: 'var(--gray-100)', borderRadius: '6px', padding: '2px' }}>
+                      <button type="button" onClick={() => setImageMode('upload')}
+                        style={{
+                          padding: '4px 10px', fontSize: '.75rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
+                          background: imageMode === 'upload' ? '#fff' : 'transparent',
+                          color: imageMode === 'upload' ? 'var(--navy)' : 'var(--gray-400)',
+                          boxShadow: imageMode === 'upload' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.2s'
+                        }}>
+                        <Upload size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Upload
+                      </button>
+                      <button type="button" onClick={() => setImageMode('url')}
+                        style={{
+                          padding: '4px 10px', fontSize: '.75rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
+                          background: imageMode === 'url' ? '#fff' : 'transparent',
+                          color: imageMode === 'url' ? 'var(--navy)' : 'var(--gray-400)',
+                          boxShadow: imageMode === 'url' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.2s'
+                        }}>
+                        <Image size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {imageMode === 'upload' ? (
+                    <div>
+                      <input type="file" ref={fileInputRef} accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 20 * 1024) {
+                            addToast('Image must be under 20KB', 'error');
+                            return;
+                          }
+                          setImageUploading(true);
+                          const res = await apiUploadProductImage(file);
+                          setImageUploading(false);
+                          if (res.success && res.url) {
+                            setNewProd(prev => ({ ...prev, imageUrl: res.url }));
+                            addToast('Image uploaded successfully!', 'success');
+                          } else {
+                            addToast(res.error || 'Failed to upload image', 'error');
+                          }
+                          e.target.value = '';
+                        }} />
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                        onDragLeave={() => setDragOver(false)}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          setDragOver(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (!file) return;
+                          if (!file.type.match(/image\/(jpeg|png|webp)/)) {
+                            addToast('Only JPG, PNG, WebP images allowed', 'error');
+                            return;
+                          }
+                          if (file.size > 20 * 1024) {
+                            addToast('Image must be under 20KB', 'error');
+                            return;
+                          }
+                          setImageUploading(true);
+                          const res = await apiUploadProductImage(file);
+                          setImageUploading(false);
+                          if (res.success && res.url) {
+                            setNewProd(prev => ({ ...prev, imageUrl: res.url }));
+                            addToast('Image uploaded successfully!', 'success');
+                          } else {
+                            addToast(res.error || 'Failed to upload image', 'error');
+                          }
+                        }}
+                        onClick={() => !imageUploading && fileInputRef.current?.click()}
+                        style={{
+                          border: `2px dashed ${dragOver ? 'var(--teal)' : 'var(--gray-200)'}`,
+                          borderRadius: 'var(--radius-md)',
+                          padding: '1.25rem',
+                          textAlign: 'center',
+                          cursor: imageUploading ? 'wait' : 'pointer',
+                          background: dragOver ? 'rgba(0,128,128,0.04)' : 'var(--gray-50)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        {imageUploading ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.5rem' }}>
+                            <Loader size={24} color="var(--teal)" style={{ animation: 'spin 1s linear infinite' }} />
+                            <span style={{ fontSize: '.82rem', color: 'var(--gray-400)' }}>Uploading...</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.35rem' }}>
+                            <Upload size={22} color="var(--gray-400)" />
+                            <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--navy)' }}>Click to upload or drag & drop</span>
+                            <span style={{ fontSize: '.72rem', color: 'var(--gray-400)' }}>JPG, PNG, WebP — Max 20KB</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
                     <input className="form-control" placeholder="https://example.com/image.jpg"
                       value={newProd.imageUrl} onChange={e => setNewProd({...newProd, imageUrl: e.target.value})} id="new-prod-image" />
-                    {newProd.imageUrl && (
-                      <div style={{ marginTop: '.5rem', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', padding: '.25rem', display: 'inline-block', background: '#fff' }}>
-                        <img src={newProd.imageUrl} alt="Preview" style={{ height: '40px', width: '40px', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                  )}
+
+                  {newProd.imageUrl && (
+                    <div style={{ marginTop: '.5rem', display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                      <div style={{ border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', padding: '.25rem', display: 'inline-block', background: '#fff' }}>
+                        <img src={newProd.imageUrl} alt="Preview" style={{ height: '48px', width: '48px', objectFit: 'contain' }}
+                          onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                       </div>
-                    )}
-                  </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '.75rem', color: 'var(--green)', fontWeight: 600, margin: 0 }}>✓ Image set</p>
+                        <p style={{ fontSize: '.7rem', color: 'var(--gray-400)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{newProd.imageUrl}</p>
+                      </div>
+                      <button type="button" onClick={() => setNewProd({...newProd, imageUrl: ''})}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px' }}
+                        title="Remove image">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
 
