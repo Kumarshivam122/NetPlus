@@ -201,15 +201,12 @@ export async function apiUploadDocument(file) {
 
 export async function apiUploadProductImage(file) {
   try {
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    const response = await fetchWithAuth('/upload/product-image', {
-      method: 'POST',
-      body: formData,
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve({ success: true, url: reader.result });
+      reader.onerror = () => reject(new Error('Failed to read image file'));
+      reader.readAsDataURL(file);
     });
-    
-    return { success: true, url: response?.url || '' };
   } catch (err) {
     console.error('Product Image Upload Error:', err);
     return { success: false, error: err.message };
@@ -296,6 +293,7 @@ export async function apiDeleteProduct(productId) {
     });
     return { success: true };
   } catch (err) {
+    console.error('Delete Product Error:', err);
     return { success: false, error: err.message };
   }
 }
