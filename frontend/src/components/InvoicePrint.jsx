@@ -19,9 +19,12 @@ export default function InvoicePrint({ order, user }) {
   return (
     <div id="invoice-capture" className="invoice-print-container">
       <div className="invoice-header">
-        <div className="invoice-logo">
-          <h2>NetPlus</h2>
-          <p>Wholesale Pharmaceuticals</p>
+        <div className="invoice-logo" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img src="/netLogo.jpeg" alt="NetPlus Logo" style={{ height: '60px', width: 'auto', borderRadius: '8px' }} />
+          <div>
+            <h2>NetPlus</h2>
+            <p>Wholesale Pharmaceuticals</p>
+          </div>
         </div>
         <div className="invoice-details">
           <h1 style={{ color: '#000', margin: 0 }}>INVOICE</h1>

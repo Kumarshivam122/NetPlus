@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, X, ShoppingCart, CheckCircle, Package, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, SlidersHorizontal, Plus, Star } from 'lucide-react';
+import { Search, Filter, X, ShoppingCart, CheckCircle, Package, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, SlidersHorizontal, Plus, Star, ChevronLeft, Tag, Building2, Layers, Beaker, ShieldCheck, Info } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
 import { apiGetProducts, apiSubmitOrder } from '../../services/api';
@@ -137,6 +137,162 @@ function OrderModal({ product, onClose, onAdd }) {
   );
 }
 
+/* ─── Product Detail Modal (Amazon / Flipkart style) ─── */
+function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
+  const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+
+  // Available units from pricing JSONB
+  const availableUnits = product.pricing
+    ? Object.keys(product.pricing)
+    : ['Strips', 'Bottles', 'Boxes', 'Pieces'];
+
+  const defaultUnit = availableUnits[0] || 'Strips';
+  const effectivePrice = product.pricing && product.pricing[defaultUnit]
+    ? product.pricing[defaultUnit].price
+    : product.price;
+  const effectiveMrp = product.pricing && product.pricing[defaultUnit]
+    ? product.pricing[defaultUnit].mrp
+    : product.mrp;
+
+  return (
+    <div className="pdp-overlay" onClick={onClose}>
+      <div className="pdp-modal" onClick={e => e.stopPropagation()}>
+        {/* Close / Back button */}
+        <button className="pdp-close" onClick={onClose} title="Close">
+          <X size={22} />
+        </button>
+
+        <div className="pdp-layout">
+          {/* ── Left: Large Image ── */}
+          <div className="pdp-image-section">
+            <div className="pdp-image-wrapper">
+              {product.imageUrl ? (
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="pdp-image"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.style.display = 'none';
+                    e.target.parentNode.querySelector('.pdp-image-fallback').style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="pdp-image-fallback"
+                style={{ display: product.imageUrl ? 'none' : 'flex' }}
+              >
+                {categoryIconMap[product.category]
+                  ? React.cloneElement(categoryIconMap[product.category], { size: 80, strokeWidth: 1 })
+                  : <Activity size={80} color="#333" strokeWidth={1} />}
+              </div>
+            </div>
+            {discount > 0 && (
+              <div className="pdp-discount-ribbon">
+                {discount}% OFF
+              </div>
+            )}
+          </div>
+
+          {/* ── Right: Product Info ── */}
+          <div className="pdp-info-section">
+            {/* Category Badge */}
+            <div className="pdp-category-badge">
+              <Tag size={12} />
+              {product.category?.charAt(0).toUpperCase() + product.category?.slice(1)}
+              {product.rx && <span className="pdp-rx-badge">Rx</span>}
+            </div>
+
+            {/* Product Name */}
+            <h2 className="pdp-title">{product.name}</h2>
+
+            {/* Generic Name */}
+            {product.generic && (
+              <p className="pdp-generic">
+                <Beaker size={14} style={{ flexShrink: 0 }} />
+                {product.generic}
+              </p>
+            )}
+
+            {/* Manufacturer */}
+            <p className="pdp-manufacturer">
+              <Building2 size={14} style={{ flexShrink: 0 }} />
+              {product.manufacturer}
+            </p>
+
+            {/* Divider */}
+            <div className="pdp-divider" />
+
+            {/* Pricing */}
+            <div className="pdp-pricing">
+              <span className="pdp-price">₹{effectivePrice.toFixed(2)}</span>
+              <span className="pdp-mrp">MRP ₹{effectiveMrp.toFixed(2)}</span>
+              {discount > 0 && (
+                <span className="pdp-discount-text">{discount}% off</span>
+              )}
+            </div>
+            <div className="pdp-per-unit">per {defaultUnit}</div>
+
+            {/* Tax Info */}
+            <div className="pdp-tax-info">
+              <ShieldCheck size={14} />
+              {product.taxIncluded
+                ? 'Inclusive of all taxes'
+                : `+ ${product.taxPercent || 0}% Tax applicable`}
+            </div>
+
+            {/* Details Grid */}
+            <div className="pdp-details-grid">
+              <div className="pdp-detail-item">
+                <span className="pdp-detail-label">Pack Size</span>
+                <span className="pdp-detail-value">{product.unit || '—'}</span>
+              </div>
+              <div className="pdp-detail-item">
+                <span className="pdp-detail-label">Stock</span>
+                <span className="pdp-detail-value" style={{ color: (product.stock || 0) > 0 ? 'var(--green, #16a34a)' : 'var(--red, #dc2626)' }}>
+                  {(product.stock || 0) > 0 ? `${product.stock} units` : 'Out of Stock'}
+                </span>
+              </div>
+              <div className="pdp-detail-item">
+                <span className="pdp-detail-label">Category</span>
+                <span className="pdp-detail-value">{product.category?.charAt(0).toUpperCase() + product.category?.slice(1)}</span>
+              </div>
+              <div className="pdp-detail-item">
+                <span className="pdp-detail-label">Type</span>
+                <span className="pdp-detail-value">{product.rx ? 'Prescription' : 'Over the Counter'}</span>
+              </div>
+            </div>
+
+            {/* Available Units */}
+            {availableUnits.length > 1 && (
+              <div className="pdp-units-section">
+                <span className="pdp-units-label"><Layers size={14} /> Available Units</span>
+                <div className="pdp-units-chips">
+                  {availableUnits.map(u => (
+                    <span key={u} className="pdp-unit-chip">{u}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Button */}
+            <button
+              className="pdp-add-btn"
+              onClick={() => {
+                onClose();
+                onOrder(product);
+              }}
+            >
+              <ShoppingCart size={18} />
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RetailerProducts() {
   const categoryIconMap = {
     'antibiotics': <TestTube size={32} color="#333" strokeWidth={1.5} />,
@@ -159,6 +315,7 @@ export default function RetailerProducts() {
   const [category, setCategory] = useState('all');
   const [rxFilter, setRxFilter] = useState('all');
   const [selected, setSelected] = useState(null);
+  const [detailProduct, setDetailProduct] = useState(null);
   const [displayLimit, setDisplayLimit] = useState(40);
 
   useEffect(() => {
@@ -289,7 +446,11 @@ export default function RetailerProducts() {
             <>
               <div className="products-grid">
                 {displayedProducts.map((p, i) => (
-                  <div key={p.id} className="product-card animate-fade-up" style={{ animationDelay:`${(i % 40) * 0.04}s`, padding: '1rem', background: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                  <div key={p.id} className="product-card animate-fade-up" style={{ animationDelay:`${(i % 40) * 0.04}s`, padding: '1rem', background: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.25s ease, transform 0.25s ease' }}
+                    onClick={() => setDetailProduct(p)}
+                    onMouseOver={(e) => { e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
                     
                     {/* Best Price Badge */}
                     <div style={{ position: 'absolute', top: 0, left: 0, background: '#F3E8FF', color: '#6B46C1', padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderTopLeftRadius: '8px', borderBottomRightRadius: '8px' }}>
@@ -329,12 +490,12 @@ export default function RetailerProducts() {
                       <span style={{ fontSize: '.85rem', fontWeight: 700, color: '#0F766E' }}>{discount(p)}% off</span>
                     </div>
 
-                    {/* Add Button */}
+                    {/* Add Button — stopPropagation so it doesn't open the detail modal */}
                     <button 
                       style={{ width: '100%', marginTop: '1rem', padding: '0.65rem', background: '#115E59', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}
                       onMouseOver={(e) => e.target.style.background = '#0F514C'}
                       onMouseOut={(e) => e.target.style.background = '#115E59'}
-                      onClick={() => setSelected(p)}
+                      onClick={(e) => { e.stopPropagation(); setSelected(p); }}
                     >
                       Add
                     </button>
@@ -368,6 +529,15 @@ export default function RetailerProducts() {
         </div>
       </main>
 
+      {detailProduct && (
+        <ProductDetailModal
+          product={detailProduct}
+          onClose={() => setDetailProduct(null)}
+          onOrder={(p) => { setDetailProduct(null); setSelected(p); }}
+          categoryIconMap={categoryIconMap}
+        />
+      )}
+
       {selected && (
         <OrderModal product={selected} onClose={() => setSelected(null)} onAdd={handleAddToCart} />
       )}
@@ -388,6 +558,236 @@ export default function RetailerProducts() {
           background:var(--gradient-teal); color:#fff;
           font-size:.7rem; font-weight:700;
           padding:.2rem .55rem; border-radius:var(--radius-full);
+        }
+
+        /* ── Product Detail Modal (PDP) ── */
+        .pdp-overlay {
+          position: fixed; inset: 0; z-index: 9999;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(6px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 1.5rem;
+          animation: pdpFadeIn 0.25s ease;
+        }
+        @keyframes pdpFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes pdpSlideUp {
+          from { opacity: 0; transform: translateY(30px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .pdp-modal {
+          position: relative;
+          background: #fff;
+          border-radius: 16px;
+          max-width: 900px;
+          width: 100%;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 25px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1);
+          animation: pdpSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .pdp-close {
+          position: absolute; top: 16px; right: 16px; z-index: 10;
+          width: 38px; height: 38px; border-radius: 50%;
+          border: none; background: rgba(0,0,0,0.06); cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.2s, transform 0.2s;
+          color: #555;
+        }
+        .pdp-close:hover {
+          background: rgba(0,0,0,0.12);
+          transform: rotate(90deg);
+        }
+        .pdp-layout {
+          display: flex;
+          min-height: 420px;
+        }
+
+        /* Image Section */
+        .pdp-image-section {
+          flex: 0 0 45%;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          display: flex; align-items: center; justify-content: center;
+          position: relative;
+          border-radius: 16px 0 0 16px;
+          padding: 2rem;
+        }
+        .pdp-image-wrapper {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center;
+          min-height: 300px;
+        }
+        .pdp-image {
+          max-width: 100%; max-height: 350px;
+          object-fit: contain;
+          filter: drop-shadow(0 8px 24px rgba(0,0,0,0.08));
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .pdp-image:hover {
+          transform: scale(1.06);
+        }
+        .pdp-image-fallback {
+          width: 140px; height: 140px;
+          background: rgba(255,255,255,0.8);
+          border-radius: 24px;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .pdp-discount-ribbon {
+          position: absolute; top: 20px; left: 0;
+          background: linear-gradient(135deg, #dc2626, #ef4444);
+          color: #fff; font-size: 0.75rem; font-weight: 800;
+          padding: 6px 16px 6px 12px;
+          border-radius: 0 20px 20px 0;
+          letter-spacing: 0.5px;
+          box-shadow: 0 2px 8px rgba(220,38,38,0.3);
+        }
+
+        /* Info Section */
+        .pdp-info-section {
+          flex: 1; padding: 2rem 2.25rem;
+          display: flex; flex-direction: column;
+          overflow-y: auto;
+        }
+        .pdp-category-badge {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: #f0fdf4; color: #15803d;
+          font-size: 0.72rem; font-weight: 600;
+          padding: 4px 12px; border-radius: 20px;
+          width: fit-content; text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .pdp-rx-badge {
+          background: #fef2f2; color: #dc2626;
+          font-size: 0.65rem; font-weight: 700;
+          padding: 2px 8px; border-radius: 10px;
+          margin-left: 6px;
+        }
+        .pdp-title {
+          font-size: 1.55rem; font-weight: 800;
+          color: #0f172a; margin: 0.75rem 0 0.4rem;
+          line-height: 1.3;
+          font-family: var(--font-display, inherit);
+        }
+        .pdp-generic {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 0.88rem; color: #64748b;
+          margin: 0 0 0.25rem; font-style: italic;
+        }
+        .pdp-manufacturer {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 0.85rem; color: #475569;
+          margin: 0 0 0.5rem; font-weight: 500;
+        }
+        .pdp-divider {
+          height: 1px;
+          background: linear-gradient(90deg, #e2e8f0, transparent);
+          margin: 0.75rem 0;
+        }
+        .pdp-pricing {
+          display: flex; align-items: baseline; gap: 10px;
+          flex-wrap: wrap;
+        }
+        .pdp-price {
+          font-size: 2rem; font-weight: 900;
+          color: #0f172a;
+          font-family: var(--font-display, inherit);
+        }
+        .pdp-mrp {
+          font-size: 0.95rem; color: #94a3b8;
+          text-decoration: line-through;
+        }
+        .pdp-discount-text {
+          font-size: 0.9rem; font-weight: 700;
+          color: #0f766e;
+          background: #f0fdfa; padding: 2px 10px;
+          border-radius: 12px;
+        }
+        .pdp-per-unit {
+          font-size: 0.78rem; color: #94a3b8;
+          margin-top: 2px;
+        }
+        .pdp-tax-info {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 0.8rem; color: #16a34a;
+          margin-top: 0.6rem; font-weight: 500;
+        }
+        .pdp-details-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+          margin-top: 1.25rem;
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 1rem;
+        }
+        .pdp-detail-item {
+          display: flex; flex-direction: column; gap: 2px;
+        }
+        .pdp-detail-label {
+          font-size: 0.7rem; color: #94a3b8;
+          text-transform: uppercase; letter-spacing: 0.5px;
+          font-weight: 600;
+        }
+        .pdp-detail-value {
+          font-size: 0.88rem; color: #334155;
+          font-weight: 600;
+        }
+        .pdp-units-section {
+          margin-top: 1rem;
+        }
+        .pdp-units-label {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 0.8rem; color: #64748b;
+          font-weight: 600; margin-bottom: 0.5rem;
+        }
+        .pdp-units-chips {
+          display: flex; gap: 6px; flex-wrap: wrap;
+        }
+        .pdp-unit-chip {
+          font-size: 0.75rem; padding: 4px 12px;
+          background: #f1f5f9; color: #475569;
+          border-radius: 16px; font-weight: 500;
+          border: 1px solid #e2e8f0;
+        }
+        .pdp-add-btn {
+          display: flex; align-items: center; justify-content: center;
+          gap: 10px; width: 100%; margin-top: auto;
+          padding: 0.9rem 1.5rem;
+          background: linear-gradient(135deg, #115E59, #0f766e);
+          color: #fff; border: none; border-radius: 12px;
+          font-size: 1.05rem; font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 14px rgba(17,94,89,0.3);
+          margin-top: 1.5rem;
+        }
+        .pdp-add-btn:hover {
+          background: linear-gradient(135deg, #0d4f4a, #115E59);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(17,94,89,0.4);
+        }
+        .pdp-add-btn:active {
+          transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .pdp-layout {
+            flex-direction: column;
+          }
+          .pdp-image-section {
+            flex: none;
+            border-radius: 16px 16px 0 0;
+            min-height: 220px;
+            padding: 1.5rem;
+          }
+          .pdp-image { max-height: 200px; }
+          .pdp-info-section { padding: 1.5rem; }
+          .pdp-title { font-size: 1.25rem; }
+          .pdp-price { font-size: 1.6rem; }
+          .pdp-modal { max-height: 95vh; }
         }
       `}</style>
     </div>
