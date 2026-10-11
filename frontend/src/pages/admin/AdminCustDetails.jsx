@@ -11,7 +11,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
         <div className="modal-header">
           <div>
             <h4 style={{ color:'var(--navy)' }}>Retailer Details</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>ID: {u.id}</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>ID: {u.id}</p>
           </div>
           <button onClick={onClose} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }}>
             <X size={20} />
@@ -63,7 +63,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
                 <div className="doc-thumb-file">{u.licenceFileName || 'Not Uploaded'}</div>
                 {u.licenceFileUrl && (
                   <a href={u.licenceFileUrl} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    style={{ fontSize:'0.875rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
                     View File <ExternalLink size={12} />
                   </a>
                 )}
@@ -75,7 +75,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
                 <div className="doc-thumb-file">{u.licenceFile2Name || 'Not Uploaded'}</div>
                 {u.licenceFile2Url && (
                   <a href={u.licenceFile2Url} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    style={{ fontSize:'0.875rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
                     View File <ExternalLink size={12} />
                   </a>
                 )}
@@ -87,7 +87,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
                 <div className="doc-thumb-file">{u.gstinFileName || 'Not Uploaded'}</div>
                 {u.gstinFileUrl && (
                   <a href={u.gstinFileUrl} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    style={{ fontSize:'0.875rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
                     View File <ExternalLink size={12} />
                   </a>
                 )}
@@ -99,7 +99,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
                 <div className="doc-thumb-file">{u.shopPhotoName || 'Not Uploaded'}</div>
                 {u.shopPhotoUrl && (
                   <a href={u.shopPhotoUrl} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:'.75rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
+                    style={{ fontSize:'0.875rem', color:'var(--teal)', display:'flex', alignItems:'center', gap:'.2rem', marginTop:'.2rem' }}>
                     View Photo <ExternalLink size={12} />
                   </a>
                 )}
@@ -129,7 +129,7 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
           )}
 
           {u.status === 'onboarding' && (
-            <span style={{ fontSize: '.8rem', color: 'var(--gray-400)', fontStyle: 'italic' }}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--gray-400)', fontStyle: 'italic' }}>
               Waiting for user to submit details...
             </span>
           )}
@@ -143,13 +143,13 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
         </div>
       </div>
       <style>{`
-        .detail-section-title { display:flex; align-items:center; gap:.4rem; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal-dark); margin-bottom:.6rem; }
+        .detail-section-title { display:flex; align-items:center; gap:.4rem; font-size:0.875rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal-dark); margin-bottom:.6rem; }
         .detail-row { display:flex; justify-content:space-between; padding:.35rem 0; border-bottom:1px solid var(--gray-100); font-size:.85rem; }
         .detail-row span { color:var(--gray-400); }
         .detail-row strong { color:var(--navy); max-width:55%; text-align:right; }
         .doc-thumb { display:flex; flex-direction:column; align-items:center; background:var(--gray-50); border:1.5px solid var(--gray-100); border-radius:var(--radius-md); padding:1rem; gap:.4rem; min-width:120px; }
-        .doc-thumb-name { font-weight:600; font-size:.82rem; color:var(--navy); }
-        .doc-thumb-file { font-size:.68rem; color:var(--gray-400); word-break:break-all; text-align:center; }
+        .doc-thumb-name { font-weight:600; font-size:0.875rem; color:var(--navy); }
+        .doc-thumb-file { font-size:0.875rem; color:var(--gray-400); word-break:break-all; text-align:center; }
       `}</style>
     </div>
   );
@@ -201,7 +201,7 @@ export default function AdminCustDetails() {
         <div className="portal-topbar">
           <div>
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Customer Details</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>{users.length} total registered retailers</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{users.length} total registered retailers</p>
           </div>
         </div>
         <div className="portal-content">
@@ -212,15 +212,15 @@ export default function AdminCustDetails() {
               <input id="user-search" placeholder="Search store, email, city..."
                 value={search} onChange={e => setSearch(e.target.value)} />
               {search && <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }}
-                onClick={()=>setSearch('')}><X size={14}/></button>}
+                aria-label="Clear search" onClick={()=>setSearch('')}><X size={16} aria-hidden="true"/></button>}
             </div>
             <div className="filter-chips">
               {[
                 { val:'all',        label:'All' },
-                { val:'onboarding', label:'🆕 Onboarding' },
-                { val:'pending',    label:'⏳ Pending' },
-                { val:'approved',   label:'✅ Approved' },
-                { val:'rejected',   label:'❌ Rejected' },
+                { val:'onboarding', label:'Onboarding' },
+                { val:'pending',    label:'Pending' },
+                { val:'approved',   label:'Approved' },
+                { val:'rejected',   label:'Rejected' },
               ].map(f => (
                 <button key={f.val} className={`chip${filter===f.val?' active':''}`}
                   onClick={()=>setFilter(f.val)} id={`admin-filter-${f.val}`}>{f.label}</button>
@@ -254,7 +254,7 @@ export default function AdminCustDetails() {
                       <td>{u.ownerName}</td>
                       <td>{u.phone || '—'}</td>
                       <td>{u.city}</td>
-                      <td style={{ fontSize:'.8rem', color:'var(--gray-500)' }}>{u.licenceNo || '-'}</td>
+                      <td style={{ fontSize:'0.875rem', color:'var(--gray-500)' }}>{u.licenceNo || '-'}</td>
                       <td>
                         <span className={`badge badge-${
                           u.status === 'approved' ? 'success' : 
@@ -264,30 +264,30 @@ export default function AdminCustDetails() {
                           {u.status}
                         </span>
                       </td>
-                      <td style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>
+                      <td style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>
                         {new Date(u.createdAt).toLocaleDateString('en-IN')}
                       </td>
                       <td>
-                        <div style={{ display:'flex', gap:'.35rem' }}>
+                        <div style={{ display:'flex', gap:'.35rem', flexWrap:'wrap' }}>
                           <button className="btn btn-ghost btn-sm" title="View Details"
                             onClick={() => setSelected(u)} id={`view-${u.id}`}>
-                            <Eye size={13} />
+                            <Eye size={14} aria-hidden="true" /> View
                           </button>
                           {u.status === 'pending' && (
                             <button className="btn btn-primary btn-sm" title="Approve"
                               onClick={() => handleStatus(u.id,'approved')} id={`approve-${u.id}`}>
-                              <CheckCircle size={13} />
+                              <CheckCircle size={14} aria-hidden="true" /> Approve
                             </button>
                           )}
                           {u.status === 'pending' && (
                             <button className="btn btn-danger btn-sm" title="Reject"
                               onClick={() => handleStatus(u.id,'rejected')} id={`reject-${u.id}`}>
-                              <XCircle size={13} />
+                              <XCircle size={14} aria-hidden="true" /> Reject
                             </button>
                           )}
                           <button className="btn btn-ghost btn-sm" title="Delete" style={{ color:'var(--red)' }}
                             onClick={() => handleDelete(u.id, u.storeName)} id={`delete-${u.id}`}>
-                            <Trash2 size={13} />
+                            <Trash2 size={14} aria-hidden="true" /> Delete
                           </button>
                         </div>
                       </td>

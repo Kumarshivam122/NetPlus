@@ -17,30 +17,41 @@ export const COMPANY = {
   established: '2009',
 };
 
+// Stock photography (Pexels, free for commercial use). Replace with your own product shots whenever you have them.
+export const photo = (id, w = 480, h = 360) =>
+  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
+
 export const CATEGORIES = [
-  { id: 'all',           label: 'All Products',          icon: '💊' },
-  { id: 'antibiotics',   label: 'Antibiotics',            icon: '🦠' },
-  { id: 'cardiovascular',label: 'Cardiovascular',         icon: '❤️' },
-  { id: 'diabetes',      label: 'Diabetes Care',          icon: '🩸' },
-  { id: 'pain',          label: 'Pain & Fever',           icon: '🌡️' },
-  { id: 'vitamins',      label: 'Vitamins & Supplements', icon: '🌿' },
-  { id: 'gastro',        label: 'Gastro Care',            icon: '🫁' },
-  { id: 'neuro',         label: 'Neurology',              icon: '🧠' },
-  { id: 'respiratory',   label: 'Respiratory',            icon: '💨' },
-  { id: 'derma',         label: 'Dermatology',            icon: '🧴' },
-  { id: 'surgical',      label: 'Surgical Supplies',      icon: '🩺' },
+  { id: 'all',           label: 'All Products' },
+  { id: 'antibiotics',   label: 'Antibiotics',            image: photo(7033798)  },
+  { id: 'cardiovascular',label: 'Cardiovascular',         image: photo(14906846) },
+  { id: 'diabetes',      label: 'Diabetes Care',          image: photo(1001897)  },
+  { id: 'pain',          label: 'Pain & Fever',           image: photo(28300481) },
+  { id: 'vitamins',      label: 'Vitamins & Supplements', image: photo(13787562) },
+  { id: 'gastro',        label: 'Gastro Care',            image: photo(5858832)  },
+  { id: 'neuro',         label: 'Neurology',              image: photo(16051954) },
+  { id: 'respiratory',   label: 'Respiratory',            image: photo(29702934) },
+  { id: 'derma',         label: 'Dermatology',            image: photo(20140743) },
+  { id: 'surgical',      label: 'Surgical Supplies',      image: photo(4421550)  },
 ];
 
+// `logo` is the image file in /public/brands (one cropped logo per brand).
+// To change a logo, replace the file with the same name (or edit the path here).
 export const BRANDS = [
-  { id: 1, name: 'Cipla',           country: 'India', logo: '💊', color: '#1a73e8' },
-  { id: 2, name: 'Sun Pharma',      country: 'India', logo: '☀️', color: '#f4a900' },
-  { id: 3, name: 'Abbott',          country: 'USA',   logo: '🔬', color: '#e00' },
-  { id: 4, name: "Dr. Reddy's",     country: 'India', logo: '🏥', color: '#c00' },
-  { id: 5, name: 'Alkem',           country: 'India', logo: '⚗️', color: '#0054a6' },
-  { id: 6, name: 'Mankind',         country: 'India', logo: '👨‍⚕️', color: '#ea580c' },
-  { id: 7, name: 'Zydus',           country: 'India', logo: '🔵', color: '#0369a1' },
-  { id: 8, name: 'Intas',           country: 'India', logo: '🧪', color: '#0f766e' },
-  { id: 9, name: 'Torrent Pharma',  country: 'India', logo: '⚡', color: '#7c3aed' },
+  { id: 1,  name: 'Cipla',               country: 'India', logo: '/brands/cipla.png',              color: '#00629b' },
+  { id: 2,  name: 'Sun Pharma',          country: 'India', logo: '/brands/sun-pharma.png',         color: '#e8710a' },
+  { id: 3,  name: 'Abbott',              country: 'USA',   logo: '/brands/abbott.png',             color: '#0a5aa8' },
+  { id: 4,  name: "Dr. Reddy's",         country: 'India', logo: '/brands/dr-reddys.png',          color: '#5b2a8a' },
+  { id: 5,  name: 'Alkem',               country: 'India', logo: '/brands/alkem.png',              color: '#0054a6' },
+  { id: 6,  name: 'Mankind',             country: 'India', logo: '/brands/mankind.png',            color: '#1b3b9a' },
+  { id: 7,  name: 'Zydus',               country: 'India', logo: '/brands/zydus.png',              color: '#1b3b8a' },
+  { id: 8,  name: 'Intas',               country: 'India', logo: '/brands/intas.png',              color: '#1f6fb8' },
+  { id: 9,  name: 'Torrent Pharma',      country: 'India', logo: '/brands/torrent.png',            color: '#1d2f7a' },
+  { id: 10, name: 'Pfizer',              country: 'USA',   logo: '/brands/pfizer.png',             color: '#0093d0' },
+  { id: 11, name: 'Lupin',               country: 'India', logo: '/brands/lupin.png',              color: '#1f8a3b' },
+  { id: 12, name: 'Alembic Pharma',      country: 'India', logo: '/brands/alembic.png',            color: '#0b4aa8' },
+  { id: 13, name: 'Hindustan Syringes',  country: 'India', logo: '/brands/hindustan-syringes.png', color: '#1269b8' },
+  { id: 14, name: 'P&G',                 country: 'USA',   logo: '/brands/pg.png',                 color: '#0a4ea1' },
 ];
 
 export const PRODUCTS = [
@@ -66,20 +77,21 @@ export const PRODUCTS = [
   { id: 20, name: 'Betamethasone Cream', generic: 'Betamethasone Valerate',       manufacturer: 'Zydus Lifesciences', category: 'derma',      price: 56.00,  mrp: 82.00,  unit: 'Tube/15g',   stock: 260, rx: true  },
 ];
 
+// `icon` is the name of a line icon (see components/ServiceIcon.jsx)
 export const SERVICES = [
-  { icon: '🚚', title: 'Pan-City Distribution',   desc: 'Reliable next-day delivery to all registered pharmacies within the city and surrounding districts.' },
-  { icon: '🌡️', title: 'Cold Chain Logistics',    desc: 'Temperature-controlled storage and transport for insulin, vaccines, biologics, and temperature-sensitive medicines.' },
-  { icon: '📦', title: 'Bulk & Emergency Supply', desc: 'Handle bulk purchase orders and urgent/emergency medicine requests with priority fulfillment.' },
-  { icon: '🔒', title: 'Regulated & Compliant',   desc: 'Fully licensed under CDSCO norms. All products sourced from authorized manufacturers with verified batch records.' },
-  { icon: '💳', title: 'Flexible Credit Terms',   desc: 'Competitive credit periods for verified retailers with clean payment history and good standing.' },
-  { icon: '📊', title: 'Expiry Monitoring',        desc: 'Proactive expiry tracking. We notify clients of near-expiry stock and offer seamless return processing.' },
+  { icon: 'truck',        title: 'Pan-City Distribution',   desc: 'Reliable next-day delivery to all registered pharmacies within the city and surrounding districts.' },
+  { icon: 'thermometer',  title: 'Cold Chain Logistics',    desc: 'Temperature-controlled storage and transport for insulin, vaccines, biologics, and temperature-sensitive medicines.' },
+  { icon: 'package',      title: 'Bulk & Emergency Supply', desc: 'Handle bulk purchase orders and urgent/emergency medicine requests with priority fulfillment.' },
+  { icon: 'shield',       title: 'Regulated & Compliant',   desc: 'Fully licensed under CDSCO norms. All products sourced from authorized manufacturers with verified batch records.' },
+  { icon: 'credit-card',  title: 'Flexible Credit Terms',   desc: 'Competitive credit periods for verified retailers with clean payment history and good standing.' },
+  { icon: 'calendar',     title: 'Expiry Monitoring',       desc: 'Proactive expiry tracking. We notify clients of near-expiry stock and offer seamless return processing.' },
 ];
 
 export const DISTRIBUTION_STATS = [
-  { value: '2,400+', label: 'Registered Pharmacies',    icon: '🏪' },
-  { value: '18,000+',label: 'Products in Catalog',      icon: '💊' },
-  { value: '120+',   label: 'Brands & Manufacturers',   icon: '🏭' },
-  { value: '15+',    label: 'Years in Business',         icon: '📅' },
+  { value: '12,500+', label: 'Registered Pharmacies' },
+  { value: '45,000+', label: 'Products in Catalog' },
+  { value: '350+',    label: 'Brands & Manufacturers' },
+  { value: '15+',     label: 'Years in Business' },
 ];
 
 // =============================================

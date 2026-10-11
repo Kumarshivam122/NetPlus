@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, Shield, Truck, Clock, Star, ChevronRight,
-  Lock, UserCheck, Package, Phone, MapPin, Mail,
-  Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross
+  ArrowRight, ChevronRight, ChevronLeft, Check, Phone, MapPin, Mail, Clock,
+  Pill, Store, Syringe, ShieldCheck
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { CATEGORIES, BRANDS, SERVICES, DISTRIBUTION_STATS, COMPANY } from '../../data/store';
+import ServiceIcon from '../../components/ServiceIcon';
+import { CATEGORIES, BRANDS, SERVICES, DISTRIBUTION_STATS, COMPANY, photo } from '../../data/store';
 import { useAuth } from '../../context/AuthContext';
 
 // Animated counter
@@ -38,10 +38,37 @@ function Counter({ target, suffix = '' }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-// Floating particle
-function Particle({ style }) {
-  return <div className="hero-particle" style={style} />;
-}
+// Banner slides: photo + short caption + a link to an existing page
+const BANNERS = [
+  {
+    src: photo(13119976, 1600, 800), pos: '50% 62%',
+    alt: 'Pharmacist arranging medicines on a pharmacy shelf',
+    title: 'Wholesale medicines for your pharmacy',
+    text: 'Genuine stock from authorised manufacturers, supplied to registered medical shops.',
+    cta: { label: 'Browse Categories', to: '/products' },
+  },
+  {
+    src: photo(31112251, 1600, 800), pos: '50% 50%',
+    alt: 'Warehouse aisle with labelled storage bins',
+    title: 'Organised storage, dependable delivery',
+    text: 'Next-day delivery to registered pharmacies in the city and surrounding districts.',
+    cta: { label: 'Our Services', to: '/services' },
+  },
+  {
+    src: photo(14797864, 1600, 800), pos: '50% 45%',
+    alt: 'Pharmacist working at a computer in a pharmacy',
+    title: 'Order from the retailer portal',
+    text: 'Registered retailers can view PTR, check live stock and place orders online.',
+    cta: { label: 'Register Your Shop', to: '/register' },
+  },
+  {
+    src: photo(8657368, 1600, 800), pos: '50% 40%',
+    alt: 'Pharmacist helping a customer in a pharmacy',
+    title: `Trusted by medical shops since ${COMPANY.established}`,
+    text: 'A licensed wholesale distributor of pharmaceuticals and healthcare products.',
+    cta: { label: 'About Us', to: '/about' },
+  },
+];
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -67,7 +94,7 @@ export default function HomePage() {
     }
   };
 
-  const banners = ['/banner.jpg', '/banner2.jpg', '/banner3.jpg', '/banner4.jpg'];
+  const banners = BANNERS;
   const extendedBanners = [banners[banners.length - 1], ...banners, banners[0]];
 
   useEffect(() => {
@@ -83,7 +110,7 @@ export default function HomePage() {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev + 1);
   };
-  
+
   const prevBanner = () => {
     if (currentIndex <= 0) return;
     setIsTransitioning(true);
@@ -128,38 +155,28 @@ export default function HomePage() {
 
   const displayCategories = CATEGORIES.filter(c => c.id !== 'all');
 
-  const categoryIconMap = {
-    'antibiotics': <TestTube size={28} color="#333" strokeWidth={1.5} />,
-    'cardiovascular': <HeartPulse size={28} color="#333" strokeWidth={1.5} />,
-    'diabetes': <Activity size={28} color="#333" strokeWidth={1.5} />,
-    'pain': <Pill size={28} color="#333" strokeWidth={1.5} />,
-    'vitamins': <Cross size={28} color="#333" strokeWidth={1.5} />,
-    'gastro': <Stethoscope size={28} color="#333" strokeWidth={1.5} />,
-    'neuro': <Activity size={28} color="#333" strokeWidth={1.5} />,
-    'respiratory': <Wind size={28} color="#333" strokeWidth={1.5} />,
-    'derma': <Smile size={28} color="#333" strokeWidth={1.5} />,
-  };
-
   return (
     <div className="page-wrapper">
       <Helmet>
         <title>NET PLUS | Medical Wholesale & Distribution</title>
         <meta name="description" content="Trusted B2B pharmaceutical supplier for registered medical shops and pharmacies. Access PTR (Price to Retailer), live stock, and seamless ordering." />
         <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/`} />
-        <link rel="preload" href="/banner.jpg" as="image" />
+        <link rel="preload" href={banners[0].src} as="image" />
       </Helmet>
       <Navbar />
 
-      {/* ── HERO BANNER ── */}
-      <section className="hero-banner-section">
+      <h1 className="sr-only">NET PLUS Enterprises — Medical Wholesale &amp; Distribution</h1>
+
+      {/* ── BANNER ── */}
+      <section className="hero-section" aria-label="Featured">
         <div className="container">
-          <div className="hero-banner-wrapper animate-fade-up">
-            <button className="banner-nav-btn prev" onClick={prevBanner}>
-              <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }}/>
+          <div className="hero-wrap">
+            <button className="hero-nav prev" onClick={prevBanner} aria-label="Previous banner">
+              <ChevronLeft size={22} aria-hidden="true" />
             </button>
-            <div 
-              className="hero-banner-track"
-              style={{ 
+            <div
+              className="hero-track"
+              style={{
                 transform: `translateX(-${currentIndex * 100}%)`,
                 transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
               }}
@@ -168,37 +185,40 @@ export default function HomePage() {
               onTouchEnd={handleTouchEnd}
               onTransitionEnd={handleTransitionEnd}
             >
-              {extendedBanners.map((banner, index) => (
-                <img 
-                  key={index}
-                  src={banner} 
-                  alt={`Wholesale Medicines Banner ${index}`} 
-                  className="hero-banner-img" 
-                />
-              ))}
+              {extendedBanners.map((banner, index) => {
+                const isClone = index === 0 || index === extendedBanners.length - 1;
+                return (
+                  <div key={index} className="hero-slide" aria-hidden={isClone}>
+                    <img src={banner.src} alt={isClone ? '' : banner.alt} className="hero-slide-img" style={{ objectPosition: banner.pos }} />
+                    <div className="hero-caption">
+                      <p className="hero-title">{banner.title}</p>
+                      <p className="hero-text">{banner.text}</p>
+                      <Link to={banner.cta.to} className="btn btn-primary" tabIndex={isClone ? -1 : undefined}>
+                        {banner.cta.label} <ArrowRight size={16} aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <button className="banner-nav-btn next" onClick={nextBanner}>
-              <ChevronRight size={24} />
+            <button className="hero-nav next" onClick={nextBanner} aria-label="Next banner">
+              <ChevronRight size={22} aria-hidden="true" />
             </button>
-            <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
+            <div className="hero-dots">
               {banners.map((_, i) => {
-                const isActive = (currentIndex === 0 && i === banners.length - 1) || 
-                                 (currentIndex === extendedBanners.length - 1 && i === 0) || 
+                const isActive = (currentIndex === 0 && i === banners.length - 1) ||
+                                 (currentIndex === extendedBanners.length - 1 && i === 0) ||
                                  (currentIndex - 1 === i);
                 return (
-                  <button 
-                    key={i} 
+                  <button
+                    key={i}
+                    className={`hero-dot${isActive ? ' active' : ''}`}
+                    aria-label={`Show banner ${i + 1} of ${banners.length}`}
+                    aria-current={isActive ? 'true' : undefined}
                     onClick={() => {
                       setIsTransitioning(true);
                       setCurrentIndex(i + 1);
                     }}
-                    style={{ 
-                      width: isActive ? '24px' : '8px', 
-                      height: '8px', 
-                      borderRadius: '4px', 
-                      background: isActive ? 'var(--teal)' : 'rgba(0,0,0,0.2)',
-                      border: 'none', cursor: 'pointer', transition: 'var(--transition)'
-                    }} 
                   />
                 );
               })}
@@ -207,63 +227,77 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── QUICK ACTION CARDS ── */}
-      <section className="quick-actions-section">
+      {/* ── QUICK LINKS ── */}
+      <section className="ql-section" aria-label="Quick links">
         <div className="container">
-          <div className="quick-actions-grid">
-            <Link to="/products" className="qa-card" style={{ background: '#e6f7ec' }}>
-              <div className="qa-icon" style={{ color: '#22A355' }}>💊</div>
-              <div className="qa-content">
-                <div className="qa-title">Buy Medicines & Essentials</div>
-                <div className="qa-subtitle" style={{ color: '#166534' }}>NEXT DAY DELIVERY</div>
-              </div>
-              <ChevronRight size={20} className="qa-arrow" />
+          <div className="ql-grid">
+            <Link to="/products" className="ql-item">
+              <span className="ql-icon" aria-hidden="true"><Pill size={24} strokeWidth={1.75} /></span>
+              <span className="ql-text"><strong>Buy Medicines &amp; Essentials</strong><small>Next day delivery</small></span>
+              <ChevronRight size={20} className="ql-arrow" aria-hidden="true" />
             </Link>
-
-            <Link to="/portal" className="qa-card" style={{ background: '#fdf6db' }}>
-              <div className="qa-icon" style={{ color: '#d97706' }}>🩺</div>
-              <div className="qa-content">
-                <div className="qa-title">Register Your Shop</div>
-                <div className="qa-subtitle" style={{ color: '#92400e' }}>APPLY NOW</div>
-              </div>
-              <ChevronRight size={20} className="qa-arrow" />
+            <Link to="/portal" className="ql-item">
+              <span className="ql-icon" aria-hidden="true"><Store size={24} strokeWidth={1.75} /></span>
+              <span className="ql-text"><strong>Register Your Shop</strong><small>Apply now</small></span>
+              <ChevronRight size={20} className="ql-arrow" aria-hidden="true" />
             </Link>
-
-            <Link to="/products" className="qa-card" style={{ background: '#fce8f3' }}>
-              <div className="qa-icon" style={{ color: '#db2777' }}>✂️</div>
-              <div className="qa-content">
-                <div className="qa-title">Surgical Supplies</div>
-                <div className="qa-subtitle" style={{ color: '#9d174d' }}>BULK PRICING</div>
-              </div>
-              <ChevronRight size={20} className="qa-arrow" />
+            <Link to="/products" className="ql-item">
+              <span className="ql-icon" aria-hidden="true"><Syringe size={24} strokeWidth={1.75} /></span>
+              <span className="ql-text"><strong>Surgical Supplies</strong><small>Bulk pricing</small></span>
+              <ChevronRight size={20} className="ql-arrow" aria-hidden="true" />
             </Link>
-
-            <Link to="/products" className="qa-card" style={{ background: '#fae8e4' }}>
-              <div className="qa-icon" style={{ color: '#ea580c' }}>🛡️</div>
-              <div className="qa-content">
-                <div className="qa-title">Generic Alternatives</div>
-                <div className="qa-subtitle" style={{ color: '#9a3412' }}>EXPLORE CATALOG</div>
-              </div>
-              <ChevronRight size={20} className="qa-arrow" />
+            <Link to="/products" className="ql-item">
+              <span className="ql-icon" aria-hidden="true"><ShieldCheck size={24} strokeWidth={1.75} /></span>
+              <span className="ql-text"><strong>Generic Alternatives</strong><small>Explore catalog</small></span>
+              <ChevronRight size={20} className="ql-arrow" aria-hidden="true" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── STATS TICKER ── */}
-      <section className="stats-section" id="stats-section">
+      {/* ── SHOP BY CATEGORY ── */}
+      <section className="section" id="product-categories">
         <div className="container">
-          <div className="stats-grid">
+          <div className="head-row">
+            <h2 className="section-title">Shop by Category</h2>
+            <Link to="/products" className="head-link" id="view-all-cats-btn">
+              View All Categories <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+          <p className="section-subtitle" style={{ marginBottom: '1.25rem' }}>
+            45,000+ pharmaceutical and healthcare products across 10+ categories.{' '}
+            <strong style={{ color: 'var(--ink)' }}>Prices are visible only to approved retailers.</strong>
+          </p>
+          <div className="cat-grid">
+            {displayCategories.map((cat) => (
+              <button
+                type="button"
+                key={cat.id}
+                className="cat-tile"
+                onClick={handleActionClick}
+              >
+                <span className="cat-img"><img src={cat.image} alt="" loading="lazy" /></span>
+                <span className="cat-name">{cat.label}</span>
+                <span className="cat-link">View products</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FIGURES ── */}
+      <section className="stats-band" id="stats-section" aria-label="NET PLUS at a glance">
+        <div className="container">
+          <div className="stats-band-grid">
             {DISTRIBUTION_STATS.map((s, i) => (
-              <div key={i} className="stat-item animate-fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="stat-emoji">{s.icon}</div>
-                <div className="stat-number">
+              <div key={i} className="stats-band-item">
+                <div className="stats-band-value">
                   <Counter
                     target={s.value}
                     suffix={s.value.includes('+') ? '+' : ''}
                   />
                 </div>
-                <div className="stat-label">{s.label}</div>
+                <div className="stats-band-label">{s.label}</div>
               </div>
             ))}
           </div>
@@ -271,70 +305,27 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="section how-section" id="how-it-works">
+      <section className="section" id="how-it-works">
         <div className="container">
-          <div className="section-header animate-fade-up">
-            <span className="section-tag">How It Works</span>
-            <h2 className="section-title">For Medical Shop Owners</h2>
-            <p className="section-subtitle">Get verified and access exclusive PTR (Price to Retailer) in 4 simple steps</p>
-          </div>
-          <div className="how-grid">
+          <h2 className="section-title">How It Works for Medical Shop Owners</h2>
+          <p className="section-subtitle" style={{ marginBottom: '1.5rem' }}>Get verified and access exclusive PTR (Price to Retailer) in 4 simple steps.</p>
+          <ol className="how-row">
             {[
-              { step: '01', icon: '📝', title: 'Register',          desc: 'Fill in your shop details — name, address, licence, and upload your documents.' },
-              { step: '02', icon: '🔍', title: 'Verification',       desc: 'Our team reviews your drug licence, shop photo, and submitted documents.' },
-              { step: '03', icon: '✅', title: 'Get Approved',       desc: 'Receive approval notification. Your retailer portal access is activated.' },
-              { step: '04', icon: '🛒', title: 'Order Wholesale',    desc: 'Browse our full catalog with PTR (Price to Retailer) and place orders instantly.' },
+              { step: '1', title: 'Register',       desc: 'Fill in your shop details — name, address, licence, and upload your documents.' },
+              { step: '2', title: 'Verification',   desc: 'Our team reviews your drug licence, shop photo, and submitted documents.' },
+              { step: '3', title: 'Get Approved',   desc: 'Receive approval notification. Your retailer portal access is activated.' },
+              { step: '4', title: 'Order Wholesale', desc: 'Browse our full catalog with PTR (Price to Retailer) and place orders instantly.' },
             ].map((s, i) => (
-              <div key={i} className={`how-card how-card-${i} animate-fade-up`} style={{ animationDelay: `${i * 0.15}s`, zIndex: 4 - i }}>
-                <div className="how-card-inner">
-                  <div className="how-step">{s.step}</div>
-                  <div className="how-icon">{s.icon}</div>
-                  <h4 className="how-title">{s.title}</h4>
-                  <p className="how-desc">{s.desc}</p>
-                </div>
-                {i < 3 && <div className="how-connector"><ChevronRight size={16} /></div>}
-              </div>
+              <li key={i} className="how-item">
+                <span className="how-num"><span className="sr-only">Step </span>{s.step}</span>
+                <h3 className="how-title">{s.title}</h3>
+                <p className="how-desc">{s.desc}</p>
+              </li>
             ))}
-          </div>
-          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+          </ol>
+          <div style={{ marginTop: '1.5rem' }}>
             <Link to="/register" className="btn btn-primary btn-lg" id="how-register-btn">
-              Start Registration <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── PRODUCT CATEGORIES ── */}
-      <section className="section categories-section" id="product-categories">
-        <div className="container">
-          <div className="section-header animate-fade-up">
-            <span className="section-tag">Our Catalog</span>
-            <h2 className="section-title">Product Categories</h2>
-            <p className="section-subtitle">
-              18,000+ pharmaceutical and healthcare products across 10+ categories.
-              <br />
-              <span style={{ color: 'var(--teal)', fontWeight: 600 }}>Prices visible only to approved retailers.</span>
-            </p>
-          </div>
-          <div className="professional-categories-grid">
-            {displayCategories.map((cat, i) => (
-              <div
-                key={cat.id}
-                className="horizontal-cat-card animate-fade-up"
-                style={{ animationDelay: `${i * 0.05}s` }}
-                onClick={handleActionClick}
-              >
-                <div className="horizontal-cat-icon">
-                  {categoryIconMap[cat.id] || <Activity size={28} color="#333" strokeWidth={1.5} />}
-                  <span className="icon-accent-dot"></span>
-                </div>
-                <div className="horizontal-cat-label">{cat.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <Link to="/products" className="btn btn-outline" id="view-all-cats-btn">
-              View All Categories <ArrowRight size={16} />
+              Start Registration <ArrowRight size={18} aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -343,133 +334,97 @@ export default function HomePage() {
       {/* ── SERVICES ── */}
       <section className="section services-section" id="services-section">
         <div className="container">
-          <div className="section-header animate-fade-up">
-            <span className="section-tag">What We Offer</span>
-            <h2 className="section-title">Our Services</h2>
-            <p className="section-subtitle">End-to-end pharmaceutical distribution with quality assurance</p>
-          </div>
-          <div className="grid grid-3">
+          <h2 className="section-title">Our Services</h2>
+          <p className="section-subtitle" style={{ marginBottom: '1.5rem' }}>End-to-end pharmaceutical distribution with quality assurance.</p>
+          <div className="svc-grid">
             {SERVICES.map((s, i) => (
-              <div key={i} className="service-card animate-fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="service-icon-wrap">
-                  <span className="service-icon">{s.icon}</span>
-                </div>
-                <h4 className="service-title">{s.title}</h4>
-                <p className="service-desc">{s.desc}</p>
+              <div key={i} className="svc-item">
+                <span className="svc-icon"><ServiceIcon name={s.icon} /></span>
+                <h3 className="svc-title">{s.title}</h3>
+                <p className="svc-desc">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── BRANDS MARQUEE ── */}
-      <section className="brands-section" id="brands-section">
+      {/* ── BRANDS ── */}
+      <section className="section" id="brands-section">
         <div className="container">
-          <div className="section-header animate-fade-up">
-            <span className="section-tag">Our Partners</span>
+          <div className="head-row">
             <h2 className="section-title">Brands We Distribute</h2>
+            <Link to="/brands" className="head-link">
+              View All Brands <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </div>
-        </div>
-        <div className="brands-marquee-wrap">
-          <div className="brands-marquee">
-            {[...BRANDS, ...BRANDS].map((b, i) => (
-              <div key={i} className="brand-pill">
-                <span className="brand-pill-icon">{b.logo}</span>
-                <div>
-                  <div className="brand-pill-name">{b.name}</div>
-                  <div className="brand-pill-country">{b.country}</div>
-                </div>
+          <div className="brand-grid">
+            {BRANDS.map((b) => (
+              <div key={b.id} className="brand-cell">
+                <img src={b.logo} alt={b.name} loading="lazy" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── PRIVATE PORTAL CTA ── */}
-      <section className="section portal-cta-section" id="portal-cta">
-        <div className="container">
-          <div className="portal-cta-card animate-fade-up">
-            <div className="portal-cta-content">
-              <div className="portal-cta-badge"><Lock size={14} /> Private B2B Portal</div>
-              <h2 className="portal-cta-title">Wholesale Access for Registered Retailers Only</h2>
-              <p className="portal-cta-desc">
-                Medical PTR (Price to Retailer), stock availability, and ordering are exclusively
-                available to approved medical shops. Register and get verified to unlock access.
-              </p>
-              <div className="portal-cta-features">
-                {[
-                  { icon: '💊', text: 'Real-time PTR (Price to Retailer)' },
-                  { icon: '📦', text: 'Live stock availability' },
-                  { icon: '📋', text: 'One-click order system' },
-                  { icon: '🚚', text: 'Doorstep delivery' },
-                ].map((f, i) => (
-                  <div key={i} className="portal-cta-feature">
-                    <span>{f.icon}</span> {f.text}
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem' }}>
-                <Link to="/register" className="btn btn-primary btn-lg" id="cta-register-btn">
-                  Register Your Shop <ArrowRight size={18} />
-                </Link>
-                <Link to="/login" className="btn btn-secondary btn-lg" id="cta-login-btn">
-                  Already registered? Login
-                </Link>
-              </div>
-            </div>
-            <div className="portal-cta-visual">
-              <div className="portal-mock">
-                <div className="portal-mock-header">
-                  <div className="mock-dot red" /><div className="mock-dot amber" /><div className="mock-dot green" />
-                  <div className="mock-url">🔒 portal.netplusenterprises.com</div>
-                </div>
-                <div className="portal-mock-body">
-                  <div className="mock-row"><span className="mock-label">Augmentin 625mg</span><span className="mock-blur">₹ ●●●.●●</span></div>
-                  <div className="mock-row"><span className="mock-label">Metformin 500mg</span><span className="mock-blur">₹ ●●●.●●</span></div>
-                  <div className="mock-row"><span className="mock-label">Dolo 650mg</span><span className="mock-blur">₹ ●●.●●</span></div>
-                  <div className="mock-row"><span className="mock-label">Cetirizine 10mg</span><span className="mock-blur">₹ ●●.●●</span></div>
-                  <div className="mock-overlay">
-                    <Lock size={28} />
-                    <div>Login required to view prices</div>
-                    <Link to="/login" className="btn btn-primary btn-sm" id="mock-login-btn">Login Now</Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* ── PRIVATE PORTAL ── */}
+      <section className="cta-band" id="portal-cta">
+        <div className="container cta-band-inner">
+          <div className="cta-copy">
+            <h2>Wholesale Access for Registered Retailers Only</h2>
+            <p>
+              Medical PTR (Price to Retailer), stock availability, and ordering are exclusively
+              available to approved medical shops. Register and get verified to unlock access.
+            </p>
+            <ul className="cta-list">
+              {[
+                'Real-time PTR (Price to Retailer)',
+                'Live stock availability',
+                'One-click order system',
+                'Doorstep delivery',
+              ].map((text, i) => (
+                <li key={i}><Check size={18} aria-hidden="true" /> {text}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="cta-actions">
+            <Link to="/register" className="btn btn-light btn-lg" id="cta-register-btn">
+              Register Your Shop <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+            <Link to="/login" className="btn btn-secondary btn-lg" id="cta-login-btn">
+              Already registered? Login
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ── CONTACT STRIP ── */}
-      <section className="contact-strip" id="contact-strip">
+      <section className="contact-strip" id="contact-strip" aria-label="Contact details">
         <div className="container">
           <div className="contact-strip-grid">
             <div className="contact-strip-item">
-              <Phone size={22} style={{ color: 'var(--teal)' }} />
+              <Phone size={22} aria-hidden="true" />
               <div>
                 <div className="cs-label">Call Us</div>
                 <a href={`tel:${COMPANY.phone}`} className="cs-value">{COMPANY.phone}</a>
               </div>
             </div>
-            <div className="contact-strip-divider" />
             <div className="contact-strip-item">
-              <Mail size={22} style={{ color: 'var(--teal)' }} />
+              <Mail size={22} aria-hidden="true" />
               <div>
                 <div className="cs-label">Email Us</div>
                 <a href={`mailto:${COMPANY.email}`} className="cs-value">{COMPANY.email}</a>
               </div>
             </div>
-            <div className="contact-strip-divider" />
             <div className="contact-strip-item">
-              <Clock size={22} style={{ color: 'var(--teal)' }} />
+              <Clock size={22} aria-hidden="true" />
               <div>
                 <div className="cs-label">Business Hours</div>
                 <div className="cs-value">{COMPANY.hours}</div>
               </div>
             </div>
-            <div className="contact-strip-divider" />
             <div className="contact-strip-item">
-              <MapPin size={22} style={{ color: 'var(--teal)' }} />
+              <MapPin size={22} aria-hidden="true" />
               <div>
                 <div className="cs-label">Location</div>
                 <div className="cs-value">Dhanbad, Jharkhand</div>
@@ -482,445 +437,130 @@ export default function HomePage() {
       <Footer />
 
       <style>{`
-        /* ── Hero ── */
-        .hero {
-          min-height: 100vh;
-          background: var(--cyan);
-          display: flex; flex-direction: column;
-          position: relative; overflow: hidden;
-        }
-        .hero-bg {
-          position: absolute; inset: 0;
-          background:
-            radial-gradient(ellipse 60% 50% at 70% 40%, rgba(0,184,169,0.18) 0%, transparent 70%),
-            radial-gradient(ellipse 40% 40% at 20% 70%, rgba(6,200,232,0.1) 0%, transparent 60%);
-        }
-        .hero-container {
-          flex: 1;
-          display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          align-items: center;
-          gap: 4rem;
-          padding-top: calc(var(--nav-height) + 3rem);
-          padding-bottom: 6rem;
-          position: relative; z-index: 2;
-        }
-        .hero-badge {
-          display: inline-flex; align-items: center; gap: 0.4rem;
-          background: rgba(22,163,74,0.15);
-          border: 1px solid rgba(22,163,74,0.3);
-          color: #4ade80;
-          font-size: 0.78rem; font-weight: 600;
-          letter-spacing: 0.06em;
-          padding: 0.4rem 1rem; border-radius: var(--radius-full);
-          margin-bottom: 1.5rem;
-        }
-        .hero-title {
-          color: #fff; font-size: clamp(2rem, 4.5vw, 3.4rem);
-          line-height: 1.1; margin-bottom: 1.5rem;
-        }
-        .hero-title-accent {
-          background: var(--gradient-primary);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .hero-subtitle {
-          color: rgba(255,255,255,0.65);
-          font-size: 1.05rem; line-height: 1.7;
-          max-width: 520px; margin-bottom: 2.5rem;
-        }
-        .hero-cta-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
-        .hero-trust { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-        .hero-trust-badge {
-          display: inline-flex; align-items: center; gap: 0.3rem;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.12);
-          color: rgba(255,255,255,0.7);
-          font-size: 0.72rem; font-weight: 500;
-          padding: 0.3rem 0.7rem; border-radius: var(--radius-full);
-        }
-        .hero-particle {
-          position: absolute; border-radius: 50%;
-          background: rgba(0,184,169,0.12);
-          animation: float 5s ease-in-out infinite;
-          pointer-events: none;
-        }
-        /* Hero Visual */
-        .hero-visual { display: flex; align-items: center; justify-content: center; }
-        .hero-card-stack { position: relative; width: 320px; height: 360px; }
-        .hero-card {
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: var(--radius-xl);
-          padding: 2rem;
-        }
-        .hero-card-main {
-          width: 100%; height: 100%;
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          text-align: center;
-          animation: float 4s ease-in-out infinite;
-        }
-        .hero-card-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-        .hero-card-title { color: #fff; font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; }
-        .hero-card-sub   { color: rgba(255,255,255,0.55); font-size: 0.82rem; margin-top: 0.3rem; }
-        .hero-card-lock  {
-          display: flex; align-items: center; gap: 0.4rem;
-          color: var(--teal-light); font-size: 0.75rem; font-weight: 600;
-          background: rgba(0,184,169,0.15); border-radius: var(--radius-full);
-          padding: 0.35rem 0.75rem; margin-top: 1.25rem;
-        }
-        .hero-card-float {
-          position: absolute;
-          background: #fff; padding: 0.85rem 1.1rem;
-          display: flex; align-items: center; gap: 0.75rem;
-          box-shadow: var(--shadow-xl);
-          animation: float 3s ease-in-out infinite;
-        }
-        .hero-card-float-1 { bottom: 20px; left: -50px; animation-delay: 0.5s; border-radius: var(--radius-md); }
-        .hero-card-float-2 { top: 20px;    right: -50px; animation-delay: 1s;   border-radius: var(--radius-md); }
-        .hero-wave { position: relative; z-index: 2; margin-top: auto; line-height: 0; }
-        .hero-wave svg { display: block; width: 100%; height: 80px; }
+        /* Section heading with a link on the right */
+        .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--gray-200); margin-bottom: 1rem; }
+        .head-row .section-title { border-bottom: 0; margin-bottom: 0; padding-bottom: 0.7rem; }
+        .head-link { display: inline-flex; align-items: center; gap: 0.35rem; padding-bottom: 0.7rem; color: var(--primary); font-weight: 600; font-size: 0.95rem; }
+        .head-link:hover { text-decoration: underline; }
 
-        /* ── Stats ── */
-        .stats-section {
-          background: #fff;
-          padding: 3.5rem 0;
-          box-shadow: var(--shadow-sm);
-        }
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 2rem;
-        }
-        .stat-item {
-          text-align: center;
-          padding: 1.5rem;
-          border-right: 1px solid var(--gray-100);
-        }
-        .stat-item:last-child { border-right: none; }
-        .stat-emoji { font-size: 2rem; margin-bottom: 0.5rem; }
-        .stat-number {
-          font-family: var(--font-display);
-          font-size: 2.4rem; font-weight: 900;
-          background: var(--gradient-primary);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .stat-label { font-size: 0.85rem; color: var(--gray-500); font-weight: 500; margin-top: 0.25rem; }
+        /* ── Banner ── */
+        .hero-section { padding: 1.25rem 0 0; background: #fff; }
+        .hero-wrap { position: relative; overflow: hidden; border: 1px solid var(--gray-200); border-radius: 4px; background: #fff; }
+        .hero-track { display: flex; width: 100%; }
+        .hero-slide { flex: 0 0 100%; min-width: 0; position: relative; display: flex; flex-direction: column; }
+        .hero-slide-img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; background: var(--gray-100); }
+        .hero-caption { position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); max-width: 440px; background: #fff; padding: 1.5rem 1.75rem; border-left: 4px solid var(--accent); }
+        .hero-title { font-size: 1.6rem; font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 0.6rem; }
+        .hero-text { font-size: 1rem; color: var(--navy-light); margin-bottom: 1rem; }
+        .hero-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--gray-300); border-radius: 4px; color: var(--ink); cursor: pointer; }
+        .hero-nav:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .hero-nav.prev { left: 0.6rem; }
+        .hero-nav.next { right: 0.6rem; }
+        .hero-dots { display: flex; justify-content: center; align-items: center; gap: 0.2rem; min-height: 40px; background: #fff; border-top: 1px solid var(--gray-200); }
+        .hero-dot { width: 26px; height: 26px; padding: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .hero-dot::before { content: ''; width: 12px; height: 12px; border-radius: 2px; border: 2px solid var(--primary); background: #fff; }
+        .hero-dot.active::before { background: var(--primary); }
+
+        /* ── Quick links ── */
+        .ql-section { padding: 1.25rem 0 0.5rem; }
+        .ql-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--gray-200); border-radius: 4px; background: #fff; }
+        .ql-item { display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.1rem; border-right: 1px solid var(--gray-200); color: var(--ink); min-width: 0; }
+        .ql-item:last-child { border-right: none; }
+        .ql-item:hover { background: var(--primary-tint); }
+        .ql-icon { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--primary-line); border-radius: 4px; background: #fff; }
+        .ql-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+        .ql-text strong { font-size: 0.98rem; font-weight: 700; }
+        .ql-text small { font-size: 0.85rem; color: var(--gray-500); margin-top: 2px; }
+        .ql-arrow { color: var(--gray-400); flex-shrink: 0; }
+        .ql-item:hover .ql-arrow { color: var(--primary); }
+
+        /* ── Figures band ── */
+        .stats-band { background: var(--primary); color: #fff; padding: 2.25rem 0; }
+        .stats-band-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+        .stats-band-item { text-align: center; padding: 0.25rem 1rem; border-right: 1px solid rgba(255,255,255,0.25); }
+        .stats-band-item:last-child { border-right: none; }
+        .stats-band-value { font-size: 2.4rem; font-weight: 700; line-height: 1.1; color: #fff; }
+        .stats-band-label { font-size: 0.95rem; margin-top: 0.35rem; color: #e1e3f5; font-weight: 500; }
 
         /* ── How it works ── */
-        .how-section { background: var(--off-white); }
-        .how-grid {
-          display: flex;
-          align-items: stretch;
-          position: relative;
-          padding: 0 1rem;
-        }
-        .how-grid::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 5%;
-          right: 5%;
-          height: 3px;
-          background: linear-gradient(90deg, var(--teal), rgba(13,148,136,0.15));
-          border-radius: 2px;
-          z-index: 0;
-          transform: translateY(-50%);
-        }
-        .how-card {
-          position: relative;
-          flex: 1;
-          min-width: 0;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: default;
-        }
-        /* Each card overlaps the previous one — negative margin pulls them together */
-        .how-card-1 { margin-left: -28px; }
-        .how-card-2 { margin-left: -28px; }
-        .how-card-3 { margin-left: -28px; }
-        .how-card:hover {
-          z-index: 10 !important;
-          transform: translateY(-10px) scale(1.04);
-        }
-        .how-card-inner {
-          background: #fff;
-          border-radius: var(--radius-xl);
-          padding: 2rem 1.5rem;
-          text-align: center;
-          box-shadow: var(--shadow-sm);
-          border: 1px solid var(--gray-100);
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          height: 100%;
-          position: relative;
-          z-index: 1;
-        }
-        .how-card:hover .how-card-inner {
-          box-shadow: 0 20px 40px rgba(13, 148, 136, 0.15), 0 8px 16px rgba(0,0,0,0.08);
-          border-color: var(--teal);
-        }
-        .how-step {
-          display: inline-block;
-          font-family: var(--font-display); font-size: 2.5rem; font-weight: 900;
-          background: var(--gradient-primary);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 0.5rem;
-        }
-        .how-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-        .how-title { color: var(--navy); font-size: 1.05rem; margin-bottom: 0.5rem; }
-        .how-desc  { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
-        .how-connector {
-          position: absolute;
-          right: -6px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 28px;
-          height: 28px;
-          background: var(--teal);
-          color: #fff;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 5;
-          box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
-          transition: all 0.3s ease;
-        }
-        .how-card:hover .how-connector {
-          transform: translateY(-50%) scale(1.15);
-          box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
-        }
-
-        /* ── Categories ── */
-        .categories-section { background: #fff; }
-        .professional-categories-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 1.5rem;
-          margin-top: 1rem;
-        }
-        .horizontal-cat-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
-          border-radius: var(--radius-lg);
-          padding: 1rem;
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .horizontal-cat-card:hover {
-          border-color: var(--teal);
-          box-shadow: 0 4px 15px rgba(13, 148, 136, 0.1);
-        }
-        .horizontal-cat-icon {
-          background: #f8fafc;
-          width: 56px;
-          height: 56px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          flex-shrink: 0;
-        }
-        .icon-accent-dot {
-          position: absolute;
-          top: 14px;
-          left: 14px;
-          width: 8px;
-          height: 8px;
-          background-color: var(--teal);
-          border-radius: 50%;
-          opacity: 0.8;
-        }
-        .horizontal-cat-label {
-          font-weight: 600;
-          font-size: 0.95rem;
-          color: var(--navy);
-          line-height: 1.2;
-        }
+        .how-row { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--gray-200); border-radius: 4px; background: #fff; }
+        .how-item { padding: 1.4rem 1.4rem 1.5rem; border-right: 1px solid var(--gray-200); }
+        .how-item:last-child { border-right: none; }
+        .how-num { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 4px; background: var(--primary); color: #fff; font-weight: 700; font-size: 1rem; margin-bottom: 0.85rem; }
+        .how-title { font-size: 1.1rem; margin-bottom: 0.35rem; }
+        .how-desc { font-size: 0.95rem; color: var(--gray-500); line-height: 1.6; }
 
         /* ── Services ── */
-        .services-section { background: var(--off-white); }
-        .service-card {
-          background: #fff;
-          border-radius: var(--radius-xl);
-          padding: 2rem;
-          box-shadow: var(--shadow-sm);
-          border: 1px solid var(--gray-100);
-          transition: var(--transition);
-        }
-        .service-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-5px); }
-        .service-icon-wrap {
-          width: 60px; height: 60px;
-          background: linear-gradient(135deg, rgba(22,163,74,0.12), rgba(74,222,128,0.12));
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.8rem; margin-bottom: 1rem;
-        }
-        .service-title { color: var(--navy); font-size: 1rem; margin-bottom: 0.5rem; }
-        .service-desc  { font-size: 0.85rem; color: var(--gray-500); line-height: 1.65; }
+        .services-section { background: var(--off-white); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); }
+        .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border-top: 1px solid var(--gray-200); border-left: 1px solid var(--gray-200); }
+        .svc-item { padding: 1.5rem; border-right: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); }
+        .svc-icon { display: inline-flex; color: var(--primary); margin-bottom: 0.75rem; }
+        .svc-title { font-size: 1.08rem; margin-bottom: 0.35rem; }
+        .svc-desc { font-size: 0.95rem; color: var(--gray-500); line-height: 1.6; }
 
-        /* ── Brands marquee ── */
-        .brands-section { padding: 4rem 0; background: #fff; overflow: hidden; }
-        .brands-marquee-wrap { overflow: hidden; margin-top: 2rem; }
-        .brands-marquee {
-          display: flex; gap: 1.25rem;
-          animation: marquee 28s linear infinite;
-          width: max-content;
-        }
-        .brands-marquee:hover { animation-play-state: paused; }
-        @keyframes marquee {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        .brand-pill {
-          display: flex; align-items: center; gap: 0.75rem;
-          background: var(--gray-50);
-          border: 1.5px solid var(--gray-100);
-          border-radius: var(--radius-full);
-          padding: 0.75rem 1.4rem;
-          flex-shrink: 0;
-          transition: var(--transition-fast);
-          cursor: default;
-        }
-        .brand-pill:hover { border-color: var(--teal); background: rgba(0,184,169,0.05); }
-        .brand-pill-icon  { font-size: 1.4rem; }
-        .brand-pill-name  { font-weight: 700; font-size: 0.88rem; color: var(--navy); }
-        .brand-pill-country { font-size: 0.72rem; color: var(--gray-400); }
+        /* ── Brands ── */
+        .brand-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; }
+        .brand-cell { display: flex; align-items: center; justify-content: center; height: 112px; padding: 0.75rem; background: #fff; border: 1px solid var(--gray-200); border-radius: 4px; }
+        .brand-cell:hover { border-color: var(--primary); }
+        .brand-cell img { max-width: 100%; max-height: 76px; width: auto; height: auto; object-fit: contain; }
 
-        /* ── Portal CTA ── */
-        .portal-cta-section { background: var(--off-white); }
-        .portal-cta-card {
-          background: var(--gradient-primary);
-          border-radius: var(--radius-xl);
-          padding: 4rem;
-          display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: 4rem;
-          align-items: center;
-          overflow: hidden;
-          position: relative;
-        }
-        .portal-cta-card::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(0,184,169,0.2) 0%, transparent 70%);
-        }
-        .portal-cta-content { position: relative; z-index: 2; }
-        .portal-cta-badge {
-          display: inline-flex; align-items: center; gap: 0.4rem;
-          background: rgba(255,255,255,0.12);
-          border: 1px solid rgba(255,255,255,0.2);
-          color: #4ade80;
-          font-size: 0.78rem; font-weight: 600;
-          padding: 0.4rem 1rem; border-radius: var(--radius-full);
-          margin-bottom: 1.25rem;
-        }
-        .portal-cta-title {
-          color: #fff; font-size: clamp(1.4rem, 2.5vw, 2rem);
-          margin-bottom: 1rem;
-        }
-        .portal-cta-desc { color: rgba(255,255,255,0.65); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; }
-        .portal-cta-features {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
-        }
-        .portal-cta-feature {
-          display: flex; align-items: center; gap: 0.5rem;
-          color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500;
-          background: rgba(255,255,255,0.06);
-          padding: 0.6rem 0.9rem; border-radius: var(--radius-md);
-        }
-        /* Portal mock */
-        .portal-cta-visual { position: relative; z-index: 2; }
-        .portal-mock {
-          background: rgba(255,255,255,0.07);
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: var(--radius-xl);
-          overflow: hidden;
-        }
-        .portal-mock-header {
-          display: flex; align-items: center; gap: 0.4rem;
-          padding: 0.75rem 1rem;
-          background: rgba(0,0,0,0.2);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .mock-dot.red   { background: #ff5f57; }
-        .mock-dot.amber { background: #febc2e; }
-        .mock-dot.green { background: #28c840; }
-        .mock-url { margin-left: 0.5rem; font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-        .portal-mock-body { padding: 1.5rem; position: relative; }
-        .mock-row {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0.65rem 0;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .mock-label { font-size: 0.82rem; color: rgba(255,255,255,0.65); }
-        .mock-blur  { font-size: 0.9rem; color: var(--teal-light); font-weight: 700; filter: blur(5px); }
-        .mock-overlay {
-          position: absolute; inset: 0;
-          background: rgba(20,83,45,0.82);
-          backdrop-filter: blur(2px);
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: 0.75rem; color: #fff; font-size: 0.85rem; font-weight: 600;
-          border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-        }
+        /* ── Private portal band ── */
+        .cta-band { background: var(--footer-bg); color: #fff; padding: 2.75rem 0; border-top: 4px solid var(--accent); }
+        .cta-band-inner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2.5rem; align-items: center; }
+        .cta-copy h2 { color: #fff; margin-bottom: 0.7rem; }
+        .cta-copy p { color: #d6d9ee; font-size: 1rem; line-height: 1.7; margin-bottom: 1.1rem; max-width: 640px; }
+        .cta-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem 1.5rem; max-width: 640px; }
+        .cta-list li { display: flex; align-items: center; gap: 0.5rem; color: #fff; font-size: 0.95rem; font-weight: 500; }
+        .cta-list svg { color: var(--accent); flex-shrink: 0; }
+        .cta-actions { display: flex; flex-direction: column; gap: 0.75rem; }
 
-        /* ── Contact Strip ── */
-        .contact-strip {
-          background: #ffffff;
-          padding: 3rem 0;
-          border-top: 1px solid #e2e8f0;
-        }
-        .contact-strip-grid {
-          display: flex; align-items: stretch; justify-content: space-between;
-          gap: 1.5rem; flex-wrap: wrap;
-        }
-        .contact-strip-item {
-          display: flex; align-items: center; gap: 1rem; flex: 1;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          padding: 1.25rem 1.5rem;
-          border-radius: var(--radius-lg);
-          transition: var(--transition-fast);
-        }
-        .contact-strip-item:hover { border-color: var(--teal); box-shadow: var(--shadow-sm); }
-        .contact-strip-divider { display: none; }
-        .cs-label { font-size: 0.75rem; color: var(--navy-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
-        .cs-value { font-size: 0.95rem; color: var(--navy); font-weight: 700; text-decoration: none; transition: color 0.2s; }
-        .cs-value:hover { color: var(--teal); }
+        /* ── Contact strip ── */
+        .contact-strip { background: #fff; padding: 2rem 0; border-bottom: 1px solid var(--gray-200); }
+        .contact-strip-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--gray-200); border-radius: 4px; }
+        .contact-strip-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-right: 1px solid var(--gray-200); min-width: 0; color: var(--primary); }
+        .contact-strip-item:last-child { border-right: none; }
+        .contact-strip-item svg { flex-shrink: 0; }
+        .cs-label { font-size: 0.78rem; color: var(--gray-500); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.1rem; }
+        .cs-value { font-size: 0.9rem; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+        a.cs-value:hover { color: var(--primary); text-decoration: underline; }
 
         @media (max-width: 1024px) {
-          .hero-container { grid-template-columns: 1fr; }
-          .hero-visual { display: none; }
-          .stats-grid { grid-template-columns: repeat(2, 1fr); }
-          .how-grid { flex-wrap: wrap; gap: 1rem; }
-          .how-grid::before { display: none; }
-          .how-card-1, .how-card-2, .how-card-3 { margin-left: 0; }
-          .how-card { flex: 0 0 calc(50% - 0.5rem); }
-          .how-connector { display: none; }
-          .professional-categories-grid { grid-template-columns: repeat(3, 1fr); }
-          .portal-cta-card { grid-template-columns: 1fr; }
-          .portal-cta-visual { display: none; }
+          .ql-grid { grid-template-columns: repeat(2, 1fr); }
+          .ql-item:nth-child(2) { border-right: none; }
+          .ql-item:nth-child(-n+2) { border-bottom: 1px solid var(--gray-200); }
+          .stats-band-grid { grid-template-columns: repeat(2, 1fr); row-gap: 1.5rem; }
+          .stats-band-item:nth-child(2) { border-right: none; }
+          .how-row { grid-template-columns: repeat(2, 1fr); }
+          .how-item:nth-child(2) { border-right: none; }
+          .how-item:nth-child(-n+2) { border-bottom: 1px solid var(--gray-200); }
+          .svc-grid { grid-template-columns: repeat(2, 1fr); }
+          .brand-grid { grid-template-columns: repeat(4, 1fr); }
+          .cta-band-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+          .contact-strip-grid { grid-template-columns: repeat(2, 1fr); }
+          .contact-strip-item:nth-child(2) { border-right: none; }
+          .contact-strip-item:nth-child(-n+2) { border-bottom: 1px solid var(--gray-200); }
+        }
+        @media (max-width: 760px) {
+          .hero-slide-img { aspect-ratio: 16 / 9; }
+          .hero-caption { position: static; transform: none; max-width: none; padding: 1rem 1rem 1.1rem; border-left: 0; border-top: 4px solid var(--accent); }
+          .hero-title { font-size: 1.2rem; }
+          .hero-nav { top: auto; bottom: 0; transform: none; border-color: var(--gray-300); }
+          .hero-nav:hover { background: #fff; border-color: var(--gray-300); color: var(--ink); }
+          .hero-dots { min-height: 48px; }
+          .hero-nav.prev { left: 0.5rem; bottom: 4px; }
+          .hero-nav.next { right: 0.5rem; bottom: 4px; }
         }
         @media (max-width: 640px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr); }
-          .how-grid { flex-direction: column; gap: 1rem; }
-          .how-card { flex: 1 1 100%; }
-          .how-card-1, .how-card-2, .how-card-3 { margin-left: 0; margin-top: -16px; }
-          .how-card-0 { margin-top: 0; }
-          .how-connector { display: none; }
-          .professional-categories-grid { grid-template-columns: repeat(2, 1fr); }
-          .portal-cta-card { padding: 2rem; }
-          .contact-strip-divider { display: none; }
-          .contact-strip-grid { gap: 1rem; flex-direction: column; }
+          .section { padding: 2.25rem 0; }
+          .ql-grid, .how-row, .contact-strip-grid { grid-template-columns: 1fr; }
+          .ql-item, .how-item, .contact-strip-item { border-right: none; border-bottom: 1px solid var(--gray-200); }
+          .ql-item:last-child, .how-item:last-child, .contact-strip-item:last-child { border-bottom: none; }
+          .stats-band-grid { grid-template-columns: repeat(2, 1fr); }
+          .stats-band-value { font-size: 1.9rem; }
+          .svc-grid { grid-template-columns: 1fr; }
+          .brand-grid { grid-template-columns: repeat(2, 1fr); }
+          .cta-list { grid-template-columns: 1fr; }
+          .head-row { flex-wrap: wrap; }
         }
       `}</style>
     </div>

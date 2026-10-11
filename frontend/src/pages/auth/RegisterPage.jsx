@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, UserPlus, ArrowLeft, Shield } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, ArrowLeft, Shield, Check, AlertTriangle } from 'lucide-react';
 import { apiSimpleSignUp, apiSignIn, apiVerifyEmail } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -85,7 +85,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-page" id="register-page">
       <div className="auth-split-left">
-        <a href="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} className="auth-back-btn"><ArrowLeft size={16} /> Back</a>
+        <a href="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} className="auth-back-btn"><ArrowLeft size={18} aria-hidden="true" /> Back</a>
         <div className="auth-brand">
           <img src="/netLogo.jpeg" alt="NET PLUS ENTERPRISES" className="auth-logo" />
           <div className="auth-brand-name">NET PLUS ENTERPRISES</div>
@@ -96,11 +96,11 @@ export default function RegisterPage() {
         </div>
         <div className="auth-left-features">
           {['Exclusive wholesale catalogs', 'Dedicated support team', 'Secure order tracking'].map((f, i) => (
-            <div key={i} className="auth-left-feat"><span>✅</span> {f}</div>
+            <div key={i} className="auth-left-feat"><Check size={18} aria-hidden="true" /> {f}</div>
           ))}
         </div>
         <div className="auth-admin-hint">
-          <Shield size={14} />
+          <Shield size={16} aria-hidden="true" />
           <span>Need help? Contact support at netplus.enterprise10@gmail.com</span>
         </div>
       </div>
@@ -108,18 +108,18 @@ export default function RegisterPage() {
       <div className="auth-split-right">
         <div className="auth-form-card animate-scale-in">
           <div className="auth-form-header">
-            <h2>{step === 'register' ? 'Create Account' : 'Verify Email'}</h2>
+            <h1>{step === 'register' ? 'Create Account' : 'Verify Email'}</h1>
             <p>{step === 'register' ? 'Join NET PLUS as a retail partner' : `Enter the 6-digit code sent to ${form.email}`}</p>
           </div>
 
           {error && (
-            <div className="auth-error-banner">⚠️ {error}</div>
+            <div className="auth-error-banner" role="alert"><AlertTriangle size={18} aria-hidden="true" /> {error}</div>
           )}
 
           {step === 'register' ? (
             <form onSubmit={handleSubmit} id="register-form">
               <div className="form-group">
-                <label className="form-label">Full Name *</label>
+                <label className="form-label" htmlFor="reg-name">Full Name *</label>
                 <input
                   id="reg-name"
                   className="form-control"
@@ -131,7 +131,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Email Address *</label>
+                <label className="form-label" htmlFor="reg-email">Email Address *</label>
                 <input
                   id="reg-email"
                   className="form-control"
@@ -146,7 +146,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Password *</label>
+                <label className="form-label" htmlFor="reg-password">Password *</label>
                 <div className="password-field">
                   <input
                     id="reg-password"
@@ -157,26 +157,27 @@ export default function RegisterPage() {
                     value={form.password}
                     onChange={e => setForm({...form, password: e.target.value})}
                   />
-                  <button type="button" className="pass-toggle" onClick={() => setShowPass(s => !s)} id="toggle-password">
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <button type="button" className="pass-toggle" onClick={() => setShowPass(s => !s)} id="toggle-password" aria-label={showPass ? 'Hide password' : 'Show password'}>
+                    {showPass ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                    <span>{showPass ? 'Hide' : 'Show'}</span>
                   </button>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: '0.5rem', height: '48px' }}
+                className="btn btn-primary btn-lg"
+                style={{ width: '100%', marginTop: '0.5rem' }}
                 disabled={loading}
                 id="reg-submit"
               >
-                {loading ? <span className="spinner" style={{width:'20px',height:'20px',borderWidth:'2px',margin:'0 auto'}}/> : 'Create Account'}
+                {loading ? <><span className="spinner" style={{width:'20px',height:'20px',borderWidth:'2px',borderColor:'rgba(255,255,255,0.4)',borderTopColor:'#fff'}}/> Creating account...</> : 'Create Account'}
               </button>
             </form>
           ) : (
             <form onSubmit={handleVerify} id="verify-form">
               <div className="form-group">
-                <label className="form-label">Verification Code *</label>
+                <label className="form-label" htmlFor="reg-otp">Verification Code *</label>
                 <input
                   id="reg-otp"
                   className="form-control"
@@ -191,21 +192,21 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: '0.5rem', height: '48px' }}
+                className="btn btn-primary btn-lg"
+                style={{ width: '100%', marginTop: '0.5rem' }}
                 disabled={loading || otp.length !== 6}
                 id="verify-submit"
               >
-                {loading ? <span className="spinner" style={{width:'20px',height:'20px',borderWidth:'2px',margin:'0 auto'}}/> : 'Verify Email'}
+                {loading ? <><span className="spinner" style={{width:'20px',height:'20px',borderWidth:'2px',borderColor:'rgba(255,255,255,0.4)',borderTopColor:'#fff'}}/> Verifying...</> : 'Verify Email'}
               </button>
 
-              <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.85rem' }}>
+              <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '1rem' }}>
                 <span style={{ color: 'var(--gray-500)' }}>Didn't receive code? </span>
-                <button 
-                  type="button" 
-                  onClick={handleSubmit} 
+                <button
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={loading}
-                  style={{ background: 'none', border: 'none', color: 'var(--teal)', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--teal)', fontWeight: 700, cursor: 'pointer', fontSize: '1rem', minHeight: '44px', padding: '0 0.5rem', textDecoration: 'underline' }}
                 >
                   Resend
                 </button>
@@ -234,126 +235,89 @@ export default function RegisterPage() {
           grid-template-columns: 1fr 1fr;
         }
         .auth-split-left {
-          background: var(--gradient-hero);
+          background: var(--cyan);
+          border-right: 1px solid #c9cde8;
           padding: 3rem;
           display: flex; flex-direction: column;
-          position: relative; overflow: hidden;
-        }
-        .auth-split-left::before {
-          content:'';
-          position:absolute; inset:0;
-          background:radial-gradient(ellipse 80% 80% at 20% 80%, rgba(22,163,74,0.2) 0%, transparent 70%);
         }
         .auth-back-btn {
           display: inline-flex; align-items: center; gap: 0.4rem;
-          color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 500;
-          text-decoration: none; transition: var(--transition-fast);
-          position: relative; z-index: 2;
+          min-height: 44px;
+          color: var(--teal-dark); font-size: 1rem; font-weight: 600;
+          text-decoration: none;
         }
-        .auth-back-btn:hover { color: #fff; }
+        .auth-back-btn:hover { text-decoration: underline; }
         .auth-brand {
-          margin-top: 4rem; position: relative; z-index: 2;
+          flex: 1; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; text-align: center;
         }
-        .auth-logo { height: 48px; border-radius: 8px; margin-bottom: 1.5rem; }
-        .auth-brand-name {
-          color: #fff; font-size: 1.8rem; font-weight: 900;
-          font-family: var(--font-display); letter-spacing: 0.05em;
-          margin-bottom: 0.5rem;
-        }
-        .auth-brand-sub { color: rgba(255,255,255,0.8); font-size: 1.1rem; }
-        
+        .auth-logo { width: 90px; height: 90px; border-radius: 12px; margin-bottom: 1rem; }
+        .auth-brand-name { font-size: 1.4rem; font-weight: 800; color: var(--navy); letter-spacing: 0.02em; }
+        .auth-brand-sub  { font-size: 0.95rem; color: var(--teal-dark); font-weight: 600; margin-top: 0.3rem; }
         .auth-quote {
-          margin-top: 3rem; position: relative; z-index: 2;
-          color: #fff; font-size: 1.25rem; font-style: italic; line-height: 1.6;
-          border-left: 3px solid var(--teal); padding-left: 1.5rem;
+          background: #fff; border: 1px solid #c9cde8;
+          border-radius: var(--radius-lg); padding: 1.25rem;
+          color: var(--navy-mid); font-size: 1rem; font-style: italic; line-height: 1.6;
+          margin: 1.5rem 0;
         }
-        
-        .auth-left-features {
-          margin-top: 3rem; display: flex; flex-direction: column; gap: 1rem;
-          position: relative; z-index: 2;
-        }
-        .auth-left-feat {
-          display: flex; align-items: center; gap: 0.75rem;
-          color: rgba(255,255,255,0.9); font-size: 0.95rem;
-        }
-        
+        .auth-quote p { color: var(--navy-mid); }
+        .auth-left-features { display: flex; flex-direction: column; gap: 0.6rem; }
+        .auth-left-feat { font-size: 1rem; color: var(--navy); display: flex; gap: 0.5rem; align-items: center; }
         .auth-admin-hint {
-          margin-top: auto; display: flex; align-items: center; gap: 0.5rem;
-          color: rgba(255,255,255,0.5); font-size: 0.8rem;
-          position: relative; z-index: 2;
+          display: flex; align-items: center; gap: 0.5rem;
+          background: #fff; border: 1px solid #c9cde8;
+          border-radius: var(--radius-lg); padding: 0.75rem 1rem;
+          color: var(--navy-mid); font-size: 0.92rem; font-weight: 500;
+          margin-top: 1.5rem;
         }
 
         .auth-split-right {
-          background: var(--bg-primary);
+          background: #fff;
           display: flex; align-items: center; justify-content: center;
-          padding: 3rem;
+          padding: 2rem;
         }
-        
         .auth-form-card {
-          width: 100%; max-width: 420px;
+          background: #fff; border-radius: var(--radius-lg);
+          padding: 2.5rem; width: 100%; max-width: 440px;
+          border: 1px solid var(--gray-200);
         }
-        
-        .auth-form-header { margin-bottom: 2rem; }
-        .auth-form-header h2 {
-          font-family: var(--font-display); color: var(--navy);
-          font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800;
-        }
+        .auth-form-header { margin-bottom: 1.5rem; }
+        .auth-form-header h1, .auth-form-header h2 { color: var(--navy); font-size: 1.6rem; margin-bottom: 0.3rem; }
         .auth-form-header p { color: var(--gray-500); font-size: 1rem; }
 
         .auth-error-banner {
-          background: #fef2f2; border-left: 4px solid var(--red);
-          padding: 1rem; color: var(--red); font-size: 0.85rem; font-weight: 500;
-          margin-bottom: 1.5rem; border-radius: 4px;
-        }
-
-        .form-label {
-          display: block; font-size: 0.85rem; font-weight: 600;
-          color: var(--navy); margin-bottom: 0.4rem;
-        }
-        .form-control {
-          width: 100%; padding: 0.85rem 1rem;
-          border: 1px solid var(--gray-200); border-radius: var(--radius-md);
-          font-size: 0.95rem; transition: var(--transition-fast);
-          background: #fff;
-        }
-        .form-control:focus {
-          border-color: var(--teal); outline: none;
-          box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+          display: flex; align-items: flex-start; gap: 0.5rem;
+          background: #fde8e8; border: 1px solid #f5b5b5;
+          border-radius: var(--radius-lg); padding: 0.75rem 1rem;
+          color: #9b1c1c; font-size: 0.95rem; font-weight: 500;
+          margin-bottom: 1rem;
         }
 
         .password-field { position: relative; }
+        .password-field .form-control { padding-right: 5.25rem; }
         .pass-toggle {
-          position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-          background: none; border: none; color: var(--gray-400); cursor: pointer;
-          padding: 4px; display: flex; align-items: center; justify-content: center;
-          transition: var(--transition-fast);
+          position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%);
+          background: none; border: none; cursor: pointer;
+          min-height: 40px; padding: 0 0.6rem;
+          color: var(--teal-dark); font-size: 0.92rem; font-weight: 600;
+          display: flex; align-items: center; gap: 0.3rem;
         }
-        .pass-toggle:hover { color: var(--navy); }
+        .pass-toggle:hover { text-decoration: underline; }
 
         .auth-divider {
-          display: flex; align-items: center; text-align: center; margin: 2rem 0;
+          display: flex; align-items: center; gap: 1rem;
+          margin: 1.5rem 0 0.75rem; color: var(--gray-500); font-size: 0.95rem;
         }
         .auth-divider::before, .auth-divider::after {
-          content: ''; flex: 1; border-bottom: 1px solid var(--gray-200);
-        }
-        .auth-divider span {
-          padding: 0 1rem; color: var(--gray-400); font-size: 0.85rem; font-weight: 500;
+          content: ''; flex: 1; height: 1px; background: var(--gray-200);
         }
 
-        .auth-note {
-          text-align: center; color: var(--gray-400); font-size: 0.8rem; margin-top: 1.5rem;
-        }
-
-        .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.96); }
-          to { opacity: 1; transform: scale(1); }
-        }
+        .auth-note { text-align: center; color: var(--gray-500); font-size: 0.875rem; margin-top: 1rem; }
 
         @media (max-width: 900px) {
           .auth-page { grid-template-columns: 1fr; }
           .auth-split-left { display: none; }
-          .auth-split-right { padding: 2rem; align-items: flex-start; padding-top: 4rem; }
+          .auth-split-right { padding: 1.5rem 1rem; align-items: flex-start; }
         }
       `}</style>
     </div>

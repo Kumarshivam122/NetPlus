@@ -24,24 +24,24 @@ class ErrorBoundary extends React.Component {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: "'Inter', Arial, sans-serif",
           textAlign: 'center',
           padding: '2rem'
         }}>
-          <h1 style={{ color: '#ef4444', marginBottom: '1rem' }}>Something went wrong.</h1>
+          <h1 style={{ color: '#c62828', marginBottom: '1rem' }}>Something went wrong.</h1>
           <p style={{ color: '#4b5563', marginBottom: '2rem' }}>
             We're sorry, but the application encountered an unexpected error.
           </p>
           <button 
             onClick={() => window.location.reload()}
             style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#3b82f6',
+              padding: '0.75rem 1.5rem', minHeight: '44px', fontSize: '1rem',
+              backgroundColor: '#3c3c8f',
               color: 'white',
               border: 'none',
-              borderRadius: '0.375rem',
+              borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: '500'
+              fontWeight: '600'
             }}
           >
             Refresh Page

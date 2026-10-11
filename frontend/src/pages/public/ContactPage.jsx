@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertTriangle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -98,22 +99,25 @@ export default function ContactPage() {
       
       <Navbar />
       
-      <section className="page-hero" id="contact-hero" style={{ background: '#fff' }}>
+      <section className="page-hero" id="contact-hero">
         <div className="container">
-          <span className="accent-tag">Get In Touch</span>
-          <h1 className="page-hero-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 800 }}>Contact Us</h1>
-          <p className="page-hero-sub" style={{ color: 'var(--gray-500)', fontSize: '1.1rem', maxWidth: '560px', margin: '0 auto' }}>
+          <ol className="breadcrumb" aria-label="Breadcrumb">
+            <li><Link to="/">Home</Link></li>
+            <li aria-current="page">Contact Us</li>
+          </ol>
+          <h1 className="page-hero-title">Contact Us</h1>
+          <p className="page-hero-sub">
             Have a question? Reach out to our team. We're here Mon–Sat, 9AM to 7PM.
           </p>
         </div>
       </section>
 
-      <section className="section" id="contact-section" style={{ paddingTop: '0' }}>
+      <section className="section" id="contact-section">
         <div className="container">
           <div className="contact-grid">
             {/* Info */}
-            <div className="contact-info animate-fade-up">
-              <h3 style={{ color: 'var(--navy)', marginBottom: '1.5rem' }}>Contact Information</h3>
+            <div className="contact-info">
+              <h2 className="contact-card-title">Contact Information</h2>
               {[
                 { icon: <Phone size={20} />, label: 'Phone', value: COMPANY.phone, href: `tel:${COMPANY.phone}` },
                 { icon: <Phone size={20} />, label: 'Alternate', value: COMPANY.phone2, href: `tel:${COMPANY.phone2}` },
@@ -123,7 +127,7 @@ export default function ContactPage() {
                 { icon: <Clock size={20} />, label: 'Hours',  value: COMPANY.hours },
               ].map((c, i) => (
                 <div key={i} className="contact-info-item">
-                  <div className="ci-icon">{c.icon}</div>
+                  <div className="ci-icon" aria-hidden="true">{c.icon}</div>
                   <div>
                     <div className="ci-label">{c.label}</div>
                     {c.href
@@ -136,11 +140,11 @@ export default function ContactPage() {
             </div>
 
             {/* Form */}
-            <div className="contact-form-card animate-fade-up delay-200">
+            <div className="contact-form-card">
               {sent ? (
-                <div className="contact-success">
-                  <CheckCircle size={48} style={{ color: 'var(--green)' }} />
-                  <h3 style={{ fontWeight: 800 }}>Message Sent!</h3>
+                <div className="contact-success" role="status">
+                  <CheckCircle size={48} style={{ color: 'var(--green)' }} aria-hidden="true" />
+                  <h2 style={{ fontWeight: 700 }}>Message Sent!</h2>
                   <p>Our team will get back to you within 24 business hours.</p>
                   <button className="btn btn-primary" onClick={() => { setSent(false); setForm({ name:'',email:'',phone:'',subject:'',message:'', botField: '' }); }}>
                     Send Another
@@ -148,11 +152,11 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <>
-                  <h3 style={{ color: 'var(--navy)', marginBottom: '1.5rem', fontWeight: 800 }}>Send a Message</h3>
-                  
+                  <h2 className="contact-card-title">Send a Message</h2>
+
                   {error && (
-                    <div style={{ padding: '0.875rem', background: '#fef2f2', color: '#b91c1c', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.9rem', fontWeight: '500' }}>
-                      <AlertTriangle size={18} /> {error}
+                    <div role="alert" style={{ padding: '0.875rem 1rem', background: '#fde8e8', color: '#9b1c1c', border: '1px solid #f5b5b5', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.95rem', fontWeight: '500' }}>
+                      <AlertTriangle size={18} aria-hidden="true" /> {error}
                     </div>
                   )}
 
@@ -187,11 +191,11 @@ export default function ContactPage() {
                       <textarea id="contact-message" className="form-control" required placeholder="Write your message here..." rows={5}
                         value={form.message} onChange={e => setForm({...form, message: e.target.value})} />
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', opacity: loading ? 0.7 : 1 }} id="contact-submit-btn" disabled={loading}>
+                    <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} id="contact-submit-btn" disabled={loading}>
                       {loading ? (
-                        <div className="spinner" style={{ width: '16px', height: '16px', borderTopColor: '#fff', margin: '0 auto' }} />
+                        <><div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: 'rgba(255,255,255,0.4)', borderTopColor: '#fff' }} /> Sending...</>
                       ) : (
-                        <><Send size={16} /> Send Message</>
+                        <><Send size={16} aria-hidden="true" /> Send Message</>
                       )}
                     </button>
                   </form>
@@ -203,23 +207,22 @@ export default function ContactPage() {
       </section>
       <Footer />
       <style>{`
-        .page-hero { padding: 6rem 0 4rem; text-align: center; }
-        .page-hero-title { color: var(--navy); margin:.75rem 0 1rem; }
-        .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:3rem; align-items:start; }
-        .contact-info { background:var(--navy); border-radius:var(--radius-xl); padding:2.5rem; }
-        .contact-info h3 { color:#fff !important; }
-        .contact-info-item { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; }
+        .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:2rem; align-items:start; }
+        .contact-card-title { font-size:1.3rem; color:var(--navy); margin-bottom:1.5rem; font-weight:700; }
+        .contact-info { background:var(--off-white); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:2rem; }
+        .contact-info-item { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; }
+        .contact-info-item:last-child { margin-bottom:0; }
         .ci-icon {
-          width:40px; height:40px; background:rgba(0,184,169,.15); border-radius:var(--radius-md);
+          width:44px; height:44px; background:var(--cyan); border-radius:var(--radius-lg);
           display:flex; align-items:center; justify-content:center; color:var(--teal); flex-shrink:0;
         }
-        .ci-label { font-size:.72rem; font-weight:700; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.2rem; }
-        .ci-value { font-size:.9rem; color:rgba(255,255,255,.8); line-height:1.5; }
-        .ci-value.link { text-decoration:none; color:var(--teal-light); }
-        .ci-value.link:hover { color:#fff; }
-        .contact-form-card { background:#fff; border-radius:var(--radius-xl); padding:2.5rem; box-shadow:var(--shadow-md); border:1px solid var(--gray-100); }
+        .ci-label { font-size:.8rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.15rem; }
+        .ci-value { font-size:1rem; color:var(--navy); line-height:1.5; }
+        .ci-value.link { text-decoration:none; color:var(--teal); font-weight:600; }
+        .ci-value.link:hover { text-decoration:underline; }
+        .contact-form-card { background:#fff; border-radius:var(--radius-lg); padding:2rem; border:1px solid var(--gray-200); }
         .contact-success { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; padding:3rem; text-align:center; min-height:300px; }
-        .contact-success h3 { color:var(--navy); }
+        .contact-success h2 { color:var(--navy); }
         .contact-success p { color:var(--gray-500); }
         @media (max-width:900px) { .contact-grid { grid-template-columns:1fr; } }
       `}</style>

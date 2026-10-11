@@ -87,15 +87,15 @@ export default function RetailerOrders() {
       <main className="portal-main">
         <div className="portal-topbar">
           <div>
-            <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>My Orders</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>{orders.length} total orders</p>
+            <h1 style={{ color:'var(--navy)', fontSize:'1.2rem' }}>My Orders</h1>
+            <p style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>{orders.length} total orders</p>
           </div>
         </div>
         <div className="portal-content">
           {orders.length === 0 ? (
-            <div style={{ textAlign:'center', padding:'5rem', color:'var(--gray-400)' }}>
-              <ClipboardList size={56} style={{ opacity:.2, marginBottom:'1rem' }} />
-              <h3 style={{ color:'var(--gray-300)' }}>No Orders Yet</h3>
+            <div style={{ textAlign:'center', padding:'5rem 1rem', color:'var(--gray-500)' }}>
+              <ClipboardList size={56} style={{ opacity:.4, marginBottom:'1rem' }} aria-hidden="true" />
+              <h2 style={{ color:'var(--navy)', fontSize:'1.3rem', marginBottom:'.4rem' }}>No Orders Yet</h2>
               <p>Browse the product catalog and submit your first order.</p>
             </div>
           ) : (
@@ -121,11 +121,11 @@ export default function RetailerOrders() {
 
                     return (
                       <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(e)}>
-                        <td style={{ fontWeight:700, color:'var(--navy)', fontFamily:'var(--font-display)' }}>{e.id}</td>
+                        <td style={{ fontWeight:700, color:'var(--navy)', whiteSpace:'nowrap' }}>{e.id}</td>
                         <td>
                           <div style={{ fontWeight:600, color:'var(--navy)' }}>
                             {firstItem.productName}
-                            {items.length > 1 && <span style={{ fontSize: '.75rem', color: 'var(--gray-500)', marginLeft: '.4rem' }}>(+{items.length - 1} more)</span>}
+                            {items.length > 1 && <span style={{ fontSize: '.85rem', color: 'var(--gray-500)', marginLeft: '.4rem' }}>(+{items.length - 1} more)</span>}
                           </div>
                         </td>
                         <td style={{ color:'var(--gray-500)' }}>{firstItem.manufacturer || e.manufacturer || 'Multiple'}</td>
@@ -135,22 +135,27 @@ export default function RetailerOrders() {
                         <td>
                           <span className={`badge badge-${s.cls}`}>{s.icon} {s.label}</span>
                         </td>
-                        <td style={{ fontSize:'.8rem', color:'var(--gray-400)' }}>
+                        <td style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>
                           {new Date(e.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}
                         </td>
                         <td onClick={ev => ev.stopPropagation()}>
-                          {e.status === 'pending' && (
-                            <button className="btn btn-outline btn-sm" style={{ borderColor: 'var(--red)', color: 'var(--red)', padding: '.25rem .5rem', fontSize: '.75rem' }} 
-                              onClick={() => handleCancel(e.id)} title="Cancel Order">
-                              <XCircle size={14} /> Cancel
+                          <div style={{ display:'flex', gap:'.5rem', flexWrap:'wrap' }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setSelectedOrder(e)} aria-label={`View details of order ${e.id}`}>
+                              View
                             </button>
-                          )}
-                          {e.status === 'delivered' && (
-                            <button className="btn btn-outline btn-sm" style={{ padding: '.25rem .5rem', fontSize: '.75rem' }} 
-                              onClick={() => handlePrint(e)} title="Download Invoice">
-                              <FileText size={14} /> Invoice
-                            </button>
-                          )}
+                            {e.status === 'pending' && (
+                              <button className="btn btn-outline btn-sm" style={{ borderColor: 'var(--red)', color: 'var(--red)' }}
+                                onClick={() => handleCancel(e.id)} title="Cancel Order">
+                                <XCircle size={14} aria-hidden="true" /> Cancel
+                              </button>
+                            )}
+                            {e.status === 'delivered' && (
+                              <button className="btn btn-outline btn-sm"
+                                onClick={() => handlePrint(e)} title="Download Invoice">
+                                <FileText size={14} aria-hidden="true" /> Invoice
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -164,26 +169,26 @@ export default function RetailerOrders() {
 
       {selectedOrder && (
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth:'600px' }}>
+          <div className="modal-content" role="dialog" aria-modal="true" aria-label="Order details" onClick={e => e.stopPropagation()} style={{ maxWidth:'600px' }}>
             <div className="modal-header">
               <div>
-                <h4 style={{ color:'var(--navy)' }}>Order Details</h4>
-                <p style={{ fontSize:'.82rem', color:'var(--gray-400)', marginTop:'.2rem' }}>{selectedOrder.orderId}</p>
+                <h2 style={{ color:'var(--navy)', fontSize:'1.15rem' }}>Order Details</h2>
+                <p style={{ fontSize:'.9rem', color:'var(--gray-500)', marginTop:'.2rem' }}>{selectedOrder.orderId}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--gray-400)' }}>
-                <span style={{ fontSize: '1.2rem' }}>×</span>
+              <button className="btn btn-ghost btn-sm" onClick={() => setSelectedOrder(null)} aria-label="Close order details">
+                Close
               </button>
             </div>
             <div className="modal-body">
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'1.5rem' }}>
                 <div>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Date Submitted</div>
+                  <div style={{ fontSize:'.9rem', color:'var(--gray-500)', marginBottom:'.2rem' }}>Date Submitted</div>
                   <div style={{ fontWeight:700, color:'var(--navy)' }}>
                     {new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}
                   </div>
                 </div>
                 <div style={{ textAlign:'right' }}>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Status</div>
+                  <div style={{ fontSize:'.9rem', color:'var(--gray-500)', marginBottom:'.2rem' }}>Status</div>
                   <span className={`badge badge-${
                     selectedOrder.status==='approved' ? 'success' :
                     selectedOrder.status==='delivered' ? 'info' :
@@ -197,21 +202,21 @@ export default function RetailerOrders() {
 
               {selectedOrder.note && (
                 <div style={{ marginBottom: '1.5rem', background:'var(--gray-50)', padding:'.75rem', borderRadius:'var(--radius-md)' }}>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Order Note</div>
-                  <div style={{ fontSize:'.85rem', color:'var(--navy)' }}>{selectedOrder.note}</div>
+                  <div style={{ fontSize:'.9rem', color:'var(--gray-500)', marginBottom:'.2rem' }}>Order Note</div>
+                  <div style={{ fontSize:'.95rem', color:'var(--navy)' }}>{selectedOrder.note}</div>
                 </div>
               )}
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <h5 style={{ fontSize:'.9rem', color:'var(--navy)', marginBottom:'.5rem' }}>Items</h5>
+                <h3 style={{ fontSize:'1rem', color:'var(--navy)', marginBottom:'.5rem' }}>Items</h3>
                 <div style={{ background:'var(--gray-50)', borderRadius:'var(--radius-md)', padding:'.75rem' }}>
                   {(selectedOrder.items || []).map((item, idx) => (
                     <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'.5rem 0', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
                       <div>
-                        <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>{item.productName}</div>
-                        <div style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.95rem' }}>{item.productName}</div>
+                        <div style={{ fontSize: '.85rem', color: 'var(--gray-500)' }}>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</div>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.95rem' }}>
                         ₹{(item.quantity * item.price).toFixed(2)}
                       </div>
                     </div>
@@ -219,7 +224,7 @@ export default function RetailerOrders() {
                 </div>
               </div>
 
-              <div style={{ display:'flex', justifyContent:'space-between', padding:'.75rem 1rem', background:'rgba(13,148,136,0.05)', borderRadius:'var(--radius-md)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', padding:'.75rem 1rem', background:'var(--cyan)', borderRadius:'var(--radius-md)' }}>
                 <div style={{ fontWeight: 700, color:'var(--navy)' }}>Total Amount</div>
                 <div style={{ fontWeight: 800, color:'var(--teal)', fontSize:'1.1rem' }}>
                   ₹{(selectedOrder.totalAmount || (selectedOrder.items || []).reduce((acc, item) => acc + (item.quantity * item.price), 0)).toFixed(2)}
@@ -229,14 +234,14 @@ export default function RetailerOrders() {
               {selectedOrder.status === 'pending' && (
                 <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
                   <button className="btn btn-outline" style={{ borderColor: 'var(--red)', color: 'var(--red)' }} onClick={() => handleCancel(selectedOrder.id)}>
-                    <XCircle size={15} /> Cancel Order
+                    <XCircle size={16} aria-hidden="true" /> Cancel Order
                   </button>
                 </div>
               )}
               {selectedOrder.status === 'delivered' && (
                 <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
                   <button className="btn btn-primary" onClick={() => handlePrint(selectedOrder)}>
-                    <FileText size={15} /> Download Invoice
+                    <FileText size={16} aria-hidden="true" /> Download Invoice
                   </button>
                 </div>
               )}
@@ -250,7 +255,7 @@ export default function RetailerOrders() {
           <div style={{ marginBottom: '1rem', color: 'var(--navy)', fontWeight: 600, fontSize: '1.1rem' }}>
             Generating PDF... Please wait.
           </div>
-          <div style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+          <div style={{ border: '1px solid var(--gray-200)' }}>
             <InvoicePrint order={printOrder} user={user} />
           </div>
         </div>

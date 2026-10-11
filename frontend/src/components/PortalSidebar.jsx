@@ -57,7 +57,7 @@ export default function PortalSidebar({ title }) {
             <div className="sb-brand-sub">{user?.role === 'admin' ? 'Admin Panel' : 'Retailer Portal'}</div>
           </div>
         )}
-        <button className="sb-collapse-btn" onClick={() => setCollapsed(c => !c)} id="sidebar-collapse-btn">
+        <button className="sb-collapse-btn" onClick={() => setCollapsed(c => !c)} id="sidebar-collapse-btn" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
@@ -71,7 +71,7 @@ export default function PortalSidebar({ title }) {
           <div className="sb-user-info">
             <div className="sb-user-name">{user?.storeName || user?.name}</div>
             <div className={`sb-user-role ${user?.role}`}>
-              {user?.role === 'admin' ? '⚡ Administrator' : '🏪 Retailer'}
+              {user?.role === 'admin' ? 'Administrator' : 'Retailer'}
             </div>
           </div>
         )}
@@ -92,7 +92,7 @@ export default function PortalSidebar({ title }) {
               <Icon size={18} className="sb-link-icon" />
               {!collapsed && <span>{item.label}</span>}
               {!collapsed && item.to === '/portal/cart' && cart?.length > 0 && (
-                <span style={{ marginLeft:'auto', background:'var(--red)', color:'#fff', fontSize:'.7rem', fontWeight:800, padding:'.1rem .45rem', borderRadius:'20px' }}>
+                <span style={{ marginLeft:'auto', background:'var(--red)', color:'#fff', fontSize:'.8rem', fontWeight:800, padding:'.1rem .5rem', borderRadius:'20px' }}>
                   {cart.length}
                 </span>
               )}
@@ -129,59 +129,56 @@ export default function PortalSidebar({ title }) {
 
       {/* Mobile Topbar */}
       <div className="sb-mobile-topbar" id="mobile-topbar">
-        <button className="sb-mobile-menu-btn" onClick={() => setMobileOpen(true)} id="mobile-sidebar-btn">
+        <button className="sb-mobile-menu-btn" onClick={() => setMobileOpen(true)} id="mobile-sidebar-btn" aria-label="Open menu">
           <Menu size={22} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <img src="/netLogo.jpeg" alt="" style={{ width: 32, borderRadius: 8 }} />
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', color: 'var(--navy)' }}>
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--navy)' }}>
             {title || 'Portal'}
           </span>
         </div>
-        <button className="sb-mobile-notif-btn" id="mobile-notif-btn">
+        <button className="sb-mobile-notif-btn" id="mobile-notif-btn" aria-label="Notifications">
           <Bell size={20} />
         </button>
       </div>
 
       <style>{`
-        .portal-sidebar { width:260px; min-height:100vh; background:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:200; transition:width var(--transition); overflow:hidden; border-right: 1px solid var(--gray-100); }
+        .portal-sidebar { width:260px; min-height:100vh; background:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:200; overflow:hidden; border-right: 1px solid var(--gray-200); }
         .portal-sidebar.collapsed { width: 76px; }
-        
-        .sb-header { padding:1.5rem 1.25rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gray-50); position:relative; }
-        .sb-brand { display:flex; align-items:center; gap:0.75rem; overflow:hidden; padding: 1.25rem; }
-        .sb-logo { width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        .sb-brand-name { font-family:var(--font-display); font-size:1.1rem; font-weight:800; color:var(--navy); white-space:nowrap; letter-spacing: -0.02em; }
-        .sb-brand-sub  { font-size:0.65rem; color:var(--teal); letter-spacing:0.12em; text-transform:uppercase; white-space:nowrap; font-weight: 700; margin-top: 0.1rem; }
-        .sb-collapse-btn { position:absolute; right:-14px; top:50%; transform:translateY(-50%); width:28px; height:28px; background:#fff; color:var(--navy); border:1px solid var(--gray-200); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.05); z-index:10; transition: var(--transition); }
-        .sb-collapse-btn:hover { transform: translateY(-50%) scale(1.1); color: var(--teal); border-color: var(--teal); }
-        
-        .sb-user { display:flex; align-items:center; gap:0.85rem; padding:1.25rem; border-bottom:1px solid var(--gray-50); background: var(--gray-50); }
-        .sb-user-avatar { width:42px; height:42px; background:linear-gradient(135deg, var(--teal), var(--cyan)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: 0 4px 12px rgba(0,184,169,0.2); }
-        .sb-user-name { font-size:0.9rem; font-weight:700; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .sb-user-role { font-size:0.7rem; margin-top:3px; white-space:nowrap; font-weight: 600; }
+
+        .sb-brand { display:flex; align-items:center; gap:0.75rem; overflow:hidden; padding: 1.25rem; position: relative; border-bottom: 1px solid var(--gray-200); }
+        .sb-logo { width:40px; height:40px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+        .sb-brand-name { font-size:1.1rem; font-weight:800; color:var(--navy); white-space:nowrap; line-height: 1.1; }
+        .sb-brand-sub  { font-size:0.8rem; color:var(--teal); white-space:nowrap; font-weight: 700; margin-top: 0.15rem; }
+        .sb-collapse-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:32px; height:32px; background:#fff; color:var(--navy); border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; }
+        .sb-collapse-btn:hover { color: var(--teal); border-color: var(--teal); background: var(--cyan); }
+        .portal-sidebar.collapsed .sb-collapse-btn { right: 22px; }
+
+        .sb-user { display:flex; align-items:center; gap:0.85rem; padding:1rem 1.25rem; border-bottom:1px solid var(--gray-200); background: var(--off-white); }
+        .sb-user-avatar { width:42px; height:42px; background:var(--teal); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+        .sb-user-name { font-size:0.95rem; font-weight:700; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .sb-user-role { font-size:0.85rem; margin-top:2px; white-space:nowrap; font-weight: 600; }
         .sb-user-role.admin   { color:var(--teal); }
         .sb-user-role.retailer{ color:var(--gray-500); }
-        
-        .sb-nav { flex:1; padding:1.25rem 0.85rem; display:flex; flex-direction:column; gap:0.4rem; overflow-y:auto; }
-        .sb-link { display:flex; align-items:center; gap:0.85rem; padding:0.85rem 1rem; color:var(--gray-500); font-size:0.92rem; font-weight:600; border-radius:var(--radius-lg); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration:none; border:none; background:transparent; cursor:pointer; width:100%; white-space:nowrap; }
-        .sb-link:hover { color:var(--navy); background:var(--gray-50); transform: translateX(4px); }
-        .sb-link.active { color:var(--teal); background:rgba(0,184,169,0.08); font-weight: 700; transform: translateX(4px); }
-        .sb-link-icon { flex-shrink:0; transition: var(--transition); color: inherit; }
-        .sb-link:hover .sb-link-icon { transform: scale(1.1); color: var(--teal); }
-        .sb-link.active .sb-link-icon { color: var(--teal); transform: scale(1.1); }
-        
-        .sb-footer { padding:1rem 0.85rem; border-top:1px solid var(--gray-50); }
-        .sb-logout { color:var(--red); justify-content: center; background: rgba(229,57,53,0.05); }
-        .sb-logout:hover { background:rgba(229,57,53,0.1); color:var(--red); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(229,57,53,0.1); }
-        .sb-logout.active { transform: none; box-shadow: none; }
-        
+
+        .sb-nav { flex:1; padding:1rem 0.75rem; display:flex; flex-direction:column; gap:0.25rem; overflow-y:auto; }
+        .sb-link { display:flex; align-items:center; gap:0.85rem; min-height:46px; padding:0.6rem 1rem; color:var(--navy-mid); font-size:1rem; font-weight:500; border-radius:8px; text-decoration:none; border:none; border-left:4px solid transparent; background:transparent; cursor:pointer; width:100%; white-space:nowrap; }
+        .sb-link:hover { color:var(--teal-dark); background:var(--gray-100); }
+        .sb-link.active { color:var(--teal-dark); background:var(--cyan); font-weight: 700; border-left-color: var(--teal); }
+        .sb-link-icon { flex-shrink:0; color: inherit; }
+
+        .sb-footer { padding:0.75rem; border-top:1px solid var(--gray-200); }
+        .sb-logout { color:var(--red); justify-content: center; border: 1px solid #f0b8b8; border-left-width: 1px; background: #fff; }
+        .sb-logout:hover { background:#fde8e8; color:#9b1c1c; }
+
         /* Mobile */
-        .sb-mobile-overlay { display:none; position:fixed; inset:0; z-index:300; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(4px); }
+        .sb-mobile-overlay { display:none; position:fixed; inset:0; z-index:300; background:rgba(18,22,24,0.5); }
         .mobile-sidebar { position:relative; width:280px !important; }
-        .sb-mobile-topbar { display:none; position:fixed; top:0; left:0; right:0; height:60px; background:#fff; border-bottom:1px solid var(--gray-100); box-shadow:var(--shadow-sm); z-index:100; align-items:center; justify-content:space-between; padding:0 1.25rem; }
-        .sb-mobile-menu-btn, .sb-mobile-notif-btn { background:var(--gray-50); border:1px solid var(--gray-100); border-radius: var(--radius-md); cursor:pointer; color:var(--navy); padding:0.4rem; display:flex; align-items:center; justify-content:center; transition: var(--transition); }
-        .sb-mobile-menu-btn:hover, .sb-mobile-notif-btn:hover { background: var(--gray-100); transform: translateY(-1px); }
-        
+        .sb-mobile-topbar { display:none; position:fixed; top:0; left:0; right:0; height:60px; background:#fff; border-bottom:1px solid var(--gray-200); z-index:100; align-items:center; justify-content:space-between; padding:0 1rem; }
+        .sb-mobile-menu-btn, .sb-mobile-notif-btn { background:#fff; border:1px solid var(--gray-300); border-radius: 8px; cursor:pointer; color:var(--navy); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; }
+        .sb-mobile-menu-btn:hover, .sb-mobile-notif-btn:hover { background: var(--gray-100); }
+
         @media(max-width:768px){.portal-sidebar{display:none}.sb-mobile-overlay{display:block}.sb-mobile-topbar{display:flex}}
       `}</style>
     </>

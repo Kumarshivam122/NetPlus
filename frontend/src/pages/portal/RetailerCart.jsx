@@ -86,42 +86,43 @@ export default function RetailerCart() {
       <main className="portal-main">
         <div className="portal-topbar">
           <div>
-            <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Your Cart</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>{cart.length} items in cart</p>
+            <h1 style={{ color:'var(--navy)', fontSize:'1.2rem' }}>Your Cart</h1>
+            <p style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>{cart.length} items in cart</p>
           </div>
         </div>
 
-        <div className="portal-content" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
-          
-          <div className="cart-items" style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <h5 style={{ marginBottom: '1.5rem', color: 'var(--navy)', borderBottom: '1px solid var(--gray-100)', paddingBottom: '1rem' }}>Order Items</h5>
-            
+        <div className="portal-content cart-layout">
+
+          <div className="cart-items cart-panel">
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--navy)', fontSize: '1.15rem', borderBottom: '1px solid var(--gray-200)', paddingBottom: '1rem' }}>Order Items</h2>
+
             {cart.length === 0 ? (
-              <div style={{ textAlign:'center', padding:'3rem', color:'var(--gray-400)' }}>
-                <ShoppingCart size={48} style={{ opacity:.3, marginBottom:'.75rem' }} />
+              <div style={{ textAlign:'center', padding:'3rem', color:'var(--gray-500)' }}>
+                <ShoppingCart size={48} style={{ opacity:.4, marginBottom:'.75rem' }} aria-hidden="true" />
                 <p>Your cart is empty.</p>
-                <button className="btn btn-outline btn-sm" style={{ marginTop: '1rem' }} onClick={() => navigate('/portal/products')}>Browse Products</button>
+                <button className="btn btn-outline" style={{ marginTop: '1rem' }} onClick={() => navigate('/portal/products')}>Browse Products</button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {cart.map((item, index) => (
-                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius-md)' }}>
+                  <div key={index} className="cart-row">
                     <div>
                       <div style={{ fontWeight: 700, color: 'var(--navy)' }}>{item.productName}</div>
-                      <div style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{item.manufacturer}</div>
-                      <div style={{ fontSize: '.85rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{item.price.toFixed(2)} per {item.unit}</div>
+                      <div style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.manufacturer}</div>
+                      <div style={{ fontSize: '.95rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{item.price.toFixed(2)} per {item.unit}</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div className="cart-row-controls">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                        <input type="number" min="1" className="form-control" style={{ width: '70px', padding: '.25rem .5rem' }} 
+                        <input type="number" min="1" className="form-control" style={{ width: '84px' }}
+                          aria-label={`Quantity of ${item.productName}`}
                           value={item.quantity} onChange={(e) => updateQuantity(index, Number(e.target.value))} />
-                        <span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>{item.unit}</span>
+                        <span style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.unit}</span>
                       </div>
-                      <div style={{ fontWeight: 700, color: 'var(--navy)', minWidth: '80px', textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--navy)', minWidth: '90px', textAlign: 'right' }}>
                         ₹{(item.price * item.quantity).toFixed(2)}
                       </div>
-                      <button onClick={() => removeFromCart(index)} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', opacity: 0.7 }}>
-                        <Trash2 size={16} />
+                      <button className="btn btn-ghost btn-sm" onClick={() => removeFromCart(index)} aria-label={`Remove ${item.productName} from cart`} style={{ color: 'var(--red)' }}>
+                        <Trash2 size={16} aria-hidden="true" /> Remove
                       </button>
                     </div>
                   </div>
@@ -130,31 +131,31 @@ export default function RetailerCart() {
             )}
           </div>
 
-          <div className="cart-summary" style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <h5 style={{ marginBottom: '1.5rem', color: 'var(--navy)' }}>Order Summary</h5>
-            
+          <div className="cart-summary cart-panel">
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--navy)', fontSize: '1.15rem' }}>Order Summary</h2>
+
             <div className="form-group">
-              <label className="form-label">Order Notes</label>
-              <textarea className="form-control" rows={2} placeholder="Delivery instructions..."
+              <label className="form-label" htmlFor="cart-note">Order Notes</label>
+              <textarea id="cart-note" className="form-control" rows={2} placeholder="Delivery instructions"
                 value={note} onChange={e => setNote(e.target.value)} />
             </div>
 
             <div className="form-group" style={{ marginTop: '1rem' }}>
-              <label className="form-label">Apply Coupon</label>
+              <label className="form-label" htmlFor="cart-coupon">Apply Coupon</label>
               <div style={{ display:'flex', gap:'.5rem' }}>
-                <input className="form-control" type="text" placeholder="e.g. SUMMER20" style={{ textTransform: 'uppercase' }}
+                <input id="cart-coupon" className="form-control" type="text" placeholder="e.g. SUMMER20" style={{ textTransform: 'uppercase' }}
                   value={coupon} onChange={e => { setCoupon(e.target.value); setCouponMsg({text:'', type:''}); }} />
                 <button type="button" className="btn btn-outline" onClick={() => handleApplyCoupon()}>Apply</button>
               </div>
               {couponMsg.text && (
-                <div style={{ fontSize:'.75rem', marginTop:'.25rem', color: couponMsg.type === 'error' ? 'var(--red)' : couponMsg.type === 'info' ? 'var(--gray-400)' : 'var(--green)' }}>
+                <div role="status" style={{ fontSize:'.9rem', marginTop:'.4rem', fontWeight: 500, color: couponMsg.type === 'error' ? 'var(--red)' : couponMsg.type === 'info' ? 'var(--gray-500)' : 'var(--green)' }}>
                   {couponMsg.text}
                 </div>
               )}
               
               {availableCoupons.length > 0 && (
                 <div style={{ marginTop: '1rem' }}>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.4rem', fontWeight:600 }}>Available Coupons</div>
+                  <div style={{ fontSize:'.9rem', color:'var(--gray-500)', marginBottom:'.4rem', fontWeight:600 }}>Available Coupons</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
                     {availableCoupons.map(c => (
                       <button 
@@ -162,8 +163,8 @@ export default function RetailerCart() {
                         type="button"
                         onClick={() => handleApplyCoupon(c.code)}
                         style={{
-                          background: 'var(--teal-light)', color: 'var(--teal-dark)', border: '1px dashed var(--teal)',
-                          padding: '.25rem .75rem', borderRadius: '1rem', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer'
+                          background: 'var(--cyan)', color: 'var(--teal-dark)', border: '1px dashed var(--teal)',
+                          padding: '.35rem .9rem', minHeight: '36px', borderRadius: '1rem', fontSize: '.9rem', fontWeight: 700, cursor: 'pointer'
                         }}>
                         {c.code} ({c.discountPercentage}%)
                       </button>
@@ -173,8 +174,8 @@ export default function RetailerCart() {
               )}
             </div>
 
-            <div style={{ background:'rgba(13,148,136,0.05)', borderRadius:'var(--radius-md)', padding:'1rem', marginTop:'1.5rem', display:'flex', flexDirection:'column', gap:'.5rem' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--gray-500)' }}>
+            <div style={{ background:'var(--cyan)', borderRadius:'var(--radius-md)', padding:'1rem', marginTop:'1.5rem', display:'flex', flexDirection:'column', gap:'.5rem' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.95rem', color:'var(--gray-500)' }}>
                 <span>Subtotal</span>
                 <span>₹{subTotal.toFixed(2)}</span>
               </div>
@@ -204,23 +205,31 @@ export default function RetailerCart() {
             </div>
 
             {totalAmount > 0 && totalAmount < 1500 && (
-              <div style={{ color: 'var(--red)', fontSize: '.85rem', marginTop: '1rem', textAlign: 'center', fontWeight: 600 }}>
+              <div role="alert" style={{ color: 'var(--red)', fontSize: '.95rem', marginTop: '1rem', textAlign: 'center', fontWeight: 600 }}>
                 Minimum order amount is ₹1500
               </div>
             )}
-            
-            <button 
-              className="btn btn-primary" 
-              style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }}
+
+            <button
+              className="btn btn-primary btn-lg"
+              style={{ width: '100%', marginTop: '1.5rem' }}
               disabled={cart.length === 0 || isSubmitting || totalAmount < 1500}
               onClick={handleSubmit}
             >
-              <CheckCircle size={18} /> {isSubmitting ? 'Placing Order...' : 'Place Order'}
+              <CheckCircle size={18} aria-hidden="true" /> {isSubmitting ? 'Placing Order...' : 'Place Order'}
             </button>
           </div>
 
         </div>
       </main>
+
+      <style>{`
+        .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
+        .cart-panel { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.5rem; }
+        .cart-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); }
+        .cart-row-controls { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        @media (max-width: 1100px) { .cart-layout { grid-template-columns: 1fr; } }
+      `}</style>
     </div>
   );
 }

@@ -36,3 +36,7 @@ backend/uploads/
 test_*.js
 backend/test_*.js
 backend/fix_db.js
+
+# Backups and snapshots
+*_backup*/
+*_snapshot*/

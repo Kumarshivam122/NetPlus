@@ -40,7 +40,7 @@ export default function AdminOrders() {
         <div className="portal-topbar">
           <div>
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Retailer Orders</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>{orders.length} total orders</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{orders.length} total orders</p>
           </div>
         </div>
         <div className="portal-content">
@@ -49,16 +49,16 @@ export default function AdminOrders() {
               <Search size={16} style={{ color:'var(--gray-400)' }} />
               <input id="admin-enq-search" placeholder="Search product or retailer..."
                 value={search} onChange={e => setSearch(e.target.value)} />
-              {search && <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }} onClick={()=>setSearch('')}><X size={14}/></button>}
+              {search && <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }} aria-label="Clear search" onClick={()=>setSearch('')}><X size={16} aria-hidden="true"/></button>}
             </div>
             <div className="filter-chips">
               {[
                 { val:'all',      label:'All' },
-                { val:'pending',  label:'⏳ Pending' },
-                { val:'approved', label:'✅ Approved' },
-                { val:'delivered',label:'📦 Delivered' },
-                { val:'rejected', label:'❌ Rejected' },
-                { val:'cancelled',label:'🚫 Cancelled' },
+                { val:'pending',  label:'Pending' },
+                { val:'approved', label:'Approved' },
+                { val:'delivered',label:'Delivered' },
+                { val:'rejected', label:'Rejected' },
+                { val:'cancelled',label:'Cancelled' },
               ].map(f => (
                 <button key={f.val} className={`chip${filter===f.val?' active':''}`}
                   onClick={() => setFilter(f.val)} id={`enq-filter-${f.val}`}>{f.label}</button>
@@ -93,15 +93,15 @@ export default function AdminOrders() {
 
                     return (
                     <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(e)}>
-                      <td style={{ fontWeight:700, color:'var(--navy)', fontSize:'.82rem' }}>{e.id}</td>
+                      <td style={{ fontWeight:700, color:'var(--navy)', fontSize:'0.875rem', whiteSpace:'nowrap' }}>{e.id}</td>
                       <td style={{ fontWeight:600 }}>{e.userName}</td>
                       <td>
                         <div style={{ fontWeight:600, color:'var(--navy)' }}>
                           {firstItem.productName}
-                          {items.length > 1 && <span style={{ fontSize: '.75rem', color: 'var(--gray-500)', marginLeft: '.4rem' }}>(+{items.length - 1} more)</span>}
+                          {items.length > 1 && <span style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginLeft: '.4rem' }}>(+{items.length - 1} more)</span>}
                         </div>
                       </td>
-                      <td style={{ color:'var(--gray-500)', fontSize:'.82rem' }}>{firstItem.manufacturer || e.manufacturer || 'Multiple'}</td>
+                      <td style={{ color:'var(--gray-500)', fontSize:'0.875rem' }}>{firstItem.manufacturer || e.manufacturer || 'Multiple'}</td>
                       <td style={{ fontWeight:700 }}>₹{Number(totalAmt).toFixed(2)}</td>
                       <td>
                         <span className={`badge badge-${
@@ -115,34 +115,34 @@ export default function AdminOrders() {
                           {e.status}
                         </span>
                       </td>
-                      <td style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>
+                      <td style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>
                         {new Date(e.createdAt).toLocaleDateString('en-IN')}
                       </td>
                       <td>
-                        <div style={{ display:'flex', gap:'.35rem' }} onClick={(ev) => ev.stopPropagation()}>
+                        <div style={{ display:'flex', gap:'.35rem', flexWrap:'wrap' }} onClick={(ev) => ev.stopPropagation()}>
                           {e.status === 'pending' && (
                             <>
                               <button className="btn btn-primary btn-sm" title="Approve"
                                 onClick={() => handleStatus(e.id,'approved')} id={`approve-enq-${e.id}`}>
-                                <CheckCircle size={13} />
+                                <CheckCircle size={14} aria-hidden="true" /> Approve
                               </button>
                               <button className="btn btn-danger btn-sm" title="Reject"
                                 onClick={() => handleStatus(e.id,'rejected')} id={`reject-enq-${e.id}`}>
-                                <XCircle size={13} />
+                                <XCircle size={14} aria-hidden="true" /> Reject
                               </button>
                             </>
                           )}
                           {e.status === 'approved' && (
                             <button className="btn btn-success btn-sm" title="Mark Delivered" style={{ background: 'var(--teal)', borderColor: 'var(--teal)' }}
                               onClick={() => handleStatus(e.id,'delivered')} id={`complete-enq-${e.id}`}>
-                              <CheckCircle size={13} />
+                              <CheckCircle size={14} aria-hidden="true" /> Mark Delivered
                             </button>
                           )}
 
                           {e.status !== 'pending' && e.status !== 'cancelled' && e.status !== 'returned' && e.status !== 'refunded' && (
                             <button className="btn btn-ghost btn-sm" title="Mark Pending"
                               onClick={() => handleStatus(e.id,'pending')} id={`pending-enq-${e.id}`}>
-                              <Clock size={13} />
+                              <Clock size={14} aria-hidden="true" /> Mark Pending
                             </button>
                           )}
                           {e.status === 'approved' && (
@@ -150,7 +150,7 @@ export default function AdminOrders() {
                               onClick={() => {
                                 if (window.confirm("Cancel this order?")) handleStatus(e.id,'cancelled');
                               }} id={`cancel-enq-${e.id}`}>
-                              <XCircle size={13} />
+                              <XCircle size={14} aria-hidden="true" /> Cancel
                             </button>
                           )}
                         </div>
@@ -171,7 +171,7 @@ export default function AdminOrders() {
             <div className="modal-header">
               <div>
                 <h4 style={{ color:'var(--navy)' }}>Order Details</h4>
-                <p style={{ fontSize:'.82rem', color:'var(--gray-400)', marginTop:'.2rem' }}>{selectedOrder.orderId}</p>
+                <p style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginTop:'.2rem' }}>{selectedOrder.orderId}</p>
               </div>
               <button onClick={() => setSelectedOrder(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--gray-400)' }}>
                 <X size={20} />
@@ -180,11 +180,11 @@ export default function AdminOrders() {
             <div className="modal-body">
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'1.5rem' }}>
                 <div>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Retailer</div>
+                  <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Retailer</div>
                   <div style={{ fontWeight:700, color:'var(--navy)' }}>{selectedOrder.userName}</div>
                 </div>
                 <div style={{ textAlign:'right' }}>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Status</div>
+                  <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Status</div>
                   <span className={`badge badge-${
                     selectedOrder.status==='approved' ? 'success' :
                     selectedOrder.status==='delivered' ? 'info' :
@@ -198,7 +198,7 @@ export default function AdminOrders() {
 
               {selectedOrder.note && (
                 <div style={{ marginBottom: '1.5rem', background:'var(--gray-50)', padding:'.75rem', borderRadius:'var(--radius-md)' }}>
-                  <div style={{ fontSize:'.75rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Order Note</div>
+                  <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginBottom:'.2rem' }}>Order Note</div>
                   <div style={{ fontSize:'.85rem', color:'var(--navy)' }}>{selectedOrder.note}</div>
                 </div>
               )}
@@ -210,7 +210,7 @@ export default function AdminOrders() {
                     <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'.5rem 0', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>{item.productName}</div>
-                        <div style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</div>
                       </div>
                       <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>
                         ₹{(item.quantity * item.price).toFixed(2)}
@@ -220,7 +220,7 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              <div style={{ display:'flex', justifyContent:'space-between', padding:'.75rem 1rem', background:'rgba(13,148,136,0.05)', borderRadius:'var(--radius-md)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', padding:'.75rem 1rem', background:'var(--cyan)', borderRadius:'var(--radius-md)' }}>
                 <div style={{ fontWeight: 700, color:'var(--navy)' }}>Total Amount</div>
                 <div style={{ fontWeight: 800, color:'var(--teal)', fontSize:'1.1rem' }}>
                   ₹{(selectedOrder.totalAmount || (selectedOrder.items || []).reduce((acc, item) => acc + (item.quantity * item.price), 0)).toFixed(2)}

@@ -124,13 +124,13 @@ export default function InvoicePrint({ order, user }) {
         .invoice-header {
           display: flex;
           justify-content: space-between;
-          border-bottom: 2px solid #0f766e;
+          border-bottom: 2px solid #3c3c8f;
           padding-bottom: 20px;
           margin-bottom: 30px;
         }
 
         .invoice-logo h2 {
-          color: #0f766e;
+          color: #3c3c8f;
           font-weight: 800;
           margin: 0 0 5px 0;
           font-size: 28px;
@@ -181,12 +181,12 @@ export default function InvoicePrint({ order, user }) {
         }
         .invoice-summary-row.discount { color: #16a34a; }
         .invoice-summary-row.total {
-          border-top: 2px solid #0f766e;
+          border-top: 2px solid #3c3c8f;
           margin-top: 10px;
           padding-top: 10px;
           font-size: 18px;
           font-weight: 800;
-          color: #0f766e;
+          color: #3c3c8f;
         }
 
         .invoice-footer {

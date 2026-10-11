@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader } from 'lucide-react';
+import { Check, Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
 import { apiGetProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct, apiUploadProductImage } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSearchParams } from 'react-router-dom';
 
 export default function AdminProducts() {
   const categoryIconMap = {
@@ -19,7 +20,12 @@ export default function AdminProducts() {
   };
   const { addToast } = useToast();
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  // The header search sends admins here as /admin/products?q=term
+  const urlSearch = searchParams.get('q') || '';
+  const [search, setSearch] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
+  if (urlSearch !== prevUrlSearch) { setPrevUrlSearch(urlSearch); setSearch(urlSearch); }
   const [category, setCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -147,7 +153,7 @@ export default function AdminProducts() {
         <div className="portal-topbar">
           <div>
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Product Catalog</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>{products.length} products in database</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{products.length} products in database</p>
           </div>
           <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)} id="add-product-btn">
             <Plus size={15} /> Add Product
@@ -159,7 +165,7 @@ export default function AdminProducts() {
               <Search size={16} style={{ color:'var(--gray-400)' }} />
               <input id="admin-product-search" placeholder="Search product, generic, manufacturer..."
                 value={search} onChange={e => setSearch(e.target.value)} />
-              {search && <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }} onClick={()=>setSearch('')}><X size={14}/></button>}
+              {search && <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--gray-400)' }} aria-label="Clear search" onClick={()=>setSearch('')}><X size={16} aria-hidden="true"/></button>}
             </div>
             <div className="filter-chips">
               {CATEGORIES.map(c => (
@@ -192,7 +198,7 @@ export default function AdminProducts() {
               <tbody>
                 {filtered.map((p, i) => (
                   <tr key={p.id}>
-                    <td style={{ color:'var(--gray-400)', fontSize:'.8rem' }}>{i+1}</td>
+                    <td style={{ color:'var(--gray-400)', fontSize:'0.875rem' }}>{i+1}</td>
                     <td style={{ display: 'flex', gap: '0.25rem' }}>
                       <button className="btn btn-ghost btn-sm" title="Edit Product" style={{ color:'var(--teal)' }}
                         onClick={() => {
@@ -214,11 +220,11 @@ export default function AdminProducts() {
                           });
                           setShowAddModal(true);
                         }} id={`edit-product-${p.id}`}>
-                        <Edit size={13} />
+                        <Edit size={14} aria-hidden="true" /> Edit
                       </button>
                       <button className="btn btn-ghost btn-sm" title="Delete Product" style={{ color:'var(--red)' }}
                         onClick={() => handleDelete(p.id, p.name)} id={`delete-product-${p.id}`}>
-                        <Trash2 size={13} />
+                        <Trash2 size={14} aria-hidden="true" /> Delete
                       </button>
                     </td>
                     <td>
@@ -235,16 +241,16 @@ export default function AdminProducts() {
                       )}
                     </td>
                     <td style={{ fontWeight:700, color:'var(--navy)' }}>{p.name}</td>
-                    <td style={{ fontSize:'.82rem', color:'var(--gray-500)' }}>{p.generic}</td>
+                    <td style={{ fontSize:'0.875rem', color:'var(--gray-500)' }}>{p.generic}</td>
                     <td>{p.manufacturer}</td>
                     <td>
-                      <span className="badge badge-info" style={{ fontSize:'.68rem' }}>
+                      <span className="badge badge-info" style={{ fontSize:'0.875rem' }}>
                         {CATEGORIES.find(c=>c.id===p.category)?.label || p.category}
                       </span>
                     </td>
                     <td style={{ color:'var(--teal)', fontWeight:800, fontFamily:'var(--font-display)' }}>₹{Number(p.price).toFixed(2)}</td>
                     <td style={{ color:'var(--gray-400)', textDecoration:'line-through' }}>₹{Number(p.mrp).toFixed(2)}</td>
-                    <td style={{ fontSize:'.8rem' }}>{p.unit}</td>
+                    <td style={{ fontSize:'0.875rem' }}>{p.unit}</td>
                     <td>
                       <button 
                         onClick={() => handleToggleStock(p)}
@@ -265,8 +271,8 @@ export default function AdminProducts() {
                     </td>
                     <td>
                       {p.rx
-                        ? <span className="badge badge-danger" style={{ fontSize:'.68rem' }}>Rx</span>
-                        : <span className="badge badge-success" style={{ fontSize:'.68rem' }}>OTC</span>
+                        ? <span className="badge badge-danger" style={{ fontSize:'0.875rem' }}>Rx</span>
+                        : <span className="badge badge-success" style={{ fontSize:'0.875rem' }}>OTC</span>
                       }
                     </td>
                   </tr>
@@ -284,7 +290,7 @@ export default function AdminProducts() {
             <div className="modal-header">
               <div>
                 <h4 style={{ color:'var(--navy)' }}>{editingId ? 'Edit Product' : 'Add New Product'}</h4>
-                <p style={{ fontSize:'.82rem', color:'var(--gray-400)' }}>{editingId ? 'Update catalog details' : 'Insert into Supabase catalog'}</p>
+                <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{editingId ? 'Update catalog details' : 'Insert into Supabase catalog'}</p>
               </div>
               <button onClick={() => setShowAddModal(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--gray-400)' }}>
                 <X size={20} />
@@ -294,12 +300,12 @@ export default function AdminProducts() {
               <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Brand Name *</label>
+                    <label className="form-label" htmlFor="new-prod-name">Brand Name *</label>
                     <input className="form-control" required placeholder="e.g. Augmentin 625mg"
                       value={newProd.name} onChange={e => setNewProd({...newProd, name: e.target.value})} id="new-prod-name" />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Generic Composition *</label>
+                    <label className="form-label" htmlFor="new-prod-generic">Generic Composition *</label>
                     <input className="form-control" required placeholder="e.g. Amoxicillin + Clavulanic" list="generics-list"
                       value={newProd.generic} onChange={e => setNewProd({...newProd, generic: e.target.value})} id="new-prod-generic" />
                     <datalist id="generics-list">
@@ -310,7 +316,7 @@ export default function AdminProducts() {
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Manufacturer *</label>
+                    <label className="form-label" htmlFor="new-prod-mfr">Manufacturer *</label>
                     <input className="form-control" required placeholder="e.g. Cipla, Sun Pharma" list="manufacturers-list"
                       value={newProd.manufacturer} onChange={e => setNewProd({...newProd, manufacturer: e.target.value})} id="new-prod-mfr" />
                     <datalist id="manufacturers-list">
@@ -318,10 +324,10 @@ export default function AdminProducts() {
                     </datalist>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Category</label>
+                    <label className="form-label" htmlFor="new-prod-cat">Category</label>
                     <select className="form-control" value={newProd.category} onChange={e => setNewProd({...newProd, category: e.target.value})} id="new-prod-cat">
                       {CATEGORIES.filter(c => c.id !== 'all').map(c => (
-                        <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+                        <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
                   </div>
@@ -333,7 +339,7 @@ export default function AdminProducts() {
                     <div style={{ display: 'flex', gap: '2px', background: 'var(--gray-100)', borderRadius: '6px', padding: '2px' }}>
                       <button type="button" onClick={() => setImageMode('upload')}
                         style={{
-                          padding: '4px 10px', fontSize: '.75rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
+                          padding: '4px 10px', fontSize: '0.875rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
                           background: imageMode === 'upload' ? '#fff' : 'transparent',
                           color: imageMode === 'upload' ? 'var(--navy)' : 'var(--gray-400)',
                           boxShadow: imageMode === 'upload' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
@@ -343,7 +349,7 @@ export default function AdminProducts() {
                       </button>
                       <button type="button" onClick={() => setImageMode('url')}
                         style={{
-                          padding: '4px 10px', fontSize: '.75rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
+                          padding: '4px 10px', fontSize: '0.875rem', fontWeight: 600, border: 'none', borderRadius: '5px', cursor: 'pointer',
                           background: imageMode === 'url' ? '#fff' : 'transparent',
                           color: imageMode === 'url' ? 'var(--navy)' : 'var(--gray-400)',
                           boxShadow: imageMode === 'url' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
@@ -415,13 +421,13 @@ export default function AdminProducts() {
                         {imageUploading ? (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.5rem' }}>
                             <Loader size={24} color="var(--teal)" style={{ animation: 'spin 1s linear infinite' }} />
-                            <span style={{ fontSize: '.82rem', color: 'var(--gray-400)' }}>Uploading...</span>
+                            <span style={{ fontSize: '0.875rem', color: 'var(--gray-400)' }}>Uploading...</span>
                           </div>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.35rem' }}>
                             <Upload size={22} color="var(--gray-400)" />
-                            <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--navy)' }}>Click to upload or drag & drop</span>
-                            <span style={{ fontSize: '.72rem', color: 'var(--gray-400)' }}>JPG, PNG, WebP — Max 20KB</span>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--navy)' }}>Click to upload or drag & drop</span>
+                            <span style={{ fontSize: '0.875rem', color: 'var(--gray-400)' }}>JPG, PNG, WebP — Max 20KB</span>
                           </div>
                         )}
                       </div>
@@ -438,8 +444,8 @@ export default function AdminProducts() {
                           onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '.75rem', color: 'var(--green)', fontWeight: 600, margin: 0 }}>✓ Image set</p>
-                        <p style={{ fontSize: '.7rem', color: 'var(--gray-400)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{newProd.imageUrl}</p>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--green)', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}><Check size={14} aria-hidden="true" /> Image set</p>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--gray-400)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{newProd.imageUrl}</p>
                       </div>
                       <button type="button" onClick={() => setNewProd({...newProd, imageUrl: ''})}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px' }}
@@ -454,15 +460,15 @@ export default function AdminProducts() {
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Tax Included</label>
-                    <select className="form-control" value={newProd.taxIncluded} onChange={e => setNewProd({...newProd, taxIncluded: e.target.value === 'true'})}>
+                    <label className="form-label" htmlFor="new-prod-tax-incl">Tax Included</label>
+                    <select id="new-prod-tax-incl" className="form-control" value={newProd.taxIncluded} onChange={e => setNewProd({...newProd, taxIncluded: e.target.value === 'true'})}>
                       <option value="true">Yes (Tax Included in Price)</option>
                       <option value="false">No (Add Tax on top)</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Tax Percentage (%)</label>
-                    <input className="form-control" type="number" min="0" step="0.01" disabled={newProd.taxIncluded}
+                    <label className="form-label" htmlFor="new-prod-tax-pct">Tax Percentage (%)</label>
+                    <input id="new-prod-tax-pct" className="form-control" type="number" min="0" step="0.01" disabled={newProd.taxIncluded}
                       value={newProd.taxPercent} onChange={e => setNewProd({...newProd, taxPercent: e.target.value})} />
                   </div>
                 </div>
@@ -527,8 +533,8 @@ export default function AdminProducts() {
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Stock Availability</label>
-                    <select className="form-control" value={newProd.inStock} onChange={e => setNewProd({...newProd, inStock: e.target.value === 'true'})}>
+                    <label className="form-label" htmlFor="new-prod-stock">Stock Availability</label>
+                    <select id="new-prod-stock" className="form-control" value={newProd.inStock} onChange={e => setNewProd({...newProd, inStock: e.target.value === 'true'})}>
                       <option value="true">In Stock</option>
                       <option value="false">Out of Stock</option>
                     </select>
@@ -544,7 +550,7 @@ export default function AdminProducts() {
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Discount Percentage (%)</label>
+                    <label className="form-label" htmlFor="new-prod-discount">Discount Percentage (%)</label>
                     <input className="form-control" type="number" min="0" step="0.1" placeholder="e.g. 15"
                       value={newProd.discount} onChange={e => setNewProd({...newProd, discount: e.target.value})} id="new-prod-discount" />
                   </div>

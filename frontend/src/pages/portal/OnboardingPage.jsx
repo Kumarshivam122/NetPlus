@@ -60,6 +60,14 @@ export default function OnboardingPage() {
     setErrors(e => ({ ...e, [k]: '' }));
   };
 
+  // Lets keyboard users open the file picker on the upload boxes (Enter or Space)
+  const openOnKey = (inputId) => (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      document.getElementById(inputId).click();
+    }
+  };
+
   const handleFileChange = (e, setFileState, errorKey) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -152,7 +160,7 @@ export default function OnboardingPage() {
       <div className="auth-full-container animate-scale-in">
         
         <div className="auth-full-header">
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} className="auth-back-btn" style={{ position: 'absolute', left: 0, top: 0 }}><ArrowLeft size={16} /> Back</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} className="auth-back-btn" style={{ position: 'absolute', left: 0, top: 0 }}><ArrowLeft size={18} aria-hidden="true" /> Back</a>
           <img src="/netLogo.jpeg" alt="NET PLUS ENTERPRISES" className="auth-logo-small" />
           <div className="auth-brand-name-dark">NET PLUS ENTERPRISES</div>
           <div className="auth-brand-sub-dark">Medical Wholesale & Distribution</div>
@@ -171,16 +179,16 @@ export default function OnboardingPage() {
 
         <div className="auth-form-card" style={{ maxWidth: '700px', margin: '0 auto' }}>
           <div className="auth-form-header">
-            <h2>Complete Profile</h2>
+            <h1>Complete Profile</h1>
             <p>Fill in your shop details to get verified</p>
           </div>
 
           <form onSubmit={handleSubmit} id="onboarding-form">
             {/* Store Details */}
-            <div className="onb-section-title"><Store size={14} /> Store Details</div>
+            <div className="onb-section-title"><Store size={16} aria-hidden="true" /> Store Details</div>
 
             <div className="form-group">
-              <label className="form-label">Retailer / Store Name *</label>
+              <label className="form-label" htmlFor="onb-store-name">Retailer / Store Name *</label>
               <input className="form-control" type="text" placeholder="e.g. Apollo Pharmacy"
                 value={form.storeName} onChange={e => setF('storeName', e.target.value)} id="onb-store-name" />
               {errors.storeName && <div className="field-error">{errors.storeName}</div>}
@@ -188,23 +196,23 @@ export default function OnboardingPage() {
 
             <div className="onb-row">
               <div className="form-group">
-                <label className="form-label">Phone Number *</label>
+                <label className="form-label" htmlFor="onb-phone">Phone Number *</label>
                 <input className="form-control" type="tel" inputMode="tel" placeholder="10-digit mobile" maxLength={10}
                   value={form.phone} onChange={e => setF('phone', e.target.value.replace(/\D/g, '').slice(0, 10))} id="onb-phone" />
                 {errors.phone && <div className="field-error">{errors.phone}</div>}
               </div>
               <div className="form-group">
-                <label className="form-label">Alternate Phone</label>
+                <label className="form-label" htmlFor="onb-alt-phone">Alternate Phone</label>
                 <input className="form-control" type="tel" inputMode="tel" placeholder="Optional" maxLength={10}
                   value={form.alternatePhone} onChange={e => setF('alternatePhone', e.target.value.replace(/\D/g, '').slice(0, 10))} id="onb-alt-phone" />
               </div>
             </div>
 
             {/* Location */}
-            <div className="onb-section-title" style={{ marginTop: '1.25rem' }}><MapPin size={14} /> Location</div>
+            <div className="onb-section-title" style={{ marginTop: '1.25rem' }}><MapPin size={16} aria-hidden="true" /> Location</div>
 
             <div className="form-group">
-              <label className="form-label">Full Store Address *</label>
+              <label className="form-label" htmlFor="onb-address">Full Store Address *</label>
               <input className="form-control" type="text" placeholder="Street address, landmark"
                 value={form.storeAddress} onChange={e => setF('storeAddress', e.target.value)} id="onb-address" />
               {errors.storeAddress && <div className="field-error">{errors.storeAddress}</div>}
@@ -212,7 +220,7 @@ export default function OnboardingPage() {
 
             <div className="onb-row onb-row-3">
               <div className="form-group">
-                <label className="form-label">State</label>
+                <label className="form-label" htmlFor="onb-state">State</label>
                 <select className="form-control" value={form.state} onChange={e => { setF('state', e.target.value); setF('city', ''); }} id="onb-state">
                   {Object.keys(STATE_CITY_MAP).map(s => (
                     <option key={s} value={s}>{s}</option>
@@ -220,7 +228,7 @@ export default function OnboardingPage() {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">City *</label>
+                <label className="form-label" htmlFor="onb-city">City *</label>
                 <select className="form-control" value={form.city} onChange={e => setF('city', e.target.value)} id="onb-city" required>
                   <option value="" disabled>Select City</option>
                   {(STATE_CITY_MAP[form.state] || []).map(city => (
@@ -230,7 +238,7 @@ export default function OnboardingPage() {
                 {errors.city && <div className="field-error">{errors.city}</div>}
               </div>
               <div className="form-group">
-                <label className="form-label">Pincode *</label>
+                <label className="form-label" htmlFor="onb-pincode">Pincode *</label>
                 <input className="form-control" type="text" placeholder="6 digits" maxLength={6}
                   value={form.pincode} onChange={e => setF('pincode', e.target.value.replace(/\D/g, ''))} id="onb-pincode" 
                   pattern="^[1-9][0-9]{5}$" title="Please enter a valid 6-digit Indian PIN code." required
@@ -240,17 +248,17 @@ export default function OnboardingPage() {
             </div>
 
             {/* Documents */}
-            <div className="onb-section-title" style={{ marginTop: '1.25rem' }}><FileText size={14} /> Documents</div>
+            <div className="onb-section-title" style={{ marginTop: '1.25rem' }}><FileText size={16} aria-hidden="true" /> Documents</div>
 
             <div className="onb-row">
               <div className="form-group">
-                <label className="form-label">Drug Licence Number *</label>
+                <label className="form-label" htmlFor="onb-licence">Drug Licence Number *</label>
                 <input className="form-control" type="text" placeholder="e.g. MH-MZ-123456"
                   value={form.licenceNo} onChange={e => setF('licenceNo', e.target.value.toUpperCase())} id="onb-licence" />
                 {errors.licenceNo && <div className="field-error">{errors.licenceNo}</div>}
               </div>
               <div className="form-group">
-                <label className="form-label">GSTIN Number *</label>
+                <label className="form-label" htmlFor="onb-gstin">GSTIN Number *</label>
                 <input className="form-control" type="text" placeholder="e.g. 22AAAAA0000A1Z5"
                   value={form.gstin} onChange={e => setF('gstin', e.target.value.toUpperCase())} id="onb-gstin" />
                 {errors.gstin && <div className="field-error">{errors.gstin}</div>}
@@ -260,7 +268,7 @@ export default function OnboardingPage() {
             <div className="onb-row">
               <div className="form-group">
                 <label className="form-label">Upload Drug Licence (Page 1) *</label>
-                <div className="onb-upload" onClick={() => document.getElementById('licence-upload').click()}>
+                <div className="onb-upload" role="button" tabIndex={0} onKeyDown={openOnKey('licence-upload')} onClick={() => document.getElementById('licence-upload').click()}>
                   <input type="file" id="licence-upload" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => handleFileChange(e, setLicenceFile, 'licenceFile')} />
                   {licenceFile.file ? (
                     <>
@@ -280,7 +288,7 @@ export default function OnboardingPage() {
 
               <div className="form-group">
                 <label className="form-label">Upload Drug Licence (Page 2) (Optional)</label>
-                <div className="onb-upload" onClick={() => document.getElementById('licence2-upload').click()}>
+                <div className="onb-upload" role="button" tabIndex={0} onKeyDown={openOnKey('licence2-upload')} onClick={() => document.getElementById('licence2-upload').click()}>
                   <input type="file" id="licence2-upload" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => handleFileChange(e, setLicenceFile2, null)} />
                   {licenceFile2.file ? (
                     <>
@@ -301,7 +309,7 @@ export default function OnboardingPage() {
             <div className="onb-row">
               <div className="form-group">
                 <label className="form-label">GSTIN Document (Optional)</label>
-                <div className="onb-upload" onClick={() => document.getElementById('gstin-upload').click()}>
+                <div className="onb-upload" role="button" tabIndex={0} onKeyDown={openOnKey('gstin-upload')} onClick={() => document.getElementById('gstin-upload').click()}>
                   <input type="file" id="gstin-upload" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => handleFileChange(e, setGstinFile, null)} />
                   {gstinFile.file ? (
                     <>
@@ -321,7 +329,7 @@ export default function OnboardingPage() {
 
             <div className="form-group">
               <label className="form-label">Medical Store Photo *</label>
-              <div className="onb-upload" onClick={() => document.getElementById('shop-photo-upload').click()}>
+              <div className="onb-upload" role="button" tabIndex={0} onKeyDown={openOnKey('shop-photo-upload')} onClick={() => document.getElementById('shop-photo-upload').click()}>
                 <input type="file" id="shop-photo-upload" style={{ display: 'none' }} accept="image/*" onChange={e => handleFileChange(e, setShopPhoto, 'shopPhoto')} />
                 {shopPhoto.file ? (
                   <>
@@ -340,9 +348,9 @@ export default function OnboardingPage() {
               {errors.shopPhoto && <div className="field-error">{errors.shopPhoto}</div>}
             </div>
 
-            <button type="submit" className="btn btn-primary"
-              style={{ width: '100%', marginTop: '1rem', height: '48px' }} disabled={loading} id="onb-submit-btn">
-              {loading ? <span className="btn-spinner" /> : <><CheckCircle size={16} /> Submit for Verification</>}
+            <button type="submit" className="btn btn-primary btn-lg"
+              style={{ width: '100%', marginTop: '1rem' }} disabled={loading} id="onb-submit-btn">
+              {loading ? <><span className="btn-spinner" /> Submitting...</> : <><CheckCircle size={18} aria-hidden="true" /> Submit for Verification</>}
             </button>
           </form>
 
@@ -379,21 +387,19 @@ export default function OnboardingPage() {
           padding-top: 1rem;
         }
         .auth-logo-small {
-          width: 70px; height: 70px; border-radius: 14px; margin-bottom: 0.75rem;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          width: 70px; height: 70px; border-radius: 12px; margin-bottom: 0.75rem;
         }
-        .auth-brand-name-dark { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--navy); }
-        .auth-brand-sub-dark { font-size: 0.8rem; color: var(--gray-500); font-weight: 500; margin-top: 0.2rem; }
+        .auth-brand-name-dark { font-size: 1.25rem; font-weight: 800; color: var(--navy); }
+        .auth-brand-sub-dark { font-size: 0.95rem; color: var(--gray-500); font-weight: 500; margin-top: 0.2rem; }
 
         .auth-info-banner {
-          background: #fff;
+          background: var(--cyan);
           border-radius: var(--radius-lg);
-          padding: 1.5rem;
-          border: 1px solid var(--gray-200);
-          box-shadow: var(--shadow-sm);
+          padding: 1.25rem 1.5rem;
+          border: 1px solid #c9cde8;
         }
         .banner-quote {
-          font-style: italic; color: var(--gray-600); font-size: 0.9rem;
+          font-style: italic; color: var(--navy-mid); font-size: 1rem;
           text-align: center; margin-bottom: 1rem;
         }
         .banner-features {
@@ -401,45 +407,46 @@ export default function OnboardingPage() {
         }
         .banner-feat {
           display: flex; align-items: center; gap: 0.4rem;
-          font-size: 0.8rem; color: var(--navy); font-weight: 500;
+          font-size: 0.95rem; color: var(--navy); font-weight: 600;
         }
 
         .auth-back-btn {
           display: inline-flex; align-items: center; gap: 0.4rem;
-          color: var(--gray-500); font-size: 0.85rem; font-weight: 500;
-          text-decoration: none; transition: var(--transition-fast);
+          min-height: 44px;
+          color: var(--teal-dark); font-size: 1rem; font-weight: 600;
+          text-decoration: none;
         }
-        .auth-back-btn:hover { color: var(--navy); }
+        .auth-back-btn:hover { text-decoration: underline; }
         .auth-form-card {
-          background: #fff; border-radius: var(--radius-xl);
+          background: #fff; border-radius: var(--radius-lg);
           padding: 2.5rem; width: 100%;
-          box-shadow: var(--shadow-xl); border: 1px solid var(--gray-100);
+          border: 1px solid var(--gray-200);
         }
-        .auth-form-header { margin-bottom: 1.75rem; }
-        .auth-form-header h2 { color: var(--navy); font-size: 1.6rem; margin-bottom: 0.3rem; }
-        .auth-form-header p  { color: var(--gray-500); font-size: 0.9rem; }
-        .auth-note { text-align: center; font-size: 0.75rem; color: var(--gray-400); margin-top: 1rem; }
+        .auth-form-header { margin-bottom: 1.5rem; }
+        .auth-form-header h1, .auth-form-header h2 { color: var(--navy); font-size: 1.6rem; margin-bottom: 0.3rem; }
+        .auth-form-header p  { color: var(--gray-500); font-size: 1rem; }
+        .auth-note { text-align: center; font-size: 0.875rem; color: var(--gray-500); margin-top: 1rem; }
 
         .onb-section-title {
           display: flex; align-items: center; gap: 0.4rem;
-          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: var(--teal-dark);
-          margin-bottom: 0.75rem; padding-bottom: 0.4rem;
-          border-bottom: 1px solid var(--gray-100);
+          font-size: 0.9rem; font-weight: 700;
+          color: var(--teal-dark);
+          margin-bottom: 0.75rem; padding-bottom: 0.5rem;
+          border-bottom: 2px solid var(--cyan);
         }
         .onb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .onb-row-3 { grid-template-columns: 1fr 1fr 1fr; }
 
         .onb-upload {
-          cursor: pointer; border: 2px dashed var(--gray-200); border-radius: var(--radius-md);
-          padding: 1.25rem; text-align: center; transition: var(--transition-fast);
+          cursor: pointer; border: 2px dashed var(--border-input); border-radius: var(--radius-lg);
+          padding: 1.25rem; text-align: center; background: #fff;
           display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
         }
-        .onb-upload:hover { border-color: var(--teal); background: rgba(13,148,136,0.03); }
-        .onb-upload-name { font-weight: 600; font-size: 0.85rem; color: var(--navy); }
-        .onb-upload-hint { font-size: 0.75rem; color: var(--gray-400); }
+        .onb-upload:hover { border-color: var(--teal); background: var(--cyan); }
+        .onb-upload-name { font-weight: 600; font-size: 0.95rem; color: var(--navy); }
+        .onb-upload-hint { font-size: 0.85rem; color: var(--gray-500); }
 
-        .field-error { color: var(--red); font-size: 0.78rem; margin-top: 0.2rem; }
+        .field-error { color: var(--red); font-size: 0.9rem; margin-top: 0.25rem; font-weight: 500; }
 
         .btn-spinner {
           width: 18px; height: 18px;
@@ -448,12 +455,6 @@ export default function OnboardingPage() {
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
           display: inline-block;
-        }
-
-        .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.96); }
-          to { opacity: 1; transform: scale(1); }
         }
 
         @media (max-width: 768px) {

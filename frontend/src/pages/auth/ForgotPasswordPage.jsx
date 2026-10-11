@@ -73,18 +73,18 @@ export default function ForgotPasswordPage() {
           {step === 1 && (
             <>
               <div className="auth-header">
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(56, 178, 172, 0.1)', color: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <div className="auth-icon-badge" aria-hidden="true">
                   <Mail size={28} />
                 </div>
-                <h1 className="auth-title" style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)' }}>Forgot Password</h1>
+                <h1 className="auth-title">Forgot Password</h1>
                 <p className="auth-subtitle">Enter your email address to receive a 6-digit verification code.</p>
               </div>
 
               <form onSubmit={handleSendEmail} className="auth-form" id="forgot-password-form">
                 <div className="form-group">
-                  <label className="form-label">Email Address</label>
+                  <label className="form-label" htmlFor="forgot-password-email">Email Address</label>
                   <div className="input-with-icon">
-                    <Mail size={18} className="input-icon" />
+                    <Mail size={18} className="input-icon" aria-hidden="true" />
                     <input
                       type="email"
                       className="form-control"
@@ -102,8 +102,8 @@ export default function ForgotPasswordPage() {
                 </button>
 
                 <div className="auth-footer" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                  <Link to="/login" style={{ color: 'var(--teal)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
-                    <ArrowLeft size={16} /> Back to Login
+                  <Link to="/login" style={{ color: 'var(--teal)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', minHeight: '44px' }}>
+                    <ArrowLeft size={18} aria-hidden="true" /> Back to Login
                   </Link>
                 </div>
               </form>
@@ -113,18 +113,18 @@ export default function ForgotPasswordPage() {
           {step === 2 && (
             <>
               <div className="auth-header">
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(233, 127, 57, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <div className="auth-icon-badge" aria-hidden="true">
                   <Key size={28} />
                 </div>
-                <h1 className="auth-title" style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)' }}>Enter OTP</h1>
+                <h1 className="auth-title">Enter OTP</h1>
                 <p className="auth-subtitle">We sent a 6-digit code to <strong>{email}</strong>.</p>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="auth-form" id="verify-otp-form">
                 <div className="form-group">
-                  <label className="form-label">Verification Code (OTP)</label>
+                  <label className="form-label" htmlFor="otp-input">Verification Code (OTP)</label>
                   <div className="input-with-icon">
-                    <Key size={18} className="input-icon" />
+                    <Key size={18} className="input-icon" aria-hidden="true" />
                     <input
                       type="text"
                       className="form-control"
@@ -144,7 +144,7 @@ export default function ForgotPasswordPage() {
                 </button>
 
                 <div className="auth-footer" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                  <button type="button" onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontWeight: 500, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  <button type="button" onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'var(--teal-dark)', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', minHeight: '44px', textDecoration: 'underline' }}>
                     Didn't receive code? Change email
                   </button>
                 </div>
@@ -155,18 +155,18 @@ export default function ForgotPasswordPage() {
           {step === 3 && (
             <>
               <div className="auth-header">
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(56, 178, 172, 0.1)', color: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <div className="auth-icon-badge" aria-hidden="true">
                   <Lock size={28} />
                 </div>
-                <h1 className="auth-title" style={{ fontFamily: 'var(--font-display)', color: 'var(--navy)' }}>Create New Password</h1>
+                <h1 className="auth-title">Create New Password</h1>
                 <p className="auth-subtitle">Please enter your new password to secure your account.</p>
               </div>
 
               <form onSubmit={handleResetPassword} className="auth-form" id="new-password-form">
                 <div className="form-group">
-                  <label className="form-label">New Password</label>
+                  <label className="form-label" htmlFor="new-password-input">New Password</label>
                   <div className="input-with-icon">
-                    <Lock size={18} className="input-icon" />
+                    <Lock size={18} className="input-icon" aria-hidden="true" />
                     <input
                       type="password"
                       className="form-control"
@@ -189,10 +189,10 @@ export default function ForgotPasswordPage() {
 
           {step === 4 && (
             <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <div className="auth-icon-badge success" aria-hidden="true">
                 <CheckCircle size={32} />
               </div>
-              <h2 style={{ color: 'var(--navy)', marginBottom: '0.5rem', fontFamily: 'var(--font-display)' }}>Password Reset!</h2>
+              <h1 style={{ color: 'var(--navy)', marginBottom: '0.5rem', fontSize: '1.6rem' }}>Password Reset!</h1>
               <p style={{ color: 'var(--gray-500)', lineHeight: 1.6, marginBottom: '2rem' }}>
                 Your password has been successfully reset. You can now login with your new credentials.
               </p>
@@ -205,11 +205,13 @@ export default function ForgotPasswordPage() {
       </main>
 
       <style>{`
-        .auth-main { min-height: calc(100vh - 72px); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: var(--gray-50); }
-        .auth-card { background: #fff; border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 440px; box-shadow: var(--shadow-md); }
+        .auth-main { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: var(--off-white); }
+        .auth-card { background: #fff; border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 440px; border: 1px solid var(--gray-200); }
         .auth-header { text-align: center; margin-bottom: 2rem; }
-        .auth-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .auth-subtitle { color: var(--gray-500); font-size: 0.95rem; line-height: 1.5; }
+        .auth-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--navy); }
+        .auth-subtitle { color: var(--gray-500); font-size: 1rem; line-height: 1.5; }
+        .auth-icon-badge { width: 56px; height: 56px; border-radius: var(--radius-lg); background: var(--cyan); color: var(--teal); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+        .auth-icon-badge.success { background: #e4f4ea; color: var(--green); width: 64px; height: 64px; }
         .input-with-icon { position: relative; }
         .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); }
         .input-with-icon .form-control { padding-left: 2.5rem; }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, CheckCircle, XCircle, LogOut, Phone, Mail } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, LogOut, Phone, Mail, Search, Unlock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { COMPANY } from '../../data/store';
 
@@ -26,26 +26,26 @@ export default function PendingPage() {
 
         {status === 'pending' && (
           <>
-            <div className="pending-icon pending"><Clock size={48} /></div>
-            <h2>Registration Under Review</h2>
+            <div className="pending-icon pending" aria-hidden="true"><Clock size={48} /></div>
+            <h1>Registration Under Review</h1>
             <p>
               Your medical shop <strong>"{user?.storeName}"</strong> registration has been received.
               Our team is reviewing your drug licence and submitted documents.
             </p>
             <div className="pending-timeline">
-              <div className="pt-item done"><span>✅</span> Registration submitted</div>
-              <div className="pt-item done"><span>✅</span> Documents received</div>
-              <div className="pt-item current"><span>🔍</span> Under verification (1–2 business days)</div>
-              <div className="pt-item"><span>📧</span> Approval email will be sent</div>
-              <div className="pt-item"><span>🔓</span> Portal access granted</div>
+              <div className="pt-item done"><CheckCircle size={18} aria-hidden="true" /> Registration submitted</div>
+              <div className="pt-item done"><CheckCircle size={18} aria-hidden="true" /> Documents received</div>
+              <div className="pt-item current"><Search size={18} aria-hidden="true" /> Under verification (1–2 business days)</div>
+              <div className="pt-item"><Mail size={18} aria-hidden="true" /> Approval email will be sent</div>
+              <div className="pt-item"><Unlock size={18} aria-hidden="true" /> Portal access granted</div>
             </div>
           </>
         )}
 
         {status === 'rejected' && (
           <>
-            <div className="pending-icon rejected"><XCircle size={48} /></div>
-            <h2>Registration Not Approved</h2>
+            <div className="pending-icon rejected" aria-hidden="true"><XCircle size={48} /></div>
+            <h1>Registration Not Approved</h1>
             <p>
               Unfortunately, your registration for <strong>"{user?.storeName}"</strong> was not approved.
               This may be due to incomplete or unclear documents, or an invalid drug licence.
@@ -62,8 +62,8 @@ export default function PendingPage() {
 
         {status === 'approved' && (
           <>
-            <div className="pending-icon approved"><CheckCircle size={48} /></div>
-            <h2>Account Approved!</h2>
+            <div className="pending-icon approved" aria-hidden="true"><CheckCircle size={48} /></div>
+            <h1>Account Approved!</h1>
             <p>Your medical shop has been verified. You can now access the wholesale portal.</p>
             <Link to="/portal" className="btn btn-primary btn-lg" id="pending-goto-portal-btn">
               Go to Retailer Portal
@@ -80,22 +80,23 @@ export default function PendingPage() {
       </div>
 
       <style>{`
-        .pending-page { min-height:100vh; background:linear-gradient(135deg,#1A1250 0%,#2D2D75 40%,#3B3B9E 100%); display:flex; align-items:center; justify-content:center; padding:2rem; }
-        .pending-card { background:#fff; border-radius:var(--radius-xl); padding:3rem; max-width:520px; width:100%; text-align:center; box-shadow:var(--shadow-xl); }
-        .pending-icon { margin-bottom:1.25rem; }
-        .pending-icon.pending  { color:var(--accent); }
+        .pending-page { min-height:100vh; background:var(--off-white); display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+        .pending-card { background:#fff; border-radius:var(--radius-lg); padding:2.5rem; max-width:540px; width:100%; text-align:center; border:1px solid var(--gray-200); }
+        .pending-icon { margin-bottom:1rem; }
+        .pending-icon.pending  { color:var(--orange-dark); }
         .pending-icon.approved { color:var(--green); }
         .pending-icon.rejected { color:var(--red); }
-        .pending-card h2 { color:var(--navy); margin-bottom:.75rem; font-size:1.5rem; }
-        .pending-card p  { color:var(--gray-500); line-height:1.7; margin-bottom:1.5rem; }
-        .pending-timeline { display:flex; flex-direction:column; gap:.6rem; background:var(--gray-50); border-radius:var(--radius-lg); padding:1.25rem; text-align:left; margin-bottom:1.5rem; }
-        .pt-item { display:flex; align-items:center; gap:.65rem; font-size:.88rem; color:var(--gray-400); }
+        .pending-card h1 { color:var(--navy); margin-bottom:.75rem; font-size:1.5rem; }
+        .pending-card p  { color:var(--navy-light); line-height:1.7; margin-bottom:1.5rem; }
+        .pending-timeline { display:flex; flex-direction:column; gap:.6rem; background:var(--off-white); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:1.25rem; text-align:left; margin-bottom:1.5rem; }
+        .pt-item { display:flex; align-items:center; gap:.65rem; font-size:.95rem; color:var(--gray-500); }
         .pt-item.done    { color:var(--gray-700); }
-        .pt-item.current { color:var(--navy); font-weight:600; }
+        .pt-item.done svg { color:var(--green); }
+        .pt-item.current { color:var(--navy); font-weight:700; }
         .pending-contact { display:flex; flex-direction:column; gap:.6rem; margin-bottom:1.5rem; }
-        .contact-chip { display:inline-flex; align-items:center; gap:.5rem; background:var(--gray-50); border:1.5px solid var(--gray-100); border-radius:var(--radius-full); padding:.5rem 1rem; font-size:.88rem; color:var(--navy); text-decoration:none; }
-        .contact-chip:hover { border-color:var(--teal); color:var(--teal); }
-        .pending-footer { display:flex; align-items:center; justify-content:space-between; margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--gray-100); font-size:.82rem; color:var(--gray-400); flex-wrap:wrap; gap:.75rem; }
+        .contact-chip { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:44px; background:#fff; border:1px solid var(--gray-300); border-radius:var(--radius-lg); padding:.5rem 1rem; font-size:1rem; font-weight:600; color:var(--navy); text-decoration:none; }
+        .contact-chip:hover { border-color:var(--teal); color:var(--teal-dark); background:var(--cyan); }
+        .pending-footer { display:flex; align-items:center; justify-content:space-between; margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--gray-200); font-size:.9rem; color:var(--gray-500); flex-wrap:wrap; gap:.75rem; }
       `}</style>
     </div>
   );

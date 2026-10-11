@@ -53,27 +53,28 @@ export default function RetailerRequest() {
       <main className="portal-main">
         <div className="portal-topbar">
           <div>
-            <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Query Portal</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>Submit a request for medicines not found in our catalog</p>
+            <h1 style={{ color:'var(--navy)', fontSize:'1.2rem' }}>Query Portal</h1>
+            <p style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>Submit a request for medicines not found in our catalog</p>
           </div>
         </div>
         <div className="portal-content">
           <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={{ padding: '0.75rem', background: 'rgba(0, 184, 169, 0.1)', borderRadius: 'var(--radius-md)', color: 'var(--teal)' }}>
+              <div style={{ padding: '0.75rem', background: 'var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--teal)' }} aria-hidden="true">
                 <MessageSquare size={24} />
               </div>
               <div>
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--navy)' }}>Request a Medicine</h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>Fill out the form below to request a specific medicine.</p>
+                <p style={{ fontSize: '0.95rem', color: 'var(--gray-500)' }}>Fill out the form below to request a specific medicine.</p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="form-group">
-                <label className="form-label">Medicine Name & Details *</label>
-                <input 
-                  type="text" 
+                <label className="form-label" htmlFor="req-medicine">Medicine Name & Details *</label>
+                <input
+                  id="req-medicine"
+                  type="text"
                   className="form-control" 
                   required 
                   placeholder="e.g. Paracetamol 500mg, 10 strips"
@@ -84,9 +85,10 @@ export default function RetailerRequest() {
 
               <div className="grid grid-2" style={{ gap: '1rem' }}>
                 <div className="form-group">
-                  <label className="form-label">Email Address *</label>
-                  <input 
-                    type="email" 
+                  <label className="form-label" htmlFor="req-email">Email Address *</label>
+                  <input
+                    id="req-email"
+                    type="email"
                     className="form-control" 
                     required 
                     placeholder="your@email.com"
@@ -95,9 +97,10 @@ export default function RetailerRequest() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Phone Number *</label>
-                  <input 
-                    type="text" 
+                  <label className="form-label" htmlFor="req-phone">Phone Number *</label>
+                  <input
+                    id="req-phone"
+                    type="text"
                     className="form-control" 
                     required 
                     maxLength="10"
@@ -105,16 +108,17 @@ export default function RetailerRequest() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                   />
-                  <small style={{ color: 'var(--gray-400)', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                  <small style={{ color: 'var(--gray-500)', fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>
                     Must be exactly 10 digits
                   </small>
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Additional Notes (Optional)</label>
-                <textarea 
-                  className="form-control" 
+                <label className="form-label" htmlFor="req-notes">Additional Notes (Optional)</label>
+                <textarea
+                  id="req-notes"
+                  className="form-control"
                   rows="3" 
                   placeholder="Any specific brand, manufacturer, or quantity requirements..."
                   value={formData.notes}
@@ -124,11 +128,11 @@ export default function RetailerRequest() {
 
               <button 
                 type="submit" 
-                className="btn btn-primary" 
+                className="btn btn-primary btn-lg"
                 disabled={submitting}
                 style={{ marginTop: '0.5rem', width: '100%', justifyContent: 'center' }}
               >
-                {submitting ? 'Submitting...' : <><Send size={18} /> Submit Request</>}
+                {submitting ? 'Submitting...' : <><Send size={18} aria-hidden="true" /> Submit Request</>}
               </button>
             </form>
           </div>

@@ -62,7 +62,7 @@ export default function AdminCoupons() {
         <div className="portal-topbar">
           <div>
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Coupon Management</h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>Manage discounts available to retailers</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>Manage discounts available to retailers</p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
             <Plus size={16} /> New Coupon
@@ -153,12 +153,12 @@ export default function AdminCoupons() {
                           {c.isVisible ? 'Visible' : 'Hidden'}
                         </button>
                       </td>
-                      <td style={{ fontSize:'.8rem', color:'var(--gray-400)' }}>
+                      <td style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>
                         {new Date(c.createdAt).toLocaleDateString('en-IN')}
                       </td>
                       <td>
                         <button className="btn btn-ghost btn-sm" style={{ color:'var(--red)' }} onClick={() => handleDelete(c.id, c.code)}>
-                          <Trash2 size={14} />
+                          <Trash2 size={14} aria-hidden="true" /> Delete
                         </button>
                       </td>
                     </tr>

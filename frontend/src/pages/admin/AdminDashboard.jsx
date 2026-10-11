@@ -58,15 +58,15 @@ export default function AdminDashboard() {
       <main className="portal-main">
         <div className="portal-topbar">
           <div>
-            <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>
-              Admin Dashboard ⚡
-            </h4>
-            <p style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>Welcome, {user?.name}</p>
+            <h1 style={{ color:'var(--navy)', fontSize:'1.2rem' }}>
+              Admin Dashboard
+            </h1>
+            <p style={{ fontSize:'0.9rem', color:'var(--gray-500)' }}>Welcome, {user?.name}</p>
           </div>
           <div style={{ display:'flex', gap:'.75rem', alignItems:'center' }}>
             {pending > 0 && (
               <Link to="/admin/users" className="badge badge-warning" id="pending-badge" style={{ textDecoration:'none', cursor:'pointer' }}>
-                <Clock size={12} /> {pending} pending approval{pending>1?'s':''}
+                <Clock size={14} aria-hidden="true" /> {pending} pending approval{pending>1?'s':''}
               </Link>
             )}
             <span className="badge badge-primary">Admin</span>
@@ -84,8 +84,8 @@ export default function AdminDashboard() {
             ].map((s,i) => {
               const Icon = s.icon;
               return (
-                <div key={i} className="stat-card animate-fade-up" style={{ animationDelay:`${i*.1}s` }}>
-                  <div className={`stat-icon ${s.color}`}><Icon size={22} /></div>
+                <div key={i} className="stat-card">
+                  <div className={`stat-icon ${s.color}`} aria-hidden="true"><Icon size={22} /></div>
                   <div>
                     <div className="stat-value">{s.value}</div>
                     <div className="stat-label">{s.label}</div>
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
             <div className="card" style={{ padding:'1.5rem', gridColumn:'span 2' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
                 <h4 style={{ color:'var(--navy)' }}>Recent Registrations</h4>
-                <Link to="/admin/users" style={{ fontSize:'.82rem', color:'var(--teal)', fontWeight:600 }}>View All</Link>
+                <Link to="/admin/users" style={{ fontSize:'0.875rem', color:'var(--teal)', fontWeight:600 }}>View All</Link>
               </div>
               {recentRegistrations.length === 0 ? (
                 <p style={{ color:'var(--gray-400)', textAlign:'center', padding:'2rem' }}>No retailers registered yet.</p>
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
                             {u.status}
                           </span>
                         </td>
-                        <td style={{ fontSize:'.78rem', color:'var(--gray-400)' }}>
+                        <td style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>
                           {new Date(u.createdAt).toLocaleDateString('en-IN')}
                         </td>
                       </tr>
@@ -166,9 +166,9 @@ export default function AdminDashboard() {
                     {topProducts.map((p, idx) => (
                       <tr key={idx}>
                         <td style={{ fontWeight:600, color:'var(--navy)' }}>
-                          {idx === 0 && <span style={{ marginRight:'8px' }}>🥇</span>}
-                          {idx === 1 && <span style={{ marginRight:'8px' }}>🥈</span>}
-                          {idx === 2 && <span style={{ marginRight:'8px' }}>🥉</span>}
+                          <span style={{ display:'inline-block', minWidth:'26px', marginRight:'6px', color:'var(--gray-500)', fontWeight:700 }}>{idx + 1}.</span>
+                          
+                          
                           {p.name}
                         </td>
                         <td style={{ fontWeight:800, color:'var(--teal)', fontFamily:'var(--font-display)' }}>{p.qty} units</td>
