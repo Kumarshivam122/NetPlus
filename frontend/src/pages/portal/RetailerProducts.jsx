@@ -14,7 +14,7 @@ function OrderModal({ product, onClose, onAdd }) {
     ? Object.keys(product.pricing) 
     : ['Strips', 'Bottles', 'Boxes', 'Pieces'];
 
-  const [qty, setQty]     = useState(10);
+  const [qty, setQty]     = useState(1);
   const [unit, setUnit]   = useState(availableUnits[0] || 'Strips');
 
   // Compute exact price and MRP
