@@ -2,6 +2,10 @@ const supabase = require('../db/supabase');
 
 function formatProduct(row) {
   if (!row) return null;
+  const pricing = typeof row.pricing === 'string' ? JSON.parse(row.pricing) : row.pricing || null;
+  const description = row.description || (pricing && pricing.description) || '';
+  const deviceType = (pricing && pricing.deviceType) || '';
+
   return {
     ...row,
     _id: row.id,
@@ -10,7 +14,9 @@ function formatProduct(row) {
     taxIncluded: row.tax_included,
     taxPercent: Number(row.tax_percent),
     imageUrl: row.image_url,
-    pricing: typeof row.pricing === 'string' ? JSON.parse(row.pricing) : row.pricing || null
+    description,
+    deviceType,
+    pricing
   };
 }
 
@@ -41,6 +47,14 @@ const Product = {
   },
 
   async create(data) {
+    let pricingData = data.pricing ? (typeof data.pricing === 'object' ? { ...data.pricing } : JSON.parse(data.pricing)) : {};
+    if (data.description !== undefined && data.description !== null) {
+      pricingData.description = String(data.description).trim();
+    }
+    if (data.deviceType !== undefined && data.deviceType !== null) {
+      pricingData.deviceType = String(data.deviceType).trim();
+    }
+
     const insertData = {
       name: data.name,
       generic: data.generic,
@@ -54,7 +68,7 @@ const Product = {
       stock: data.stock || 0,
       rx: data.rx || false,
       image_url: data.imageUrl || null,
-      pricing: data.pricing ? (typeof data.pricing === 'object' ? data.pricing : JSON.parse(data.pricing)) : null
+      pricing: Object.keys(pricingData).length > 0 ? pricingData : null
     };
 
     const { data: result, error } = await supabase
@@ -92,7 +106,24 @@ const Product = {
     if (data.stock !== undefined) updateData.stock = data.stock;
     if (data.rx !== undefined) updateData.rx = data.rx;
     if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
-    if (data.pricing !== undefined) updateData.pricing = typeof data.pricing === 'object' ? data.pricing : JSON.parse(data.pricing);
+
+    if (data.pricing !== undefined || data.description !== undefined || data.deviceType !== undefined) {
+      let pricingData = {};
+      if (data.pricing !== undefined) {
+        pricingData = typeof data.pricing === 'object' ? { ...data.pricing } : JSON.parse(data.pricing);
+      } else {
+        const existing = await this.findById(id);
+        pricingData = existing?.pricing ? { ...existing.pricing } : {};
+      }
+
+      if (data.description !== undefined) {
+        pricingData.description = String(data.description).trim();
+      }
+      if (data.deviceType !== undefined) {
+        pricingData.deviceType = String(data.deviceType).trim();
+      }
+      updateData.pricing = pricingData;
+    }
 
     if (Object.keys(updateData).length > 0) {
       updateData.updated_at = new Date().toISOString();

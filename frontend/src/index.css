@@ -6,7 +6,7 @@
 
    Brand colours come from the logo:
      navy  #3c3c8f  (letter N)   — primary buttons, nav bar, links
-     orange #e97f39 (background) — thin accents only
+     orange #e97f39 (background) — thin accents, plus a deeper orange (#c2410c) for the main action button
    Body text is Inter. All text/background pairs meet WCAG AA (4.5:1).
 
    The old variable names (--teal, --cyan, --navy …) are kept as
@@ -22,6 +22,8 @@
   --primary-line:   #c9cde8;
   --accent:         #e97f39;
   --accent-dark:    #b45309;   /* orange for text on white (5.0:1) */
+  --cta:            #c2410c;   /* orange for the main action button; white text on it = 5.2:1 */
+  --cta-dark:       #9a3412;
   --footer-bg:      #1d2145;
   --footer-bg-dark: #161938;
 
@@ -122,7 +124,7 @@ a  { text-decoration: none; color: inherit; }
 
 /* ── Layout ── */
 .container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 1.25rem; }
-.section    { padding: 3rem 0; }
+.section    { padding: 3.5rem 0; }
 .section-sm { padding: 2rem 0; }
 
 /* Section heading: bold title sitting on a thin rule with a short brand-coloured tab */
@@ -163,6 +165,10 @@ a  { text-decoration: none; color: inherit; }
 
 .btn-success   { background: var(--green); color: #fff; border-color: var(--green); }
 .btn-success:hover:not(:disabled)   { filter: brightness(0.9); }
+
+/* the one key action in a section (Register, Add to Cart, Search, Place Order) */
+.btn-cta       { background: var(--cta); color: #fff; border-color: var(--cta); }
+.btn-cta:hover:not(:disabled)       { background: var(--cta-dark); border-color: var(--cta-dark); }
 
 .btn-danger    { background: var(--red); color: #fff; border-color: var(--red); }
 .btn-danger:hover:not(:disabled)    { background: #991b1b; border-color: #991b1b; }
@@ -259,7 +265,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .portal-topbar { background: #fff; min-height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 2rem; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 50; gap: 1rem; flex-wrap: wrap; }
 .portal-content { padding: 1.75rem 2rem; }
 @media (max-width:1024px) { .portal-main { margin-left: 220px; width: calc(100% - 220px); max-width: calc(100% - 220px); } }
-@media (max-width:768px)  { .portal-main { margin-left: 0; width: 100%; max-width: 100%; margin-top: 60px; } .portal-content { padding: 1rem; } }
+@media (max-width:768px)  { .portal-main { margin-left: 0; width: 100%; max-width: 100%; margin-top: 60px; } .portal-topbar { position: static; min-height: auto; padding: 0.75rem 1rem; } .portal-content { padding: 1rem; } }
 
 /* ── Dashboard figures ── */
 .stat-card { background: #fff; border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem; border: 1px solid var(--gray-200); }
@@ -317,7 +323,8 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 }
 .cat-tile:hover { border-color: var(--primary); }
 .cat-img { display: block; aspect-ratio: 4 / 3; background: var(--gray-100); overflow: hidden; }
-.cat-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cat-img img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.8); transition: filter var(--transition); }
+.cat-tile:hover .cat-img img { filter: saturate(1); }
 .cat-name { display: block; padding: 0.7rem 0.9rem 0.1rem; font-weight: 600; font-size: 1rem; line-height: 1.3; }
 .cat-link { display: block; padding: 0 0.9rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: var(--primary); }
 .cat-tile:hover .cat-link { text-decoration: underline; }

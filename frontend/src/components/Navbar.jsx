@@ -241,6 +241,10 @@ export default function Navbar() {
         </div>
       </nav>
 
+      <a href={`tel:${COMPANY.phone}`} className="float-call" aria-label={`Call us on ${COMPANY.phone}`}>
+        <Phone size={20} aria-hidden="true" /> Call us
+      </a>
+
       <style>{`
         /* ── Contact strip ── */
         .util-bar { background: var(--footer-bg); color: #e3e5f3; font-size: 0.85rem; }
@@ -286,8 +290,11 @@ export default function Navbar() {
           font-family: var(--font-primary); font-size: 1rem; color: var(--ink);
         }
         .nav-search-input::placeholder { color: var(--gray-400); }
-        .nav-search-btn { border: none; background: var(--primary); color: #fff; padding: 0 1.5rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-        .nav-search-btn:hover { background: var(--primary-dark); }
+        .nav-search-btn { border: none; background: var(--cta); color: #fff; padding: 0 1.5rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        .nav-search-btn:hover { background: var(--cta-dark); }
+
+        /* Phone-only floating Call button */
+        .float-call { display: none; }
 
         /* Account + cart */
         .navbar-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
@@ -387,6 +394,8 @@ export default function Navbar() {
 
         /* ── Tablet / phone ── */
         @media (max-width: 900px) {
+          .float-call { display: inline-flex; align-items: center; gap: 0.45rem; position: fixed; right: 14px; bottom: 16px; z-index: 450; min-height: 48px; padding: 0 1.1rem; background: var(--cta); color: #fff; border-radius: 4px; font-weight: 600; font-size: 0.95rem; box-shadow: var(--shadow-lg); }
+          .float-call:hover { background: var(--cta-dark); }
           .util-bar { display: none; }
           .navbar-bottom { display: none; }
           .navbar { border-bottom: 3px solid var(--primary); }

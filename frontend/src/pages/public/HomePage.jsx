@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, ChevronRight, ChevronLeft, Check, Phone, MapPin, Mail, Clock,
-  Pill, Store, Syringe, ShieldCheck
+  Pill, Store, Syringe, ShieldCheck, BadgeCheck, FileText, CalendarCheck
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -11,31 +11,10 @@ import ServiceIcon from '../../components/ServiceIcon';
 import { CATEGORIES, BRANDS, SERVICES, DISTRIBUTION_STATS, COMPANY, photo } from '../../data/store';
 import { useAuth } from '../../context/AuthContext';
 
-// Animated counter
+// Shows the final figure straight away (no count-up), so the numbers are always readable
 function Counter({ target, suffix = '' }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
-        started.current = true;
-        const numericTarget = parseInt(target.replace(/[^0-9]/g, ''));
-        const increment = numericTarget / 60;
-        let current = 0;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= numericTarget) { setCount(numericTarget); clearInterval(timer); }
-          else setCount(Math.floor(current));
-        }, 25);
-      }
-    }, { threshold: 0.3 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+  const numericTarget = parseInt(target.replace(/[^0-9]/g, ''));
+  return <span>{numericTarget.toLocaleString('en-IN')}{suffix}</span>;
 }
 
 // Banner slides: photo + short caption + a link to an existing page
@@ -193,7 +172,7 @@ export default function HomePage() {
                     <div className="hero-caption">
                       <p className="hero-title">{banner.title}</p>
                       <p className="hero-text">{banner.text}</p>
-                      <Link to={banner.cta.to} className="btn btn-primary" tabIndex={isClone ? -1 : undefined}>
+                      <Link to={banner.cta.to} className="btn btn-cta" tabIndex={isClone ? -1 : undefined}>
                         {banner.cta.label} <ArrowRight size={16} aria-hidden="true" />
                       </Link>
                     </div>
@@ -224,6 +203,30 @@ export default function HomePage() {
               })}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── LICENCES & CREDENTIALS ── */}
+      <section className="trust-bar" aria-label="Licences and credentials">
+        <div className="container">
+          <ul className="trust-list">
+            <li>
+              <BadgeCheck size={22} aria-hidden="true" />
+              <span><strong>Licensed wholesale distributor</strong><small>Drug Lic. No. {COMPANY.dlNo}</small></span>
+            </li>
+            <li>
+              <FileText size={22} aria-hidden="true" />
+              <span><strong>GST registered</strong><small>GSTIN {COMPANY.gstin}</small></span>
+            </li>
+            <li>
+              <ShieldCheck size={22} aria-hidden="true" />
+              <span><strong>Authorised sources only</strong><small>Verified batch records</small></span>
+            </li>
+            <li>
+              <CalendarCheck size={22} aria-hidden="true" />
+              <span><strong>Serving pharmacies since {COMPANY.established}</strong><small>Dhanbad, Jharkhand</small></span>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -324,7 +327,7 @@ export default function HomePage() {
             ))}
           </ol>
           <div style={{ marginTop: '1.5rem' }}>
-            <Link to="/register" className="btn btn-primary btn-lg" id="how-register-btn">
+            <Link to="/register" className="btn btn-cta btn-lg" id="how-register-btn">
               Start Registration <ArrowRight size={18} aria-hidden="true" />
             </Link>
           </div>
@@ -388,7 +391,7 @@ export default function HomePage() {
             </ul>
           </div>
           <div className="cta-actions">
-            <Link to="/register" className="btn btn-light btn-lg" id="cta-register-btn">
+            <Link to="/register" className="btn btn-cta btn-lg" id="cta-register-btn">
               Register Your Shop <ArrowRight size={18} aria-hidden="true" />
             </Link>
             <Link to="/login" className="btn btn-secondary btn-lg" id="cta-login-btn">
@@ -449,9 +452,9 @@ export default function HomePage() {
         .hero-track { display: flex; width: 100%; }
         .hero-slide { flex: 0 0 100%; min-width: 0; position: relative; display: flex; flex-direction: column; }
         .hero-slide-img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; background: var(--gray-100); }
-        .hero-caption { position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); max-width: 440px; background: #fff; padding: 1.5rem 1.75rem; border-left: 4px solid var(--accent); }
-        .hero-title { font-size: 1.6rem; font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 0.6rem; }
-        .hero-text { font-size: 1rem; color: var(--navy-light); margin-bottom: 1rem; }
+        .hero-caption { position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); max-width: 470px; background: #fff; padding: 1.75rem 2rem; border-left: 4px solid var(--accent); }
+        .hero-title { font-size: 2rem; font-weight: 700; color: var(--ink); line-height: 1.15; margin-bottom: 0.7rem; }
+        .hero-text { font-size: 1.05rem; color: var(--navy-light); margin-bottom: 1.2rem; }
         .hero-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--gray-300); border-radius: 4px; color: var(--ink); cursor: pointer; }
         .hero-nav:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
         .hero-nav.prev { left: 0.6rem; }
@@ -460,6 +463,17 @@ export default function HomePage() {
         .hero-dot { width: 26px; height: 26px; padding: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .hero-dot::before { content: ''; width: 12px; height: 12px; border-radius: 2px; border: 2px solid var(--primary); background: #fff; }
         .hero-dot.active::before { background: var(--primary); }
+
+        /* ── Licences & credentials ── */
+        .trust-bar { background: var(--off-white); border-bottom: 1px solid var(--gray-200); margin-top: 1.25rem; }
+        .trust-list { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); }
+        .trust-list li { display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1rem; border-right: 1px solid var(--gray-200); min-width: 0; color: var(--primary); }
+        .trust-list li:first-child { padding-left: 0; }
+        .trust-list li:last-child { border-right: none; }
+        .trust-list svg { flex-shrink: 0; }
+        .trust-list span { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+        .trust-list strong { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+        .trust-list small { font-size: 0.82rem; color: var(--gray-500); overflow-wrap: anywhere; }
 
         /* ── Quick links ── */
         .ql-section { padding: 1.25rem 0 0.5rem; }
@@ -525,6 +539,10 @@ export default function HomePage() {
         a.cs-value:hover { color: var(--primary); text-decoration: underline; }
 
         @media (max-width: 1024px) {
+          .trust-list { grid-template-columns: repeat(2, 1fr); }
+          .trust-list li:nth-child(2) { border-right: none; }
+          .trust-list li:nth-child(odd) { padding-left: 0; }
+          .trust-list li:nth-child(-n+2) { border-bottom: 1px solid var(--gray-200); }
           .ql-grid { grid-template-columns: repeat(2, 1fr); }
           .ql-item:nth-child(2) { border-right: none; }
           .ql-item:nth-child(-n+2) { border-bottom: 1px solid var(--gray-200); }
@@ -543,7 +561,7 @@ export default function HomePage() {
         @media (max-width: 760px) {
           .hero-slide-img { aspect-ratio: 16 / 9; }
           .hero-caption { position: static; transform: none; max-width: none; padding: 1rem 1rem 1.1rem; border-left: 0; border-top: 4px solid var(--accent); }
-          .hero-title { font-size: 1.2rem; }
+          .hero-title { font-size: 1.3rem; }
           .hero-nav { top: auto; bottom: 0; transform: none; border-color: var(--gray-300); }
           .hero-nav:hover { background: #fff; border-color: var(--gray-300); color: var(--ink); }
           .hero-dots { min-height: 48px; }
@@ -552,6 +570,10 @@ export default function HomePage() {
         }
         @media (max-width: 640px) {
           .section { padding: 2.25rem 0; }
+          .trust-list { grid-template-columns: 1fr; }
+          .trust-list li { border-right: none; padding-left: 0; }
+          .trust-list li:nth-child(-n+3) { border-bottom: 1px solid var(--gray-200); }
+          .trust-list li:nth-child(4) { border-bottom: none; }
           .ql-grid, .how-row, .contact-strip-grid { grid-template-columns: 1fr; }
           .ql-item, .how-item, .contact-strip-item { border-right: none; border-bottom: 1px solid var(--gray-200); }
           .ql-item:last-child, .how-item:last-child, .contact-strip-item:last-child { border-bottom: none; }

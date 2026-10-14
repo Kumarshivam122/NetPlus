@@ -211,7 +211,7 @@ export default function RetailerCart() {
             )}
 
             <button
-              className="btn btn-primary btn-lg"
+              className="btn btn-cta btn-lg"
               style={{ width: '100%', marginTop: '1.5rem' }}
               disabled={cart.length === 0 || isSubmitting || totalAmount < 1500}
               onClick={handleSubmit}

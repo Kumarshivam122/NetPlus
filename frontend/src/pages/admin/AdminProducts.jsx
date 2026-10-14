@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader } from 'lucide-react';
+import { Check, Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader, FileText, Thermometer, Monitor } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
 import { apiGetProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct, apiUploadProductImage } from '../../services/api';
@@ -17,6 +17,7 @@ export default function AdminProducts() {
     'neuro': <Activity size={20} color="#333" strokeWidth={1.5} />,
     'respiratory': <Wind size={20} color="#333" strokeWidth={1.5} />,
     'derma': <Smile size={20} color="#333" strokeWidth={1.5} />,
+    'devices': <Monitor size={20} color="#333" strokeWidth={1.5} />,
   };
   const { addToast } = useToast();
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -40,6 +41,8 @@ export default function AdminProducts() {
     inStock: true, rx: true, taxIncluded: true, taxPercent: 0,
     discount: 0,
     imageUrl: '',
+    description: '',
+    deviceType: '',
     pricing: {
       Strips:  { active: true,  size: '10', price: '', mrp: '' },
       Bottles: { active: false, size: '100ml', price: '', mrp: '' },
@@ -94,6 +97,8 @@ export default function AdminProducts() {
       taxPercent: parseFloat(newProd.taxPercent) || 0,
       discount: parseFloat(newProd.discount) || 0,
       imageUrl: newProd.imageUrl,
+      description: newProd.description?.trim() || '',
+      deviceType: newProd.category === 'devices' ? newProd.deviceType : '',
     };
 
     let res;
@@ -216,6 +221,8 @@ export default function AdminProducts() {
                             inStock: p.stock > 0, rx: p.rx, taxIncluded: p.taxIncluded, taxPercent: p.taxPercent || 0,
                             discount: p.discount || 0,
                             imageUrl: p.imageUrl || '',
+                            description: p.description || p.pricing?.description || '',
+                            deviceType: p.deviceType || p.pricing?.deviceType || '',
                             pricing: mergedPricing
                           });
                           setShowAddModal(true);
@@ -240,7 +247,19 @@ export default function AdminProducts() {
                         </div>
                       )}
                     </td>
-                    <td style={{ fontWeight:700, color:'var(--navy)' }}>{p.name}</td>
+                    <td style={{ fontWeight:700, color:'var(--navy)' }}>
+                      <div>{p.name}</div>
+                      {(p.deviceType || p.pricing?.deviceType) && (
+                        <span style={{ display: 'inline-block', fontSize: '0.72rem', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, var(--teal), #0694a2)', borderRadius: '4px', padding: '1px 6px', marginTop: '3px', letterSpacing: '0.3px' }}>
+                          {(p.deviceType || p.pricing?.deviceType || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        </span>
+                      )}
+                      {(p.description || p.pricing?.description) && (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--gray-500)', fontWeight: 400, marginTop: '2px', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.description || p.pricing?.description}>
+                          {p.description || p.pricing?.description}
+                        </div>
+                      )}
+                    </td>
                     <td style={{ fontSize:'0.875rem', color:'var(--gray-500)' }}>{p.generic}</td>
                     <td>{p.manufacturer}</td>
                     <td>
@@ -300,8 +319,8 @@ export default function AdminProducts() {
               <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="new-prod-name">Brand Name *</label>
-                    <input className="form-control" required placeholder="e.g. Augmentin 625mg"
+                    <label className="form-label" htmlFor="new-prod-name">Product Name *</label>
+                    <input className="form-control" required placeholder="e.g. Augmentin 625mg or Omron BP Monitor"
                       value={newProd.name} onChange={e => setNewProd({...newProd, name: e.target.value})} id="new-prod-name" />
                   </div>
                   <div className="form-group">
@@ -332,6 +351,33 @@ export default function AdminProducts() {
                     </select>
                   </div>
                 </div>
+
+                {/* Device Type selector — only visible for Medical Devices category */}
+                {newProd.category === 'devices' && (
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="form-label" htmlFor="new-prod-device-type" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Monitor size={15} style={{ color: 'var(--teal)' }} />
+                      Device Type *
+                    </label>
+                    <select className="form-control" required value={newProd.deviceType}
+                      onChange={e => setNewProd({...newProd, deviceType: e.target.value})} id="new-prod-device-type">
+                      <option value="">— Select Device Type —</option>
+                      <option value="bp_monitor">BP Monitor (Blood Pressure)</option>
+                      <option value="heart_rate_monitor">Heart Rate Monitor</option>
+                      <option value="pulse_oximeter">Pulse Oximeter</option>
+                      <option value="thermometer">Digital Thermometer</option>
+                      <option value="nebulizer">Nebulizer</option>
+                      <option value="glucometer">Glucometer (Blood Sugar)</option>
+                      <option value="ecg_machine">ECG / EKG Machine</option>
+                      <option value="weighing_scale">Digital Weighing Scale</option>
+                      <option value="stethoscope">Stethoscope</option>
+                      <option value="other_device">Other Device</option>
+                    </select>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--gray-400)', marginTop: '4px', display: 'block' }}>
+                      Select the type of medical device being added to the catalog.
+                    </span>
+                  </div>
+                )}
 
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.5rem' }}>
@@ -456,7 +502,37 @@ export default function AdminProducts() {
                   )}
                 </div>
 
-
+                {/* About the Product / Description */}
+                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <label className="form-label" htmlFor="new-prod-description" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileText size={15} style={{ color: 'var(--teal)' }} />
+                      About the Product / Description (Optional)
+                    </span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)', fontWeight: 400 }}>
+                      Indications, usage notes, composition details
+                    </span>
+                  </label>
+                  <textarea
+                    id="new-prod-description"
+                    className="form-control"
+                    rows={3}
+                    placeholder="e.g. Broad-spectrum antibacterial medicine indicated for respiratory, ENT, and soft tissue infections. Store below 25°C in a dry place."
+                    value={newProd.description}
+                    onChange={e => setNewProd({ ...newProd, description: e.target.value })}
+                    style={{ minHeight: '84px', resize: 'vertical', lineHeight: 1.5, fontSize: '0.92rem' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--gray-400)' }}>
+                      This information helps retailers and medical professionals understand the medicine.
+                    </span>
+                    {newProd.description && (
+                      <span style={{ fontSize: '0.78rem', color: 'var(--teal-dark)', fontWeight: 600 }}>
+                        {newProd.description.length} chars
+                      </span>
+                    )}
+                  </div>
+                </div>
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>
                   <div className="form-group">

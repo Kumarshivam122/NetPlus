@@ -97,7 +97,7 @@ export default function ProductsPage() {
               <p>Register your medical shop and get verified to unlock the full catalog.</p>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <Link to="/register" className="btn btn-primary btn-lg" id="products-register-btn">
+              <Link to="/register" className="btn btn-cta btn-lg" id="products-register-btn">
                 Register Your Shop <ArrowRight size={18} aria-hidden="true" />
               </Link>
               <Link to="/login" className="btn btn-outline btn-lg" id="products-login-btn">

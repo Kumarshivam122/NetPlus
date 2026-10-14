@@ -31,6 +31,7 @@ const AdminVerifications = React.lazy(() => import('./pages/admin/AdminVerificat
 const AdminUsers         = React.lazy(() => import('./pages/admin/AdminUsers'));
 const AdminCustDetails   = React.lazy(() => import('./pages/admin/AdminCustDetails'));
 const AdminProducts      = React.lazy(() => import('./pages/admin/AdminProducts'));
+const AdminDevices       = React.lazy(() => import('./pages/admin/AdminDevices'));
 const AdminOrders        = React.lazy(() => import('./pages/admin/AdminOrders'));
 const AdminCoupons       = React.lazy(() => import('./pages/admin/AdminCoupons'));
 
@@ -158,6 +159,11 @@ export default function App() {
                     <Route path="/admin/products" element={
                       <RequireAuth allowedRoles={['admin']}>
                         <AdminProducts />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/devices" element={
+                      <RequireAuth allowedRoles={['admin']}>
+                        <AdminDevices />
                       </RequireAuth>
                     } />
                     <Route path="/admin/orders" element={

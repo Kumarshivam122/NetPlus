@@ -78,6 +78,11 @@ function OrderModal({ product, onClose, onAdd }) {
                 <div style={{ fontWeight:700, color:'var(--navy)' }}>{product.name}</div>
                 <div style={{ color:'var(--gray-400)', fontSize:'0.875rem', marginTop:'.2rem' }}>{product.generic}</div>
                 <div style={{ color:'var(--gray-400)', fontSize:'0.875rem' }}>Mfr: {product.manufacturer}</div>
+                {(product.description || product.pricing?.description) && (
+                  <div style={{ color:'var(--navy-mid)', fontSize:'0.82rem', marginTop:'.4rem', maxWidth:'300px', lineHeight: 1.4 }}>
+                    {product.description || product.pricing?.description}
+                  </div>
+                )}
               </div>
               <div style={{ textAlign:'right' }}>
                 <div style={{ fontFamily:'var(--font-display)', fontSize:'1.4rem', fontWeight:800, color:'var(--teal)' }}>
@@ -126,7 +131,7 @@ function OrderModal({ product, onClose, onAdd }) {
             
             <div className="modal-footer" style={{ padding:0, marginTop:'.5rem' }}>
               <button type="button" className="btn btn-ghost" onClick={onClose} id="order-cancel-btn">Cancel</button>
-              <button type="submit" className="btn btn-primary" id="order-submit-btn">
+              <button type="submit" className="btn btn-cta" id="order-submit-btn">
                 <ShoppingCart size={18} aria-hidden="true" /> Add to Cart
               </button>
             </div>
@@ -266,6 +271,18 @@ function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
                 <span className="pdp-detail-value">{product.rx ? 'Prescription' : 'Over the Counter'}</span>
               </div>
             </div>
+
+            {/* About This Product / Description */}
+            {(product.description || product.pricing?.description) && (
+              <div className="pdp-about-section" style={{ marginTop: '1.1rem', background: '#f8fafc', border: '1px solid var(--gray-200)', borderRadius: '8px', padding: '0.9rem 1rem' }}>
+                <span className="pdp-detail-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', color: 'var(--teal-dark)' }}>
+                  <Info size={14} /> About This Medicine / Description
+                </span>
+                <p style={{ fontSize: '0.92rem', color: 'var(--navy-mid)', lineHeight: 1.55, margin: 0, whiteSpace: 'pre-line' }}>
+                  {product.description || product.pricing?.description}
+                </p>
+              </div>
+            )}
 
             {/* Available Units */}
             {availableUnits.length > 1 && (
@@ -499,7 +516,7 @@ export default function RetailerProducts() {
                     {/* Add Button — stopPropagation so it doesn't open the detail modal */}
                     <button
                       type="button"
-                      className="btn btn-primary product-add-btn"
+                      className="btn btn-cta product-add-btn"
                       onClick={(e) => { e.stopPropagation(); setSelected(p); }}
                       aria-label={`Add ${p.name} to cart`}
                     >
@@ -748,14 +765,14 @@ export default function RetailerProducts() {
           gap: 10px; width: 100%; margin-top: auto;
           min-height: 52px;
           padding: 0.8rem 1.5rem;
-          background: var(--teal);
-          color: #fff; border: 2px solid var(--teal); border-radius: 8px;
+          background: var(--cta);
+          color: #fff; border: 2px solid var(--cta); border-radius: 4px;
           font-size: 1.05rem; font-weight: 600;
           cursor: pointer;
           margin-top: 1.5rem;
         }
         .pdp-add-btn:hover {
-          background: var(--teal-dark); border-color: var(--teal-dark);
+          background: var(--cta-dark); border-color: var(--cta-dark);
         }
 
         /* Responsive */

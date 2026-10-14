@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS products (
   stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
   rx BOOLEAN NOT NULL DEFAULT FALSE,
   image_url TEXT,
+  description TEXT DEFAULT '',
   pricing JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
