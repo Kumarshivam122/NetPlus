@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -49,12 +49,20 @@ const BANNERS = [
   },
 ];
 
+const EXTENDED_BANNERS = [BANNERS[BANNERS.length - 1], ...BANNERS, BANNERS[0]];
+
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+
+  const startXRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const draggedFarRef = useRef(false);
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -74,62 +82,199 @@ export default function HomePage() {
   };
 
   const banners = BANNERS;
-  const extendedBanners = [banners[banners.length - 1], ...banners, banners[0]];
+  const extendedBanners = EXTENDED_BANNERS;
 
+  // Auto-play interval: pause when document is hidden, hovered, or actively dragging
   useEffect(() => {
     const timer = setInterval(() => {
+      if (document.hidden || isPaused || isDraggingRef.current) return;
+
       setIsTransitioning(true);
-      setCurrentIndex((prev) => prev + 1);
+      setCurrentIndex((prev) => {
+        if (prev >= extendedBanners.length - 1) {
+          return 1;
+        }
+        return prev + 1;
+      });
     }, 5000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused, extendedBanners.length]);
+
+  // Infinite loop snap handler with fallback: ensures clone slides snap back even if transitionend is dropped
+  useEffect(() => {
+    let timeoutId;
+    let raf1, raf2;
+
+    if (currentIndex === extendedBanners.length - 1) {
+      timeoutId = setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentIndex(1);
+        raf1 = requestAnimationFrame(() => {
+          raf2 = requestAnimationFrame(() => {
+            setIsTransitioning(true);
+          });
+        });
+      }, 500);
+    } else if (currentIndex === 0) {
+      timeoutId = setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentIndex(banners.length);
+        raf1 = requestAnimationFrame(() => {
+          raf2 = requestAnimationFrame(() => {
+            setIsTransitioning(true);
+          });
+        });
+      }, 500);
+    } else if (currentIndex > extendedBanners.length - 1 || currentIndex < 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          setIsTransitioning(true);
+        });
+      });
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (raf1) cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [currentIndex, extendedBanners.length, banners.length]);
+
+  // Tab visibility listener: when tab becomes active again after an interval, ensure carousel is visible and in bounds
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        setCurrentIndex((prev) => {
+          if (prev >= extendedBanners.length - 1 || prev <= 0) {
+            setIsTransitioning(false);
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                setIsTransitioning(true);
+              });
+            });
+            return 1;
+          }
+          return prev;
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [extendedBanners.length]);
 
   const nextBanner = () => {
-    if (currentIndex >= extendedBanners.length - 1) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => prev + 1);
+    setDragOffset(0);
+    setCurrentIndex((prev) => {
+      if (prev >= extendedBanners.length - 1) return 2;
+      return prev + 1;
+    });
   };
 
   const prevBanner = () => {
-    if (currentIndex <= 0) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => prev - 1);
+    setDragOffset(0);
+    setCurrentIndex((prev) => {
+      if (prev <= 0) return banners.length - 1;
+      return prev - 1;
+    });
   };
 
-  const handleTransitionEnd = () => {
+  const handleTransitionEnd = (e) => {
+    if (e && e.target !== e.currentTarget) return;
+    if (e && e.propertyName !== 'transform') return;
+
     if (currentIndex === 0) {
       setIsTransitioning(false);
-      setCurrentIndex(extendedBanners.length - 2);
+      setCurrentIndex(banners.length);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(true);
+        });
+      });
     } else if (currentIndex === extendedBanners.length - 1) {
       setIsTransitioning(false);
       setCurrentIndex(1);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(true);
+        });
+      });
     }
   };
 
-  const minSwipeDistance = 50;
+  // Cursor drag & touch swipe handlers
+  const handlePointerDown = (e) => {
+    // Only primary mouse button or touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    // If currently at clone boundary, snap to real slide first
+    if (currentIndex >= extendedBanners.length - 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+    } else if (currentIndex <= 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(banners.length);
+    }
+
+    startXRef.current = e.clientX;
+    isDraggingRef.current = true;
+    draggedFarRef.current = false;
+    setIsDragging(true);
+    setDragOffset(0);
+    setIsTransitioning(false);
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
   };
 
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+  const handlePointerMove = (e) => {
+    if (!isDraggingRef.current) return;
+    const diff = e.clientX - startXRef.current;
+    if (Math.abs(diff) > 5) {
+      draggedFarRef.current = true;
+    }
+    setDragOffset(diff);
   };
 
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
+  const handlePointerUp = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+
+    const diff = e.clientX - startXRef.current;
+    setDragOffset(0);
+
+    const minDistance = 50;
+    if (diff < -minDistance) {
       nextBanner();
-    } else if (isRightSwipe) {
+    } else if (diff > minDistance) {
       prevBanner();
+    } else {
+      // Spring back to current slide
+      setIsTransitioning(true);
     }
-    // Clear touch states to prevent double sliding
-    setTouchStart(null);
-    setTouchEnd(null);
+  };
+
+  const handlePointerCancel = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    setDragOffset(0);
+    setIsTransitioning(true);
+
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
   };
 
   const displayCategories = CATEGORIES.filter(c => c.id !== 'all');
@@ -149,30 +294,52 @@ export default function HomePage() {
       {/* ── BANNER ── */}
       <section className="hero-section" aria-label="Featured">
         <div className="container">
-          <div className="hero-wrap">
+          <div
+            className="hero-wrap"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
             <button className="hero-nav prev" onClick={prevBanner} aria-label="Previous banner">
               <ChevronLeft size={22} aria-hidden="true" />
             </button>
             <div
-              className="hero-track"
+              className={`hero-track${isDragging ? ' is-dragging' : ''}`}
               style={{
-                transform: `translateX(-${currentIndex * 100}%)`,
-                transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none'
+                transform: dragOffset !== 0
+                  ? `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`
+                  : `translateX(-${currentIndex * 100}%)`,
+                transition: isTransitioning && !isDragging ? 'transform 0.5s ease-in-out' : 'none'
               }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               onTransitionEnd={handleTransitionEnd}
             >
               {extendedBanners.map((banner, index) => {
                 const isClone = index === 0 || index === extendedBanners.length - 1;
                 return (
                   <div key={index} className="hero-slide" aria-hidden={isClone}>
-                    <img src={banner.src} alt={isClone ? '' : banner.alt} className="hero-slide-img" style={{ objectPosition: banner.pos }} />
+                    <img
+                      src={banner.src}
+                      alt={isClone ? '' : banner.alt}
+                      className="hero-slide-img"
+                      style={{ objectPosition: banner.pos }}
+                      draggable={false}
+                    />
                     <div className="hero-caption">
                       <p className="hero-title">{banner.title}</p>
                       <p className="hero-text">{banner.text}</p>
-                      <Link to={banner.cta.to} className="btn btn-cta" tabIndex={isClone ? -1 : undefined}>
+                      <Link
+                        to={banner.cta.to}
+                        className="btn btn-cta"
+                        tabIndex={isClone ? -1 : undefined}
+                        onClick={(e) => {
+                          if (draggedFarRef.current) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
                         {banner.cta.label} <ArrowRight size={16} aria-hidden="true" />
                       </Link>
                     </div>
@@ -205,6 +372,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
 
       {/* ── LICENCES & CREDENTIALS ── */}
       <section className="trust-bar" aria-label="Licences and credentials">
@@ -449,9 +617,10 @@ export default function HomePage() {
         /* ── Banner ── */
         .hero-section { padding: 1.25rem 0 0; background: #fff; }
         .hero-wrap { position: relative; overflow: hidden; border: 1px solid var(--gray-200); border-radius: 4px; background: #fff; }
-        .hero-track { display: flex; width: 100%; }
+        .hero-track { display: flex; width: 100%; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+        .hero-track.is-dragging { cursor: grabbing; }
         .hero-slide { flex: 0 0 100%; min-width: 0; position: relative; display: flex; flex-direction: column; }
-        .hero-slide-img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; background: var(--gray-100); }
+        .hero-slide-img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; background: var(--gray-100); pointer-events: none; user-select: none; -webkit-user-drag: none; }
         .hero-caption { position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); max-width: 470px; background: #fff; padding: 1.75rem 2rem; border-left: 4px solid var(--accent); }
         .hero-title { font-size: 2rem; font-weight: 700; color: var(--ink); line-height: 1.15; margin-bottom: 0.7rem; }
         .hero-text { font-size: 1.05rem; color: var(--navy-light); margin-bottom: 1.2rem; }
