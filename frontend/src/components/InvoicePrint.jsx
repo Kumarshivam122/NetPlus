@@ -1,4 +1,5 @@
 import React from 'react';
+import { COMPANY } from '../data/store';
 
 export default function InvoicePrint({ order, user }) {
   if (!order) return null;
@@ -37,10 +38,11 @@ export default function InvoicePrint({ order, user }) {
       <div className="invoice-parties">
         <div className="invoice-from">
           <h4>Billed From:</h4>
-          <p><strong>NetPlus Wholesale</strong></p>
-          <p>123 Pharma Hub, Block C</p>
-          <p>Medical District, MD 400001</p>
-          <p>Email: support@netplus.com</p>
+          <p><strong>{COMPANY.name}</strong></p>
+          <p>{COMPANY.address}</p>
+          <p>Phone: {COMPANY.phone} | Tel: {COMPANY.phone2}</p>
+          <p>Drug Lic: {COMPANY.dlNo} | GSTIN: {COMPANY.gstin}</p>
+          <p>Email: {COMPANY.email}</p>
         </div>
         <div className="invoice-to">
           <h4>Billed To (Retailer):</h4>

@@ -5,7 +5,7 @@ const transport = nodemailer.createTransport({
   port: process.env.SMTP_PORT || 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER || process.env.SMTP_USER || "netplusenterprisesdhn@gmail.com",
+    user: process.env.EMAIL_USER || process.env.SMTP_USER || "netplusenterprises@gmail.com",
     pass: process.env.EMAIL_PASS || process.env.SMTP_PASS
   }
 });
@@ -127,7 +127,7 @@ const sendVerificationEmail = async (to, otp) => {
 };
 
 const sendContactEmail = async (contactData) => {
-  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprisesdhn@gmail.com';
+  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprises@gmail.com';
   const { name, email, phone, subject, message } = contactData;
 
   const mailOptions = {
@@ -159,7 +159,7 @@ const sendContactEmail = async (contactData) => {
 };
 
 const sendRequestEmail = async (requestData) => {
-  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprisesdhn@gmail.com';
+  const adminEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'netplusenterprises@gmail.com';
   const { medicineName, email, phone, notes } = requestData;
 
   const mailOptions = {

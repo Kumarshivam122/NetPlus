@@ -119,8 +119,8 @@ export default function ContactPage() {
             <div className="contact-info">
               <h2 className="contact-card-title">Contact Information</h2>
               {[
-                { icon: <Phone size={20} />, label: 'Phone', value: COMPANY.phone, href: `tel:${COMPANY.phone}` },
-                { icon: <Phone size={20} />, label: 'Alternate', value: COMPANY.phone2, href: `tel:${COMPANY.phone2}` },
+                { icon: <Phone size={20} />, label: 'Mobile', value: COMPANY.phone, href: `tel:${COMPANY.phone}` },
+                { icon: <Phone size={20} />, label: 'Telephone', value: COMPANY.phone2, href: `tel:${COMPANY.phone2.replace(/\s+/g, '')}` },
                 { icon: <Mail size={20} />,  label: 'Email',  value: COMPANY.email, href: `mailto:${COMPANY.email}` },
                 { icon: <Mail size={20} />,  label: 'Orders', value: COMPANY.email2, href: `mailto:${COMPANY.email2}` },
                 { icon: <MapPin size={20} />,label: 'Address',value: COMPANY.address },
