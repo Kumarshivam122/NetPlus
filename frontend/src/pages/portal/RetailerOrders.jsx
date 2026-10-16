@@ -85,6 +85,10 @@ export default function RetailerOrders() {
   };
 
   const handlePrint = (order) => {
+    if (!order || (order.status !== 'delivered' && order.status !== 'completed')) {
+      addToast('Invoice is only available after the order has been delivered.', 'warning');
+      return;
+    }
     setPrintOrder(order);
     addToast('Generating PDF...', 'info');
     setTimeout(() => {
@@ -288,7 +292,7 @@ export default function RetailerOrders() {
                                 <XCircle size={14} aria-hidden="true" />
                               </button>
                             )}
-                            {(e.status === 'delivered' || e.status === 'approved' || e.status === 'completed') && (
+                            {(e.status === 'delivered' || e.status === 'completed') && (
                               <button 
                                 className="btn btn-ghost btn-sm"
                                 onClick={() => handlePrint(e)} 
@@ -724,14 +728,20 @@ export default function RetailerOrders() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    className="btn btn-outline" 
-                    onClick={() => handlePrint(selectedOrder)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <FileText size={16} /> Download Invoice
-                  </button>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  {(selectedOrder.status === 'delivered' || selectedOrder.status === 'completed') ? (
+                    <button 
+                      className="btn btn-outline" 
+                      onClick={() => handlePrint(selectedOrder)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderColor: 'var(--teal)', color: 'var(--teal-dark)', fontWeight: 600 }}
+                    >
+                      <FileText size={16} /> Download Invoice
+                    </button>
+                  ) : (!isCancelled && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--gray-500)', display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--gray-100)', padding: '6px 12px', borderRadius: '6px' }}>
+                      <Clock size={13} /> Invoice available upon delivery
+                    </div>
+                  ))}
                   <button 
                     className="btn btn-cta" 
                     onClick={closeModal}
