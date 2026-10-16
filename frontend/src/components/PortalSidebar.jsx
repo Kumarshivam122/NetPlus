@@ -26,6 +26,7 @@ const ADMIN_NAV = [
   { to: '/admin/devices',      icon: Monitor,         label: 'Medical Devices' },
   { to: '/admin/orders',       icon: ClipboardList,   label: 'Orders' },
   { to: '/admin/coupons',      icon: Tag,             label: 'Coupons' },
+  { to: '/admin/enquiries',    icon: MessageSquare,   label: 'Enquiries & Requests' },
 ];
 
 export default function PortalSidebar({ title }) {

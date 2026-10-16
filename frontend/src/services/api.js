@@ -508,3 +508,65 @@ export async function apiValidateCoupon(code) {
     return null;
   }
 }
+
+// ==============================================================================
+// 5. ENQUIRIES & MEDICINE REQUESTS
+// ==============================================================================
+
+export async function apiSubmitMedicineRequest(requestData) {
+  try {
+    return await fetchWithAuth('/queries/request', {
+      method: 'POST',
+      body: JSON.stringify(requestData)
+    });
+  } catch (err) {
+    console.error('Submit medicine request error:', err);
+    throw err;
+  }
+}
+
+export async function apiSubmitContactQuery(contactData) {
+  try {
+    return await fetchWithAuth('/queries/contact', {
+      method: 'POST',
+      body: JSON.stringify(contactData)
+    });
+  } catch (err) {
+    console.error('Submit contact query error:', err);
+    throw err;
+  }
+}
+
+export async function apiGetEnquiries() {
+  try {
+    return await fetchWithAuth('/queries');
+  } catch (err) {
+    console.error('Get enquiries error:', err);
+    return [];
+  }
+}
+
+export async function apiUpdateEnquiryStatus(id, status) {
+  try {
+    return await fetchWithAuth(`/queries/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+  } catch (err) {
+    console.error('Update enquiry status error:', err);
+    return null;
+  }
+}
+
+export async function apiDeleteEnquiry(id) {
+  try {
+    await fetchWithAuth(`/queries/${id}`, {
+      method: 'DELETE'
+    });
+    return true;
+  } catch (err) {
+    console.error('Delete enquiry error:', err);
+    return false;
+  }
+}
+

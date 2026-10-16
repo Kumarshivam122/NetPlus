@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Package, ClipboardList, Clock, CheckCircle, XCircle, TrendingUp, UserCheck } from 'lucide-react';
+import { Users, Package, ClipboardList, Clock, CheckCircle, XCircle, TrendingUp, UserCheck, MessageSquare } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { useAuth } from '../../context/AuthContext';
-import { apiGetAllUsers, apiGetOrders, apiGetProducts } from '../../services/api';
+import { apiGetAllUsers, apiGetOrders, apiGetProducts, apiGetEnquiries } from '../../services/api';
 import { PRODUCTS as FALLBACK_PRODUCTS } from '../../data/store';
 
 export default function AdminDashboard() {
@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [totalProducts, setTotalProducts] = useState(FALLBACK_PRODUCTS.length);
+  const [enquiries, setEnquiries] = useState([]);
 
   useEffect(() => {
     let active = true;
@@ -25,6 +26,9 @@ export default function AdminDashboard() {
     apiGetProducts().then(res => {
       if (active && res) setTotalProducts(res.length);
     });
+    apiGetEnquiries().then(res => {
+      if (active && res) setEnquiries(Array.isArray(res) ? res : []);
+    });
     return () => { active = false; };
   }, []);
 
@@ -34,6 +38,7 @@ export default function AdminDashboard() {
 
   const safeOrders = Array.isArray(orders) ? orders : [];
   const pendingEnq = safeOrders.filter(e => e && e.status === 'pending').length;
+  const pendingEnquiriesCount = enquiries.filter(e => !e.status || e.status === 'pending').length;
 
   const recentRegistrations = [...users].reverse().slice(0, 5);
 
@@ -69,6 +74,11 @@ export default function AdminDashboard() {
             {pending > 0 && (
               <Link to="/admin/users" className="badge badge-warning" id="pending-badge" style={{ textDecoration:'none', cursor:'pointer' }}>
                 <Clock size={14} aria-hidden="true" /> {pending} pending approval{pending>1?'s':''}
+              </Link>
+            )}
+            {pendingEnquiriesCount > 0 && (
+              <Link to="/admin/enquiries" className="badge badge-accent" id="pending-enquiries-badge" style={{ textDecoration:'none', cursor:'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MessageSquare size={14} aria-hidden="true" /> {pendingEnquiriesCount} new request{pendingEnquiriesCount>1?'s':''}
               </Link>
             )}
             <span className="badge badge-primary">Admin</span>
@@ -138,6 +148,7 @@ export default function AdminDashboard() {
                 { label:'Total Products',  value:totalProducts,    color:'var(--teal)' },
                 { label:'Total Orders', value:orders.length,   color:'var(--navy)' },
                 { label:'Pending Orders', value:pendingEnq,       color:'var(--accent)' },
+                { label:'Enquiries / Requests', value:pendingEnquiriesCount, color:'var(--teal)' },
                 { label:'Rejected Users',  value:rejected,           color:'var(--red)' },
               ].map((s,i) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'.6rem 0', borderBottom:'1px solid var(--gray-100)' }}>
@@ -148,6 +159,7 @@ export default function AdminDashboard() {
               <div style={{ marginTop:'1.25rem', display:'flex', flexDirection:'column', gap:'.6rem' }}>
                 <Link to="/admin/users"     className="btn btn-primary btn-sm" style={{ justifyContent:'center' }} id="admin-dash-users">Manage Retailers</Link>
                 <Link to="/admin/orders" className="btn btn-outline btn-sm"  style={{ justifyContent:'center' }} id="admin-dash-enq">View Orders</Link>
+                <Link to="/admin/enquiries" className="btn btn-outline btn-sm"  style={{ justifyContent:'center' }} id="admin-dash-enquiries">Enquiries & Requests</Link>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertTriangle } from 'lu
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { COMPANY } from '../../data/store';
+import { apiSubmitContactQuery } from '../../services/api';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', botField: '' });
@@ -61,26 +62,22 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queries/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          subject: form.subject,
-          message: form.message
-        }),
+      const data = await apiSubmitContactQuery({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message
       });
 
-      const data = await response.json();
-      if (data.success) {
+      if (data && (data.success !== false)) {
         setSent(true);
       } else {
-        setError(data.message || "Failed to send message. Please try again later.");
+        setError((data && data.message) || "Failed to send message. Please try again later.");
       }
     } catch (err) {
-      setError("Failed to send message. Please try again later.");
+      console.error("Contact submit error:", err);
+      setError(err.message || "Failed to send message. Please try again later.");
     } finally {
       setLoading(false);
     }

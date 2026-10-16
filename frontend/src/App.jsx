@@ -34,6 +34,7 @@ const AdminProducts      = React.lazy(() => import('./pages/admin/AdminProducts'
 const AdminDevices       = React.lazy(() => import('./pages/admin/AdminDevices'));
 const AdminOrders        = React.lazy(() => import('./pages/admin/AdminOrders'));
 const AdminCoupons       = React.lazy(() => import('./pages/admin/AdminCoupons'));
+const AdminEnquiries     = React.lazy(() => import('./pages/admin/AdminEnquiries'));
 
 // Pending page
 const PendingPage = React.lazy(() => import('./pages/auth/PendingPage'));
@@ -170,6 +171,11 @@ function AppRoutes() {
           <Route path="/admin/coupons" element={
             <RequireAuth allowedRoles={['admin']}>
               <AdminCoupons />
+            </RequireAuth>
+          } />
+          <Route path="/admin/enquiries" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminEnquiries />
             </RequireAuth>
           } />
 
