@@ -65,7 +65,7 @@ export default function BrandsPage() {
             </ol>
             <h1 className="brands-hero-title">Brands We <span>Distribute</span></h1>
             <p className="brands-hero-sub">
-              We work with trusted pharmaceutical manufacturers and authorized brands to ensure genuine and high-quality products for your business.
+              We work with over 50 trusted pharmaceutical manufacturers and authorized brands to ensure genuine and high-quality products for your business.
             </p>
 
             <div className="brands-search-bar">

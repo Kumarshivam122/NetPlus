@@ -436,7 +436,7 @@ export default function HomePage() {
             </Link>
           </div>
           <p className="section-subtitle" style={{ marginBottom: '1.25rem' }}>
-            45,000+ pharmaceutical and healthcare products across 10+ categories.{' '}
+            3,000+ pharmaceutical and healthcare products across 10+ categories.{' '}
             <strong style={{ color: 'var(--ink)' }}>Prices are visible only to approved retailers.</strong>
           </p>
           <div className="cat-grid">

@@ -14,7 +14,7 @@ export const COMPANY = {
   gstin: '20CGEPG9949Q1ZS',
   dlNo: 'JH-Dh3-145689',
   hours: 'Mon–Sat: 9:00 AM – 7:00 PM',
-  established: '2009',
+  established: '2023',
 };
 
 // Stock photography (Pexels, free for commercial use). Replace with your own product shots whenever you have them.
@@ -90,9 +90,9 @@ export const SERVICES = [
 
 export const DISTRIBUTION_STATS = [
   { value: '12,500+', label: 'Registered Pharmacies' },
-  { value: '45,000+', label: 'Products in Catalog' },
-  { value: '350+',    label: 'Brands & Manufacturers' },
-  { value: '15+',     label: 'Years in Business' },
+  { value: '3,000+',  label: 'Products in Catalog' },
+  { value: '50+',     label: 'Brands & Manufacturers' },
+  { value: '3+',      label: 'Years in Business' },
 ];
 
 // =============================================

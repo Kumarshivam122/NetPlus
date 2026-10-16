@@ -37,7 +37,7 @@ export default function ProductsPage() {
     <div className="page-wrapper">
       <Helmet>
         <title>Wholesale Pharmaceutical Products | NET PLUS</title>
-        <meta name="description" content="Browse 45,000+ pharmaceutical products across 10+ therapeutic categories at PTR (Price to Retailer). Exclusive for verified medical shops." />
+        <meta name="description" content="Browse 3,000+ pharmaceutical products across 10+ therapeutic categories at PTR (Price to Retailer). Exclusive for verified medical shops." />
         <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/products`} />
       </Helmet>
       <Navbar />
@@ -49,7 +49,7 @@ export default function ProductsPage() {
           </ol>
           <h1 className="page-hero-title">{searchTerm ? `Search results for "${searchTerm}"` : 'Product Categories'}</h1>
           <p className="page-hero-sub">
-            45,000+ pharmaceutical products across 10+ therapeutic categories.
+            3,000+ pharmaceutical products across 10+ therapeutic categories.
             PTR (Price to Retailer) is <strong style={{ color: 'var(--ink)' }}>private</strong> — visible only to approved retailers.
           </p>
         </div>

@@ -11,7 +11,7 @@ export default function AboutPage() {
     <div className="page-wrapper" style={{ background: '#fff' }}>
       <Helmet>
         <title>About Us | NET PLUS Medical Wholesale</title>
-        <meta name="description" content="Learn about NET PLUS ENTERPRISES, Maharashtra's leading B2B pharmaceutical wholesale and distribution company with over 15 years of trust." />
+        <meta name="description" content="Learn about NET PLUS ENTERPRISES, Jharkhand's leading B2B pharmaceutical wholesale and distribution company, trusted since 2023." />
         <link rel="canonical" href={`${import.meta.env.VITE_BASE_URL}/about`} />
       </Helmet>
       <Navbar />
@@ -33,7 +33,7 @@ export default function AboutPage() {
               </h1>
 
               <p style={{ fontSize: '1.1rem', color: 'var(--navy-light)', lineHeight: 1.6, marginBottom: '1.75rem', maxWidth: '540px' }}>
-                NET PLUS ENTERPRISES — Maharashtra's leading B2B pharmaceutical wholesale & distribution company.
+                NET PLUS ENTERPRISES — Jharkhand's leading B2B pharmaceutical wholesale & distribution company.
               </p>
 
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -50,21 +50,21 @@ export default function AboutPage() {
                 <div className="stat-strip-item">
                   <div className="stat-strip-icon"><Shield size={20} /></div>
                   <div className="stat-strip-content">
-                    <h4>15+</h4>
+                    <h4>3+</h4>
                     <p>Years of Trust</p>
                   </div>
                 </div>
                 <div className="stat-strip-item">
                   <div className="stat-strip-icon"><Building size={20} /></div>
                   <div className="stat-strip-content">
-                    <h4>10,000 sq. ft.</h4>
-                    <p>Warehouse Facility</p>
+                    <h4>50+</h4>
+                    <p>Brands & Manufacturers</p>
                   </div>
                 </div>
                 <div className="stat-strip-item">
                   <div className="stat-strip-icon"><Package size={20} /></div>
                   <div className="stat-strip-content">
-                    <h4>45,000+</h4>
+                    <h4>3,000+</h4>
                     <p>Products</p>
                   </div>
                 </div>
@@ -100,10 +100,10 @@ export default function AboutPage() {
         <div className="container">
           <div style={{ maxWidth: '800px' }}>
             <span className="accent-tag">Our Story</span>
-            <h2 className="section-title">15+ Years of Trusted Distribution</h2>
+            <h2 className="section-title">Trusted Distribution Since {COMPANY.established}</h2>
             <p style={{ marginBottom: '1.5rem', lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--gray-600)' }}>
-              Founded in <strong>{COMPANY.established}</strong>, NET PLUS ENTERPRISES started as a small regional
-              medicine distributor in Dhanbad and has grown into one of Jharkhand's most trusted
+              Founded in <strong>{COMPANY.established}</strong>, NET PLUS ENTERPRISES started as a dedicated
+              medicine distributor in Dhanbad and has rapidly grown into one of Jharkhand's most trusted
               wholesale pharmaceutical supply networks.
             </p>
             <p style={{ marginBottom: '1.5rem', lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--gray-600)' }}>
@@ -111,8 +111,8 @@ export default function AboutPage() {
               medicines reach the right hands through a verified, controlled supply chain.
             </p>
             <p style={{ lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--gray-600)' }}>
-              Our warehouse facilities, cold-chain logistics, and 350+ brand partnerships allow us to
-              serve 12,500+ registered retailers across the region with next-day delivery capabilities.
+              Our warehouse facilities, cold-chain logistics, and 50+ brand & manufacturer partnerships allow us to
+              supply 3,000+ genuine products to registered retailers across the region with next-day delivery capabilities.
             </p>
           </div>
         </div>
