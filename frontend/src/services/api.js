@@ -302,10 +302,35 @@ export async function apiDeleteProduct(productId) {
 // 3. ORDERS SERVICES
 // ==============================================================================
 
+function normalizeOrder(o) {
+  if (!o) return null;
+  const orderNum = o.orderId || o.order_id || o.id || o._id || ('ORD-' + (o.createdAt ? new Date(o.createdAt).getTime() : Date.now()));
+  
+  // Calculate expected delivery if missing: +2 business days skipping Sunday
+  let expectedDelivery = o.expectedDeliveryDate || o.expected_delivery_date;
+  if (!expectedDelivery) {
+    const created = o.createdAt || o.created_at || new Date().toISOString();
+    const est = new Date(created);
+    est.setDate(est.getDate() + 2);
+    if (est.getDay() === 0) est.setDate(est.getDate() + 1);
+    expectedDelivery = est.toISOString();
+  }
+
+  return {
+    ...o,
+    id: orderNum,
+    _id: orderNum,
+    orderId: orderNum,
+    order_id: orderNum,
+    expectedDeliveryDate: expectedDelivery,
+    createdAt: o.createdAt || o.created_at || new Date().toISOString(),
+  };
+}
+
 export async function apiGetOrders() {
   try {
     const orders = await fetchWithAuth('/orders');
-    return (orders || []).map(o => ({ ...o, id: o._id }));
+    return (orders || []).map(normalizeOrder);
   } catch (err) {
     console.error(err);
     return [];
@@ -315,10 +340,20 @@ export async function apiGetOrders() {
 export async function apiGetRetailerOrders(userId) {
   try {
     const orders = await fetchWithAuth('/orders/myorders');
-    return (orders || []).map(o => ({ ...o, id: o._id }));
+    return (orders || []).map(normalizeOrder);
   } catch (err) {
     console.error(err);
     return [];
+  }
+}
+
+export async function apiGetOrderById(orderId) {
+  try {
+    const order = await fetchWithAuth(`/orders/${orderId}`);
+    return normalizeOrder(order);
+  } catch (err) {
+    console.error(err);
+    return null;
   }
 }
 
@@ -328,7 +363,7 @@ export async function apiSubmitOrder(orderData) {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
-    return order;
+    return normalizeOrder(order);
   } catch (err) {
     console.error(err);
     return null;

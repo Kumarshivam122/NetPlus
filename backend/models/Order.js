@@ -2,20 +2,34 @@ const supabase = require('../db/supabase');
 
 function addIdAlias(row) {
   if (!row) return null;
-  row._id = row.id;
+  const orderNum = row.order_id || row.orderId || row.id || ('ORD-' + (row.created_at ? new Date(row.created_at).getTime() : Date.now()));
+  row._id = row.id || orderNum;
+  row.id = row.id || orderNum;
   // Map snake_case DB columns to camelCase for frontend compatibility
-  row.orderId = row.order_id;
-  row.userId = row.user_id;
-  row.userName = row.user_name;
+  row.orderId = orderNum;
+  row.userId = row.user_id || row.userId;
+  row.userName = row.user_name || row.userName;
   
   // Parse items if they come back as a string, otherwise use directly
   row.items = typeof row.items === 'string' ? JSON.parse(row.items) : row.items || [];
   
-  row.discountCode = row.discount_code;
-  row.discountAmount = Number(row.discount_amount);
-  row.totalAmount = Number(row.total_amount);
-  row.createdAt = row.created_at;
-  row.updatedAt = row.updated_at;
+  row.discountCode = row.discount_code || row.discountCode;
+  row.discountAmount = Number(row.discount_amount || row.discountAmount || 0);
+  row.totalAmount = Number(row.total_amount || row.totalAmount || 0);
+  row.createdAt = row.created_at || row.createdAt || new Date().toISOString();
+  row.updatedAt = row.updated_at || row.updatedAt || row.createdAt;
+
+  // Expected delivery date: 2 business days after order creation (skipping Sunday)
+  if (!row.expectedDeliveryDate && !row.expected_delivery_date) {
+    const created = new Date(row.createdAt);
+    const est = new Date(created);
+    est.setDate(est.getDate() + 2);
+    if (est.getDay() === 0) est.setDate(est.getDate() + 1);
+    row.expectedDeliveryDate = est.toISOString();
+  } else {
+    row.expectedDeliveryDate = row.expected_delivery_date || row.expectedDeliveryDate;
+  }
+
   return row;
 }
 
@@ -35,13 +49,24 @@ const Order = {
   },
 
   async findById(id) {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('orders')
       .select('*')
       .eq('id', id)
       .single();
       
-    if (error && error.code !== 'PGRST116') throw error;
+    if ((error && error.code === 'PGRST116') || !data) {
+      const fallback = await supabase
+        .from('orders')
+        .select('*')
+        .eq('order_id', id)
+        .single();
+      if (!fallback.error && fallback.data) {
+        data = fallback.data;
+      }
+    } else if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
     return addIdAlias(data || null);
   },
 
@@ -57,8 +82,10 @@ const Order = {
   },
 
   async create(data) {
+    const orderId = data.orderId || ('ORD-' + Date.now());
     const insertData = {
-      order_id: data.orderId || 'ORD-' + Date.now(),
+      id: orderId,
+      order_id: orderId,
       user_id: data.userId,
       user_name: data.userName,
       items: data.items || [],

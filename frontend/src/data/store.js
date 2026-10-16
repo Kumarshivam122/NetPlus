@@ -193,8 +193,46 @@ export function deleteUser(userId) {
 }
 
 // =============================================
-//   ORDERS
+//   ORDERS & DELIVERY HELPERS
 // =============================================
+
+// Calculate expected delivery date: 2 business days after order creation, skipping Sunday
+export function computeExpectedDelivery(createdDate) {
+  const d = createdDate ? new Date(createdDate) : new Date();
+  const est = new Date(d);
+  est.setDate(est.getDate() + 2);
+  if (est.getDay() === 0) { // Sunday is non-transit
+    est.setDate(est.getDate() + 1);
+  }
+  return est;
+}
+
+export function formatDeliveryDate(dateInput) {
+  if (!dateInput) return 'Within 2 business days';
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return 'Within 2 business days';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(d);
+  target.setHours(0, 0, 0, 0);
+
+  const diffTime = target.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  const formattedDate = d.toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  if (diffDays === 0) return `Today (${formattedDate})`;
+  if (diffDays === 1) return `Tomorrow (${formattedDate})`;
+  if (diffDays === 2) return `In 2 Days (${formattedDate})`;
+  return formattedDate;
+}
+
 export function getOrders() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS) || '[]'); }
   catch { return []; }
@@ -202,11 +240,17 @@ export function getOrders() {
 
 export function submitOrder(order) {
   const list = getOrders();
+  const orderId = order.orderId || ('ORD-' + Date.now());
+  const now = new Date().toISOString();
+  const estDelivery = computeExpectedDelivery(now).toISOString();
   const entry = {
-    id: 'ORD-' + Date.now(),
+    id: orderId,
+    orderId: orderId,
     ...order,
     status: 'pending',
-    submittedAt: new Date().toISOString(),
+    submittedAt: now,
+    createdAt: now,
+    expectedDeliveryDate: estDelivery,
   };
   list.unshift(entry);
   localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(list));
@@ -215,9 +259,10 @@ export function submitOrder(order) {
 
 export function updateOrderStatus(id, status) {
   const list = getOrders();
-  const idx = list.findIndex(e => e.id === id);
+  const idx = list.findIndex(e => e.id === id || e.orderId === id);
   if (idx !== -1) {
     list[idx].status = status;
     localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(list));
   }
 }
+

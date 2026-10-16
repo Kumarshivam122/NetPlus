@@ -81,7 +81,7 @@ export default function RetailerCart() {
         freeQuantity: getItemFreeQty(item)
       }));
 
-      await apiSubmitOrder({
+      const createdOrder = await apiSubmitOrder({
         items: itemsWithFree,
         note,
         discountCode: discountPercent > 0 ? coupon.toUpperCase() : null,
@@ -90,7 +90,12 @@ export default function RetailerCart() {
       });
       addToast('Order placed successfully!', 'success');
       clearCart();
-      navigate('/portal/orders');
+      const orderId = createdOrder?.orderId || createdOrder?.id || '';
+      if (orderId) {
+        navigate(`/portal/orders?orderId=${encodeURIComponent(orderId)}&placed=true`);
+      } else {
+        navigate('/portal/orders?placed=true');
+      }
     } catch (e) {
       addToast('Failed to place order.', 'error');
     }

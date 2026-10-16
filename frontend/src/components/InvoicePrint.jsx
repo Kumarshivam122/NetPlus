@@ -1,10 +1,13 @@
 import React from 'react';
-import { COMPANY } from '../data/store';
+import { COMPANY, formatDeliveryDate, computeExpectedDelivery } from '../data/store';
 
 export default function InvoicePrint({ order, user }) {
   if (!order) return null;
 
   const items = order.items || [];
+  const orderNum = order.orderId || order.id || '';
+  const displayOrderNo = orderNum.startsWith('ORD-') ? orderNum : `ORD-${orderNum}`;
+  const expectedDelivery = order.expectedDeliveryDate || computeExpectedDelivery(order.createdAt);
   
   // Recalculate or use stored totals
   const subTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -29,8 +32,9 @@ export default function InvoicePrint({ order, user }) {
         </div>
         <div className="invoice-details">
           <h1 style={{ color: '#000', margin: 0 }}>INVOICE</h1>
-          <p><strong>Invoice #:</strong> ORD-{order.id}</p>
-          <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+          <p><strong>Order #:</strong> {displayOrderNo}</p>
+          <p><strong>Order Date:</strong> {new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+          <p><strong>Expected Delivery:</strong> {formatDeliveryDate(expectedDelivery)}</p>
           <p><strong>Status:</strong> {order.status.toUpperCase()}</p>
         </div>
       </div>
