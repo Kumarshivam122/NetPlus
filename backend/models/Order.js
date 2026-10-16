@@ -154,6 +154,15 @@ const Order = {
     
     throw new Error('Unauthorized role for cancellation');
   },
+
+  async deleteAll() {
+    const { data, error } = await supabase
+      .from('orders')
+      .delete()
+      .neq('id', -999);
+    if (error) throw error;
+    return data;
+  },
 };
 
 module.exports = Order;

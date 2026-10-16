@@ -268,12 +268,19 @@ export function submitOrder(order) {
   return entry;
 }
 
-export function updateOrderStatus(id, status) {
-  const list = getOrders();
-  const idx = list.findIndex(e => e.id === id || e.orderId === id);
-  if (idx !== -1) {
-    list[idx].status = status;
-    localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(list));
-  }
+export function clearOrders() {
+  try {
+    localStorage.removeItem(STORAGE_KEY_ORDERS);
+  } catch (e) {}
+}
+
+// Ensure fresh start cleanup for cached client orders
+if (typeof window !== 'undefined') {
+  try {
+    if (!localStorage.getItem('np_orders_fresh_v1')) {
+      localStorage.removeItem(STORAGE_KEY_ORDERS);
+      localStorage.setItem('np_orders_fresh_v1', 'true');
+    }
+  } catch (e) {}
 }
 

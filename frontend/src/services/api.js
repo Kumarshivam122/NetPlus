@@ -425,6 +425,20 @@ export async function apiCancelOrder(orderId) {
   }
 }
 
+export async function apiClearAllOrders() {
+  try {
+    await fetchWithAuth('/orders', {
+      method: 'DELETE',
+    });
+    try { localStorage.removeItem('np_orders'); } catch {}
+    return true;
+  } catch (err) {
+    console.error('Clear All Orders error:', err);
+    try { localStorage.removeItem('np_orders'); } catch {}
+    return false;
+  }
+}
+
 // ==============================================================================
 // 4. COUPON SERVICES
 // ==============================================================================

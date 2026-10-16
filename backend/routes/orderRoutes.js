@@ -108,4 +108,15 @@ router.put('/:id/cancel', protect, async (req, res) => {
   }
 });
 
+// @route DELETE /api/orders
+// Admin: Delete all orders (Fresh start)
+router.delete('/', protect, admin, async (req, res) => {
+  try {
+    await Order.deleteAll();
+    res.json({ message: 'All orders cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

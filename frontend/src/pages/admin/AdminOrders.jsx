@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck } from 'lucide-react';
+import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck, Trash2 } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
-import { apiGetOrders, apiUpdateOrderStatus } from '../../services/api';
+import { apiGetOrders, apiUpdateOrderStatus, apiClearAllOrders } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
 
@@ -27,6 +27,15 @@ export default function AdminOrders() {
     reload();
   };
 
+  const handleClearAllOrders = async () => {
+    if (window.confirm("Are you sure you want to delete ALL orders? This cannot be undone and will reset the portal for a completely fresh start.")) {
+      await apiClearAllOrders();
+      setOrders([]);
+      setSelectedOrder(null);
+      addToast('All orders cleared for a fresh start', 'success');
+    }
+  };
+
   const filtered = orders.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q || e.userName?.toLowerCase().includes(q) || (e.items && e.items.some(item => item.productName?.toLowerCase().includes(q)));
@@ -43,6 +52,16 @@ export default function AdminOrders() {
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Retailer Orders</h4>
             <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{orders.length} total orders</p>
           </div>
+          {orders.length > 0 && (
+            <button 
+              className="btn btn-outline btn-sm"
+              style={{ color: 'var(--red)', borderColor: 'var(--red)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              onClick={handleClearAllOrders}
+              id="clear-all-orders-btn"
+            >
+              <Trash2 size={14} /> Clear All Orders (Fresh Start)
+            </button>
+          )}
         </div>
         <div className="portal-content">
           <div style={{ display:'flex', gap:'1rem', alignItems:'center', flexWrap:'wrap', marginBottom:'1.5rem' }}>
