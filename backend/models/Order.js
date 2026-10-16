@@ -2,11 +2,12 @@ const supabase = require('../db/supabase');
 
 function addIdAlias(row) {
   if (!row) return null;
-  const orderNum = row.order_id || row.orderId || row.id || ('ORD-' + (row.created_at ? new Date(row.created_at).getTime() : Date.now()));
-  row._id = row.id || orderNum;
-  row.id = row.id || orderNum;
+  const orderNum = row.order_id || row.orderId || ('ORD-' + (row.created_at ? new Date(row.created_at).getTime() : Date.now()));
+  row._id = row.id;
+  row.id = row.id;
   // Map snake_case DB columns to camelCase for frontend compatibility
   row.orderId = orderNum;
+  row.order_id = orderNum;
   row.userId = row.user_id || row.userId;
   row.userName = row.user_name || row.userName;
   
@@ -49,24 +50,15 @@ const Order = {
   },
 
   async findById(id) {
-    let { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .single();
-      
-    if ((error && error.code === 'PGRST116') || !data) {
-      const fallback = await supabase
-        .from('orders')
-        .select('*')
-        .eq('order_id', id)
-        .single();
-      if (!fallback.error && fallback.data) {
-        data = fallback.data;
-      }
-    } else if (error && error.code !== 'PGRST116') {
-      throw error;
+    const isNum = !isNaN(Number(id)) && Number.isInteger(Number(id));
+    let query = supabase.from('orders').select('*');
+    if (isNum) {
+      query = query.eq('id', Number(id));
+    } else {
+      query = query.eq('order_id', id);
     }
+    const { data, error } = await query.single();
+    if (error && error.code !== 'PGRST116') throw error;
     return addIdAlias(data || null);
   },
 
@@ -83,8 +75,8 @@ const Order = {
 
   async create(data) {
     const orderId = data.orderId || ('ORD-' + Date.now());
+    // Only set order_id - id is the serial integer primary key generated automatically by Postgres
     const insertData = {
-      id: orderId,
       order_id: orderId,
       user_id: data.userId,
       user_name: data.userName,
@@ -107,28 +99,34 @@ const Order = {
   },
 
   async updateStatus(id, status) {
-    const { data: result, error } = await supabase
+    const isNum = !isNaN(Number(id)) && Number.isInteger(Number(id));
+    let query = supabase
       .from('orders')
-      .update({ status: status, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-      
+      .update({ status: status, updated_at: new Date().toISOString() });
+    if (isNum) {
+      query = query.eq('id', Number(id));
+    } else {
+      query = query.eq('order_id', id);
+    }
+    const { data: result, error } = await query.select().single();
     if (error && error.code !== 'PGRST116') throw error;
     return addIdAlias(result || null);
   },
 
   async cancelOrder(id, role, userId) {
+    const isNum = !isNaN(Number(id)) && Number.isInteger(Number(id));
     if (role === 'retailer') {
-      const { data: result, error } = await supabase
+      let query = supabase
         .from('orders')
         .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', id)
         .eq('user_id', userId)
-        .eq('status', 'pending')
-        .select()
-        .single();
-        
+        .eq('status', 'pending');
+      if (isNum) {
+        query = query.eq('id', Number(id));
+      } else {
+        query = query.eq('order_id', id);
+      }
+      const { data: result, error } = await query.select().single();
       if (error && error.code !== 'PGRST116') throw error;
       if (!result) {
         throw new Error('Order not found or cannot be cancelled');
@@ -137,13 +135,15 @@ const Order = {
     }
     
     if (role === 'admin') {
-      const { data: result, error } = await supabase
+      let query = supabase
         .from('orders')
-        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-        
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() });
+      if (isNum) {
+        query = query.eq('id', Number(id));
+      } else {
+        query = query.eq('order_id', id);
+      }
+      const { data: result, error } = await query.select().single();
       if (error && error.code !== 'PGRST116') throw error;
       if (!result) {
         throw new Error('Order not found');

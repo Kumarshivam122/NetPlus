@@ -88,16 +88,22 @@ export default function RetailerCart() {
         discountAmount,
         totalAmount
       });
+
+      if (!createdOrder) {
+        throw new Error('Failed to create order. Please try again.');
+      }
+
       addToast('Order placed successfully!', 'success');
       clearCart();
-      const orderId = createdOrder?.orderId || createdOrder?.id || '';
+      const orderId = createdOrder?.orderId || createdOrder?.order_id || createdOrder?.id || '';
       if (orderId) {
         navigate(`/portal/orders?orderId=${encodeURIComponent(orderId)}&placed=true`);
       } else {
         navigate('/portal/orders?placed=true');
       }
     } catch (e) {
-      addToast('Failed to place order.', 'error');
+      console.error('Order checkout error:', e);
+      addToast(e.message || 'Failed to place order.', 'error');
     }
     setIsSubmitting(false);
   };

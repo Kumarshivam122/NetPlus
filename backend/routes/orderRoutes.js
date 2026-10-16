@@ -18,9 +18,10 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Minimum order amount must be at least RS.1500' });
     }
 
+    const userId = req.user._id || req.user.id;
     const order = await Order.create({
       orderId: 'ORD-' + Date.now(),
-      userId: req.user._id,
+      userId,
       userName: req.user.storeName || req.user.ownerName || req.user.name,
       items,
       note,
@@ -50,7 +51,8 @@ router.get('/', protect, admin, async (req, res) => {
 // Get logged in user orders
 router.get('/myorders', protect, async (req, res) => {
   try {
-    const orders = await Order.findByUserId(req.user._id);
+    const userId = req.user._id || req.user.id;
+    const orders = await Order.findByUserId(userId);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -65,7 +67,8 @@ router.get('/:id', protect, async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
-    if (req.user.role !== 'admin' && String(order.userId) !== String(req.user._id)) {
+    const currentUserId = String(req.user._id || req.user.id);
+    if (req.user.role !== 'admin' && String(order.userId) !== currentUserId) {
       return res.status(403).json({ message: 'Not authorized to view this order' });
     }
     res.json(order);
@@ -94,7 +97,8 @@ router.put('/:id/status', protect, admin, async (req, res) => {
 // Cancel an order (Retailer if pending, Admin anytime)
 router.put('/:id/cancel', protect, async (req, res) => {
   try {
-    const updatedOrder = await Order.cancelOrder(req.params.id, req.user.role, req.user._id);
+    const userId = req.user._id || req.user.id;
+    const updatedOrder = await Order.cancelOrder(req.params.id, req.user.role, userId);
     res.json(updatedOrder);
   } catch (error) {
     if (error.message.includes('not found') || error.message.includes('cannot be cancelled')) {

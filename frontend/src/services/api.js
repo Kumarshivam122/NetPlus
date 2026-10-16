@@ -304,7 +304,7 @@ export async function apiDeleteProduct(productId) {
 
 function normalizeOrder(o) {
   if (!o) return null;
-  const orderNum = o.orderId || o.order_id || o.id || o._id || ('ORD-' + (o.createdAt ? new Date(o.createdAt).getTime() : Date.now()));
+  const orderNum = o.orderId || o.order_id || ('ORD-' + (o.createdAt ? new Date(o.createdAt).getTime() : Date.now()));
   
   // Calculate expected delivery if missing: +2 business days skipping Sunday
   let expectedDelivery = o.expectedDeliveryDate || o.expected_delivery_date;
@@ -318,8 +318,8 @@ function normalizeOrder(o) {
 
   return {
     ...o,
-    id: orderNum,
-    _id: orderNum,
+    id: o.id || o._id || orderNum,
+    _id: o.id || o._id || orderNum,
     orderId: orderNum,
     order_id: orderNum,
     expectedDeliveryDate: expectedDelivery,
@@ -332,8 +332,13 @@ export async function apiGetOrders() {
     const orders = await fetchWithAuth('/orders');
     return (orders || []).map(normalizeOrder);
   } catch (err) {
-    console.error(err);
-    return [];
+    console.error('Get Orders error:', err);
+    try {
+      const stored = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      return (stored || []).map(normalizeOrder);
+    } catch {
+      return [];
+    }
   }
 }
 
@@ -342,8 +347,13 @@ export async function apiGetRetailerOrders(userId) {
     const orders = await fetchWithAuth('/orders/myorders');
     return (orders || []).map(normalizeOrder);
   } catch (err) {
-    console.error(err);
-    return [];
+    console.error('Get Retailer Orders error:', err);
+    try {
+      const stored = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      return (stored || []).map(normalizeOrder);
+    } catch {
+      return [];
+    }
   }
 }
 
@@ -352,8 +362,14 @@ export async function apiGetOrderById(orderId) {
     const order = await fetchWithAuth(`/orders/${orderId}`);
     return normalizeOrder(order);
   } catch (err) {
-    console.error(err);
-    return null;
+    console.error('Get Order By ID error:', err);
+    try {
+      const stored = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      const match = stored.find(o => o.orderId === orderId || o.order_id === orderId || String(o.id) === String(orderId));
+      return match ? normalizeOrder(match) : null;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -363,10 +379,20 @@ export async function apiSubmitOrder(orderData) {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
-    return normalizeOrder(order);
+    const normalized = normalizeOrder(order);
+    if (normalized) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('np_orders') || '[]');
+        stored.unshift(normalized);
+        localStorage.setItem('np_orders', JSON.stringify(stored));
+      } catch (e) {
+        // ignore
+      }
+    }
+    return normalized;
   } catch (err) {
-    console.error(err);
-    return null;
+    console.error('Submit order error:', err);
+    throw err;
   }
 }
 

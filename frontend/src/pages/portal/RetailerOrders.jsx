@@ -42,15 +42,18 @@ export default function RetailerOrders() {
   const isJustPlaced = searchParams.get('placed') === 'true';
 
   const loadOrders = async () => {
-    if (!user?.id) return;
     try {
-      const res = await apiGetRetailerOrders(user.id);
+      const res = await apiGetRetailerOrders(user?.id || user?._id);
       const list = res || [];
       setOrders(list);
       setLoading(false);
 
       if (urlOrderId) {
-        const found = list.find(o => (o.orderId === urlOrderId || o.id === urlOrderId));
+        const found = list.find(o => (
+          o.orderId === urlOrderId || 
+          o.order_id === urlOrderId || 
+          String(o.id) === String(urlOrderId)
+        ));
         if (found) {
           setSelectedOrder(found);
           if (isJustPlaced) setShowCelebration(true);
@@ -64,14 +67,14 @@ export default function RetailerOrders() {
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error loading retailer orders:', err);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     loadOrders();
-  }, [user?.id, urlOrderId, isJustPlaced]);
+  }, [user?.id, user?._id, urlOrderId, isJustPlaced]);
 
   const handleCopyOrderNo = (orderNo) => {
     if (!orderNo) return;
