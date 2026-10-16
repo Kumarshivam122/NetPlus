@@ -71,8 +71,8 @@ export default function AboutPage() {
                 <div className="stat-strip-item last-item">
                   <div className="stat-strip-icon"><Users2 size={20} /></div>
                   <div className="stat-strip-content">
-                    <h4>12,500+</h4>
-                    <p>Retail Partners</p>
+                    <h4>50+</h4>
+                    <p>Registered Pharmacies</p>
                   </div>
                 </div>
               </div>

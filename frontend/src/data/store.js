@@ -89,7 +89,7 @@ export const SERVICES = [
 ];
 
 export const DISTRIBUTION_STATS = [
-  { value: '12,500+', label: 'Registered Pharmacies' },
+  { value: '50+',     label: 'Registered Pharmacies' },
   { value: '3,000+',  label: 'Products in Catalog' },
   { value: '50+',     label: 'Brands & Manufacturers' },
   { value: '3+',      label: 'Years in Business' },
