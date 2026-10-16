@@ -24,10 +24,11 @@ export default function RetailerDashboard() {
     return () => { active = false; };
   }, [user?.id]);
 
-  const pending   = orders.filter(e => e.status === 'pending').length;
-  const approved  = orders.filter(e => e.status === 'approved').length;
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const pending   = safeOrders.filter(e => e && e.status === 'pending').length;
+  const approved  = safeOrders.filter(e => e && e.status === 'approved').length;
 
-  const recentOrders = orders.slice(0, 5);
+  const recentOrders = safeOrders.slice(0, 5);
 
   return (
     <div className="portal-layout" id="retailer-dashboard">

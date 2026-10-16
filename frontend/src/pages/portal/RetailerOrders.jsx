@@ -44,30 +44,37 @@ export default function RetailerOrders() {
   const loadOrders = async () => {
     try {
       const res = await apiGetRetailerOrders(user?.id || user?._id);
-      const list = res || [];
+      const list = Array.isArray(res) ? res : [];
       setOrders(list);
       setLoading(false);
 
       if (urlOrderId) {
         const found = list.find(o => (
-          o.orderId === urlOrderId || 
-          o.order_id === urlOrderId || 
-          String(o.id) === String(urlOrderId)
+          o && (
+            o.orderId === urlOrderId || 
+            o.order_id === urlOrderId || 
+            String(o.id) === String(urlOrderId)
+          )
         ));
         if (found) {
           setSelectedOrder(found);
           if (isJustPlaced) setShowCelebration(true);
         } else {
-          // If not yet present in list, attempt direct fetch
-          const direct = await apiGetOrderById(urlOrderId);
-          if (direct) {
-            setSelectedOrder(direct);
-            if (isJustPlaced) setShowCelebration(true);
+          // If not yet present in list, attempt direct fetch safely
+          try {
+            const direct = await apiGetOrderById(urlOrderId);
+            if (direct && (direct.orderId || direct.id)) {
+              setSelectedOrder(direct);
+              if (isJustPlaced) setShowCelebration(true);
+            }
+          } catch (e) {
+            console.warn('Order not found from URL params:', urlOrderId);
           }
         }
       }
     } catch (err) {
       console.error('Error loading retailer orders:', err);
+      setOrders([]);
       setLoading(false);
     }
   };
@@ -146,15 +153,16 @@ export default function RetailerOrders() {
 
   // Helper for item calculations
   const calculateTotals = (order) => {
-    const items = order.items || [];
-    const subTotal = items.reduce((acc, item) => acc + (Number(item.price || item.unitPrice || 0) * Number(item.quantity || 0)), 0);
+    if (!order) return { subTotal: 0, totalTax: 0, totalFreeQty: 0, discountAmount: 0, finalAmount: 0 };
+    const items = Array.isArray(order.items) ? order.items : [];
+    const subTotal = items.reduce((acc, item) => acc + (Number(item?.price || item?.unitPrice || 0) * Number(item?.quantity || 0)), 0);
     const totalTax = items.reduce((acc, item) => {
-      if (item.taxIncluded === false) {
-        return acc + (((item.price || item.unitPrice || 0) * (item.taxPercent || 0) / 100) * (item.quantity || 1));
+      if (item?.taxIncluded === false) {
+        return acc + (((Number(item?.price || item?.unitPrice || 0)) * (Number(item?.taxPercent || 0)) / 100) * (Number(item?.quantity || 1)));
       }
       return acc;
     }, 0);
-    const totalFreeQty = items.reduce((acc, item) => acc + (Number(item.freeQuantity) || 0), 0);
+    const totalFreeQty = items.reduce((acc, item) => acc + (Number(item?.freeQuantity) || 0), 0);
     const discountAmount = Number(order.discountAmount) || 0;
     const finalAmount = Number(order.totalAmount) || (subTotal - discountAmount + totalTax);
 
@@ -213,9 +221,10 @@ export default function RetailerOrders() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map(e => {
+                  {(orders || []).map(e => {
+                    if (!e) return null;
                     const s = STATUS_MAP[e.status] || STATUS_MAP.pending;
-                    const items = e.items || [];
+                    const items = Array.isArray(e.items) ? e.items : [];
                     const firstItem = items[0] || {};
                     const orderId = e.orderId || e.id;
                     const { finalAmount, totalFreeQty } = calculateTotals(e);
@@ -419,7 +428,7 @@ export default function RetailerOrders() {
                     </button>
                   </div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    Placed on: {new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    Placed on: {selectedOrder?.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent'}
                   </div>
                 </div>
 
@@ -656,7 +665,7 @@ export default function RetailerOrders() {
                       return (
                         <div key={idx} style={{
                           padding: '0.75rem 0',
-                          borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid var(--gray-100)' : 'none',
+                          borderBottom: idx < (selectedOrder.items || []).length - 1 ? '1px solid var(--gray-100)' : 'none',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'flex-start',

@@ -30,21 +30,23 @@ export default function RetailerCart() {
   }, []);
 
   const getItemFreeQty = (item) => {
+    if (!item) return 0;
     const scheme = item.scheme;
     if (scheme && (scheme.enabled !== false) && Number(scheme.minQty) > 0) {
       const min = Number(scheme.minQty);
       const free = Number(scheme.freeQty) || 1;
-      return Math.floor(Number(item.quantity) / min) * free;
+      return Math.floor(Number(item.quantity || 1) / min) * free;
     }
     return item.freeQuantity || 0;
   };
 
-  const totalFreeItems = cart.reduce((acc, item) => acc + getItemFreeQty(item), 0);
+  const safeCart = Array.isArray(cart) ? cart : [];
+  const totalFreeItems = safeCart.reduce((acc, item) => acc + (item ? getItemFreeQty(item) : 0), 0);
 
-  const subTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const totalTax = cart.reduce((acc, item) => {
-    if (item.taxIncluded === false) {
-      return acc + ((item.price * (item.taxPercent || 0) / 100) * item.quantity);
+  const subTotal = safeCart.reduce((acc, item) => acc + ((Number(item?.price) || 0) * (Number(item?.quantity) || 0)), 0);
+  const totalTax = safeCart.reduce((acc, item) => {
+    if (item?.taxIncluded === false) {
+      return acc + (((Number(item.price) || 0) * (Number(item.taxPercent) || 0) / 100) * (Number(item.quantity) || 1));
     }
     return acc;
   }, 0);
@@ -132,14 +134,16 @@ export default function RetailerCart() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {cart.map((item, index) => {
+                {safeCart.map((item, index) => {
+                  if (!item) return null;
                   const freeQty = getItemFreeQty(item);
+                  const itemPrice = Number(item.price || 0);
                   return (
                   <div key={index} className="cart-row">
                     <div>
                       <div style={{ fontWeight: 700, color: 'var(--navy)' }}>{item.productName}</div>
                       <div style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.manufacturer}</div>
-                      <div style={{ fontSize: '.95rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{item.price.toFixed(2)} per {item.unit}</div>
+                      <div style={{ fontSize: '.95rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{itemPrice.toFixed(2)} per {item.unit || 'Unit'}</div>
                       {freeQty > 0 ? (
                         <div style={{
                           display: 'inline-flex',

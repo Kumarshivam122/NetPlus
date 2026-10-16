@@ -32,15 +32,17 @@ export default function AdminDashboard() {
   const approved = users.filter(u => u.status === 'approved').length;
   const rejected = users.filter(u => u.status === 'rejected').length;
 
-  const pendingEnq = orders.filter(e => e.status === 'pending').length;
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const pendingEnq = safeOrders.filter(e => e && e.status === 'pending').length;
 
   const recentRegistrations = [...users].reverse().slice(0, 5);
 
   const productDemand = {};
-  orders.forEach(order => {
-    const items = order.items || [{ productName: order.productName, quantity: order.quantity }];
+  safeOrders.forEach(order => {
+    if (!order) return;
+    const items = Array.isArray(order.items) ? order.items : (order.productName ? [{ productName: order.productName, quantity: order.quantity }] : []);
     items.forEach(item => {
-      if (item.productName) {
+      if (item && item.productName) {
         if (!productDemand[item.productName]) productDemand[item.productName] = 0;
         productDemand[item.productName] += Number(item.quantity || 1);
       }

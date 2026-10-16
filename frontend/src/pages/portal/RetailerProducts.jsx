@@ -9,6 +9,7 @@ import { useCart } from '../../context/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function OrderModal({ product, onClose, onAdd }) {
+  if (!product) return null;
   // Determine available units from pricing JSONB or fallback to defaults
   const availableUnits = product.pricing 
     ? Object.keys(product.pricing) 
@@ -196,6 +197,7 @@ const catPhoto = (categoryId) => CATEGORIES.find(c => c.id === categoryId)?.imag
 
 /* ─── Product Detail Modal (Amazon / Flipkart style) ─── */
 function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
+  if (!product) return null;
   const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const photoSrc = product.imageUrl || catPhoto(product.category);
 

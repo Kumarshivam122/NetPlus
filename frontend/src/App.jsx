@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -68,6 +68,118 @@ function RequireOnboarding({ children }) {
   return children;
 }
 
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <ErrorBoundary locationKey={location.key || location.pathname}>
+      <Suspense fallback={<div className="loading-overlay"><div className="spinner" /></div>}>
+        <Routes>
+          {/* Public */}
+          <Route path="/"         element={<HomePage />} />
+          <Route path="/about"    element={<AboutPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/brands"   element={<BrandsPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/contact"  element={<ContactPage />} />
+
+          {/* Auth */}
+          <Route path="/login"    element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/pending"  element={<PendingPage />} />
+          <Route path="/onboarding" element={
+            <RequireOnboarding>
+              <OnboardingPage />
+            </RequireOnboarding>
+          } />
+
+          {/* Retailer Portal */}
+          <Route path="/portal" element={
+            <RequireAuth allowedRoles={['retailer']}>
+              <RequireApproved>
+                <RetailerDashboard />
+              </RequireApproved>
+            </RequireAuth>
+          } />
+          <Route path="/portal/products" element={
+            <RequireAuth allowedRoles={['retailer']}>
+              <RequireApproved>
+                <RetailerProducts />
+              </RequireApproved>
+            </RequireAuth>
+          } />
+          <Route path="/portal/orders" element={
+            <RequireAuth allowedRoles={['retailer']}>
+              <RequireApproved>
+                <RetailerOrders />
+              </RequireApproved>
+            </RequireAuth>
+          } />
+          <Route path="/portal/cart" element={
+            <RequireAuth allowedRoles={['retailer']}>
+              <RequireApproved>
+                <RetailerCart />
+              </RequireApproved>
+            </RequireAuth>
+          } />
+          <Route path="/portal/request" element={
+            <RequireAuth allowedRoles={['retailer', 'admin']}>
+              <RequireApproved>
+                <RetailerRequest />
+              </RequireApproved>
+            </RequireAuth>
+          } />
+
+          {/* Admin Portal */}
+          <Route path="/admin" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminDashboard />
+            </RequireAuth>
+          } />
+          <Route path="/admin/verifications" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminVerifications />
+            </RequireAuth>
+          } />
+          <Route path="/admin/users" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminUsers />
+            </RequireAuth>
+          } />
+          <Route path="/admin/customers" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminCustDetails />
+            </RequireAuth>
+          } />
+          <Route path="/admin/products" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminProducts />
+            </RequireAuth>
+          } />
+          <Route path="/admin/devices" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminDevices />
+            </RequireAuth>
+          } />
+          <Route path="/admin/orders" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminOrders />
+            </RequireAuth>
+          } />
+          <Route path="/admin/coupons" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminCoupons />
+            </RequireAuth>
+          } />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
 export default function App() {
   return (
     <HelmetProvider>
@@ -76,111 +188,7 @@ export default function App() {
           <ToastProvider>
             <BrowserRouter>
               <ScrollToTop />
-              <ErrorBoundary>
-                <Suspense fallback={<div className="loading-overlay"><div className="spinner" /></div>}>
-                  <Routes>
-                    {/* Public */}
-                    <Route path="/"         element={<HomePage />} />
-                    <Route path="/about"    element={<AboutPage />} />
-                    <Route path="/products" element={<ProductsPage />} />
-                    <Route path="/brands"   element={<BrandsPage />} />
-                    <Route path="/services" element={<ServicesPage />} />
-                    <Route path="/contact"  element={<ContactPage />} />
-
-                    {/* Auth */}
-                    <Route path="/login"    element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/pending"  element={<PendingPage />} />
-                    <Route path="/onboarding" element={
-                      <RequireOnboarding>
-                        <OnboardingPage />
-                      </RequireOnboarding>
-                    } />
-
-                    {/* Retailer Portal */}
-                    <Route path="/portal" element={
-                      <RequireAuth allowedRoles={['retailer']}>
-                        <RequireApproved>
-                          <RetailerDashboard />
-                        </RequireApproved>
-                      </RequireAuth>
-                    } />
-                    <Route path="/portal/products" element={
-                      <RequireAuth allowedRoles={['retailer']}>
-                        <RequireApproved>
-                          <RetailerProducts />
-                        </RequireApproved>
-                      </RequireAuth>
-                    } />
-                    <Route path="/portal/orders" element={
-                      <RequireAuth allowedRoles={['retailer']}>
-                        <RequireApproved>
-                          <RetailerOrders />
-                        </RequireApproved>
-                      </RequireAuth>
-                    } />
-                    <Route path="/portal/cart" element={
-                      <RequireAuth allowedRoles={['retailer']}>
-                        <RequireApproved>
-                          <RetailerCart />
-                        </RequireApproved>
-                      </RequireAuth>
-                    } />
-                    <Route path="/portal/request" element={
-                      <RequireAuth allowedRoles={['retailer', 'admin']}>
-                        <RequireApproved>
-                          <RetailerRequest />
-                        </RequireApproved>
-                      </RequireAuth>
-                    } />
-
-                    {/* Admin Portal */}
-                    <Route path="/admin" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminDashboard />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/verifications" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminVerifications />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/users" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminUsers />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/customers" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminCustDetails />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/products" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminProducts />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/devices" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminDevices />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/orders" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminOrders />
-                      </RequireAuth>
-                    } />
-                    <Route path="/admin/coupons" element={
-                      <RequireAuth allowedRoles={['admin']}>
-                        <AdminCoupons />
-                      </RequireAuth>
-                    } />
-
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
+              <AppRoutes />
             </BrowserRouter>
           </ToastProvider>
         </CartProvider>

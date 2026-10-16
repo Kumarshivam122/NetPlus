@@ -107,10 +107,11 @@ export default function AdminOrders() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(e => {
-                    const items = e.items || [{ productName: e.productName, manufacturer: e.manufacturer, unitPrice: e.unitPrice, quantity: e.quantity, unit: e.unit, price: e.unitPrice }];
+                  {(filtered || []).map(e => {
+                    if (!e) return null;
+                    const items = Array.isArray(e.items) ? e.items : [{ productName: e.productName, manufacturer: e.manufacturer, unitPrice: e.unitPrice, quantity: e.quantity, unit: e.unit, price: e.unitPrice }];
                     const firstItem = items[0] || {};
-                    const totalAmt = e.totalAmount || items.reduce((acc, item) => acc + (Number(item.price || item.unitPrice || 0) * Number(item.quantity || 0)), 0);
+                    const totalAmt = e.totalAmount || items.reduce((acc, item) => acc + (Number(item?.price || item?.unitPrice || 0) * Number(item?.quantity || 0)), 0);
                     const orderId = e.orderId || e.id;
                     const expectedDelivery = e.expectedDeliveryDate || computeExpectedDelivery(e.createdAt);
 
@@ -295,24 +296,28 @@ export default function AdminOrders() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <h5 style={{ fontSize:'.9rem', color:'var(--navy)', marginBottom:'.5rem' }}>Items</h5>
                 <div style={{ background:'var(--gray-50)', borderRadius:'var(--radius-md)', padding:'.75rem' }}>
-                  {(selectedOrder.items || []).map((item, idx) => (
-                    <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'.5rem 0', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
-                      <div>
-                        <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>{item.productName}</div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--gray-500)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
-                          <span>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</span>
-                          {item.freeQuantity > 0 && (
-                            <span style={{ color: '#047857', fontWeight: 700, background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>
-                              +{item.freeQuantity} Free Bonus
-                            </span>
-                          )}
+                  {(selectedOrder.items || []).map((item, idx) => {
+                    const price = Number(item.price || item.unitPrice || 0);
+                    const qty = Number(item.quantity || 1);
+                    return (
+                      <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'.5rem 0', borderBottom: idx < (selectedOrder.items || []).length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>{item.productName}</div>
+                          <div style={{ fontSize: '0.875rem', color: 'var(--gray-500)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                            <span>{qty} {item.unit || 'units'} × ₹{price.toFixed(2)}</span>
+                            {item.freeQuantity > 0 && (
+                              <span style={{ color: '#047857', fontWeight: 700, background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>
+                                +{item.freeQuantity} Free Bonus
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>
+                          ₹{(qty * price).toFixed(2)}
                         </div>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>
-                        ₹{(item.quantity * item.price).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
