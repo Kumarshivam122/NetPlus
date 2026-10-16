@@ -10,7 +10,7 @@ import PortalSidebar from '../../components/PortalSidebar';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { apiGetRetailerOrders, apiGetOrderById, apiCancelOrder } from '../../services/api';
-import { COMPANY, formatDeliveryDate, computeExpectedDelivery } from '../../data/store';
+import { COMPANY, formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
 import InvoicePrint from '../../components/InvoicePrint';
 
 const STATUS_MAP = {
@@ -264,10 +264,22 @@ export default function RetailerOrders() {
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
-                            <Truck size={13} color="#15803d" />
-                            <span>{formatDeliveryDate(expectedDelivery)}</span>
-                          </div>
+                          {e.status === 'delivered' || e.status === 'completed' ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
+                              <PackageCheck size={13} color="#059669" />
+                              <span>Delivered on {formatDeliveredDate(e.deliveredAt || e.updatedAt || e.createdAt)}</span>
+                            </div>
+                          ) : (e.status === 'cancelled' || e.status === 'rejected') ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#991b1b', fontSize: '0.82rem', fontWeight: 600 }}>
+                              <XCircle size={13} color="#dc2626" />
+                              <span>Cancelled</span>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
+                              <Truck size={13} color="#15803d" />
+                              <span>Expected: {formatDeliveryDate(expectedDelivery)}</span>
+                            </div>
+                          )}
                         </td>
                         <td style={{ fontSize:'.88rem', color:'var(--gray-500)', whiteSpace: 'nowrap' }}>
                           {new Date(e.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}
@@ -423,58 +435,112 @@ export default function RetailerOrders() {
               {/* Modal Body */}
               <div style={{ padding: '1.5rem 1.75rem', background: '#f8fafc' }}>
                 
-                {/* ─── PROMINENT EXPECTED DELIVERY CALLOUT CARD ─── */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #0f172a, #1e293b)',
-                  color: '#fff',
-                  borderRadius: '12px',
-                  padding: '1.25rem 1.5rem',
-                  marginBottom: '1.5rem',
-                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '12px',
-                      background: 'rgba(56, 189, 248, 0.15)',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Truck size={26} color="#38bdf8" />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        Expected Delivery Date
-                      </div>
-                      <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>
-                        {formatDeliveryDate(expectedDelivery)}
-                      </div>
-                      <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '2px' }}>
-                        Direct Dispatch from NetPlus Central Depot, Dhanbad
-                      </div>
-                    </div>
-                  </div>
-
+                {/* ─── PROMINENT DELIVERY CALLOUT CARD ─── */}
+                {selectedOrder.status === 'delivered' || selectedOrder.status === 'completed' ? (
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    padding: '6px 12px',
-                    textAlign: 'right',
-                    border: '1px solid rgba(255, 255, 255, 0.15)'
+                    background: 'linear-gradient(135deg, #064e3b, #047857)',
+                    color: '#fff',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 12px rgba(4, 120, 87, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem'
                   }}>
-                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Dispatch Schedule</div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#38bdf8' }}>24–48h Delivery Fleet</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '12px',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <PackageCheck size={28} color="#fff" />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          Delivery Completed
+                        </div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>
+                          Delivered on {formatDeliveredDate(selectedOrder.deliveredAt || selectedOrder.updatedAt || selectedOrder.createdAt)}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: '#d1fae5', marginTop: '2px' }}>
+                          Successfully delivered and verified at registered pharmacy premises
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      borderRadius: '8px',
+                      padding: '6px 14px',
+                      textAlign: 'right',
+                      border: '1px solid rgba(255, 255, 255, 0.25)'
+                    }}>
+                      <div style={{ fontSize: '0.72rem', color: '#a7f3d0', textTransform: 'uppercase', fontWeight: 700 }}>Status</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#fff' }}>Delivered ✓</div>
+                    </div>
                   </div>
-                </div>
+                ) : !isCancelled ? (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+                    color: '#fff',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '12px',
+                        background: 'rgba(56, 189, 248, 0.15)',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Truck size={26} color="#38bdf8" />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          Expected Delivery Date
+                        </div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>
+                          {formatDeliveryDate(expectedDelivery)}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '2px' }}>
+                          Direct Dispatch from NetPlus Central Depot, Dhanbad
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      textAlign: 'right',
+                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                    }}>
+                      <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Dispatch Schedule</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#38bdf8' }}>24–48h Delivery Fleet</div>
+                    </div>
+                  </div>
+                ) : null}
 
                 {/* ─── ORDER STATUS TIMELINE STEPPER ─── */}
                 {!isCancelled ? (

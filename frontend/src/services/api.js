@@ -316,6 +316,9 @@ function normalizeOrder(o) {
     expectedDelivery = est.toISOString();
   }
 
+  const isDelivered = o.status === 'delivered' || o.status === 'completed';
+  const deliveredDate = o.deliveredAt || o.delivered_at || (isDelivered ? (o.updatedAt || o.updated_at || o.createdAt) : null);
+
   return {
     ...o,
     id: o.id || o._id || orderNum,
@@ -323,6 +326,7 @@ function normalizeOrder(o) {
     orderId: orderNum,
     order_id: orderNum,
     expectedDeliveryDate: expectedDelivery,
+    deliveredAt: deliveredDate,
     createdAt: o.createdAt || o.created_at || new Date().toISOString(),
   };
 }

@@ -233,6 +233,17 @@ export function formatDeliveryDate(dateInput) {
   return formattedDate;
 }
 
+export function formatDeliveredDate(dateInput) {
+  if (!dateInput) return 'Delivered';
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return 'Delivered';
+  return d.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
 export function getOrders() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS) || '[]'); }
   catch { return []; }

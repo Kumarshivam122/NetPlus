@@ -19,6 +19,7 @@ function addIdAlias(row) {
   row.totalAmount = Number(row.total_amount || row.totalAmount || 0);
   row.createdAt = row.created_at || row.createdAt || new Date().toISOString();
   row.updatedAt = row.updated_at || row.updatedAt || row.createdAt;
+  row.deliveredAt = row.delivered_at || row.deliveredAt || ((row.status === 'delivered' || row.status === 'completed') ? (row.updated_at || row.updatedAt) : null);
 
   // Expected delivery date: 2 business days after order creation (skipping Sunday)
   if (!row.expectedDeliveryDate && !row.expected_delivery_date) {

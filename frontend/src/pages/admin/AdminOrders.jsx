@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck } from 'lucide-react';
+import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { apiGetOrders, apiUpdateOrderStatus } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { formatDeliveryDate, computeExpectedDelivery } from '../../data/store';
+import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
 
 export default function AdminOrders() {
   const { addToast } = useToast();
@@ -120,10 +120,19 @@ export default function AdminOrders() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 7px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 600 }}>
-                          <Truck size={12} color="#15803d" />
-                          <span>{formatDeliveryDate(expectedDelivery)}</span>
-                        </div>
+                        {e.status === 'delivered' || e.status === 'completed' ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 7px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 700 }}>
+                            <PackageCheck size={12} color="#059669" />
+                            <span>Delivered: {formatDeliveredDate(e.deliveredAt || e.updatedAt || e.createdAt)}</span>
+                          </div>
+                        ) : (e.status === 'cancelled' || e.status === 'rejected') ? (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600 }}>Cancelled</span>
+                        ) : (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 7px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 600 }}>
+                            <Truck size={12} color="#15803d" />
+                            <span>Exp: {formatDeliveryDate(expectedDelivery)}</span>
+                          </div>
+                        )}
                       </td>
                       <td style={{ fontSize:'0.875rem', color:'var(--gray-400)', whiteSpace: 'nowrap' }}>
                         {new Date(e.createdAt).toLocaleDateString('en-IN')}
@@ -206,30 +215,56 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              {/* Expected Delivery Date Callout */}
-              <div style={{
-                background: '#f0fdf4',
-                border: '1px solid #bbf7d0',
-                borderRadius: '8px',
-                padding: '0.75rem 1rem',
-                marginBottom: '1.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Truck size={20} color="#15803d" />
-                  <div>
-                    <div style={{ fontSize: '0.72rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Expected Delivery Date</div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#14532d' }}>
-                      {formatDeliveryDate(selectedOrder.expectedDeliveryDate || computeExpectedDelivery(selectedOrder.createdAt))}
+              {/* Delivery Status / Date Callout */}
+              {selectedOrder.status === 'delivered' || selectedOrder.status === 'completed' ? (
+                <div style={{
+                  background: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '8px',
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <PackageCheck size={22} color="#059669" />
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#047857', fontWeight: 700, textTransform: 'uppercase' }}>Delivery Status</div>
+                      <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#065f46' }}>
+                        Order Delivered on {formatDeliveredDate(selectedOrder.deliveredAt || selectedOrder.updatedAt || selectedOrder.createdAt)}
+                      </div>
                     </div>
                   </div>
+                  <div style={{ fontSize: '0.78rem', color: '#047857', fontWeight: 700, background: '#d1fae5', padding: '3px 8px', borderRadius: '4px' }}>
+                    Delivered ✓
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#15803d', fontWeight: 600, background: '#dcfce7', padding: '3px 8px', borderRadius: '4px' }}>
-                  NetPlus 24–48h Fleet
+              ) : (
+                <div style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Truck size={20} color="#15803d" />
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Expected Delivery Date</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#14532d' }}>
+                        {formatDeliveryDate(selectedOrder.expectedDeliveryDate || computeExpectedDelivery(selectedOrder.createdAt))}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#15803d', fontWeight: 600, background: '#dcfce7', padding: '3px 8px', borderRadius: '4px' }}>
+                    NetPlus 24–48h Fleet
+                  </div>
                 </div>
-              </div>
+              )}
 
               {selectedOrder.note && (
                 <div style={{ marginBottom: '1.5rem', background:'var(--gray-50)', padding:'.75rem', borderRadius:'var(--radius-md)' }}>
