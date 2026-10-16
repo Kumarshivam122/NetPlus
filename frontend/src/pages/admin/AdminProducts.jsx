@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader, FileText, Thermometer, Monitor } from 'lucide-react';
+import { Check, Search, X, Plus, Trash2, CheckCircle, Edit, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, Upload, Image, Loader, FileText, Thermometer, Monitor, Gift } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
 import { apiGetProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct, apiUploadProductImage } from '../../services/api';
@@ -43,6 +43,11 @@ export default function AdminProducts() {
     imageUrl: '',
     description: '',
     deviceType: '',
+    scheme: {
+      enabled: false,
+      minQty: 9,
+      freeQty: 1
+    },
     pricing: {
       Strips:  { active: true,  size: '10', price: '', mrp: '' },
       Bottles: { active: false, size: '100ml', price: '', mrp: '' },
@@ -91,6 +96,11 @@ export default function AdminProducts() {
       price: defaultPrice,
       mrp: defaultMrp,
       pricing: pricingData,
+      scheme: newProd.scheme?.enabled ? {
+        enabled: true,
+        minQty: Math.max(1, parseInt(newProd.scheme.minQty) || 1),
+        freeQty: Math.max(1, parseInt(newProd.scheme.freeQty) || 1)
+      } : null,
       stock: newProd.inStock ? 100 : 0,
       unit: `${firstActiveUnitKey.slice(0, -1)}/${newProd.pricing[firstActiveUnitKey].size}`,
       taxIncluded: newProd.taxIncluded,
@@ -216,6 +226,9 @@ export default function AdminProducts() {
                             Pieces: { active: !!(p.pricing && p.pricing.Pieces), size: p.pricing?.Pieces?.size || '1', price: p.pricing?.Pieces?.price || '', mrp: p.pricing?.Pieces?.mrp || '' }
                           };
 
+                          const schemeData = p.scheme || p.pricing?.scheme;
+                          const isSchemeActive = !!(schemeData && (schemeData.enabled !== false) && Number(schemeData.minQty) > 0);
+
                           setNewProd({
                             name: p.name, generic: p.generic, manufacturer: p.manufacturer, category: p.category,
                             inStock: p.stock > 0, rx: p.rx, taxIncluded: p.taxIncluded, taxPercent: p.taxPercent || 0,
@@ -223,6 +236,11 @@ export default function AdminProducts() {
                             imageUrl: p.imageUrl || '',
                             description: p.description || p.pricing?.description || '',
                             deviceType: p.deviceType || p.pricing?.deviceType || '',
+                            scheme: {
+                              enabled: isSchemeActive,
+                              minQty: schemeData?.minQty || 9,
+                              freeQty: schemeData?.freeQty || 1
+                            },
                             pricing: mergedPricing
                           });
                           setShowAddModal(true);
@@ -249,6 +267,25 @@ export default function AdminProducts() {
                     </td>
                     <td style={{ fontWeight:700, color:'var(--navy)' }}>
                       <div>{p.name}</div>
+                      {((p.scheme?.enabled && Number(p.scheme?.minQty) > 0) || (p.pricing?.scheme?.enabled && Number(p.pricing?.scheme?.minQty) > 0)) && (
+                        <div style={{ marginTop: '3px' }}>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#065f46',
+                            background: '#d1fae5',
+                            border: '1px solid #a7f3d0',
+                            borderRadius: '4px',
+                            padding: '1px 6px',
+                            letterSpacing: '0.2px'
+                          }}>
+                            <Gift size={11} /> Scheme: Buy {p.scheme?.minQty || p.pricing?.scheme?.minQty} + Get {p.scheme?.freeQty || p.pricing?.scheme?.freeQty || 1} Free
+                          </span>
+                        </div>
+                      )}
                       {(p.deviceType || p.pricing?.deviceType) && (
                         <span style={{ display: 'inline-block', fontSize: '0.72rem', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, var(--teal), #0694a2)', borderRadius: '4px', padding: '1px 6px', marginTop: '3px', letterSpacing: '0.3px' }}>
                           {(p.deviceType || p.pricing?.deviceType || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
@@ -605,6 +642,144 @@ export default function AdminProducts() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Promotional Scheme Configuration (Buy X Get Y Free) */}
+                <div style={{
+                  background: newProd.scheme.enabled ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(6, 148, 162, 0.04))' : 'var(--gray-50)',
+                  border: newProd.scheme.enabled ? '1px solid #10b981' : '1px solid var(--gray-200)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1rem',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: newProd.scheme.enabled ? '0.85rem' : '0' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontWeight: 700, color: 'var(--navy)', fontSize: '0.92rem' }}>
+                      <input
+                        type="checkbox"
+                        id="enable-scheme-toggle"
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--teal)' }}
+                        checked={newProd.scheme.enabled}
+                        onChange={e => setNewProd({
+                          ...newProd,
+                          scheme: { ...newProd.scheme, enabled: e.target.checked }
+                        })}
+                      />
+                      <Gift size={18} style={{ color: newProd.scheme.enabled ? 'var(--teal)' : 'var(--gray-400)' }} />
+                      <span>Promotional Scheme (Buy X Get Extra Free)</span>
+                    </label>
+                    {newProd.scheme.enabled && (
+                      <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: '12px', padding: '2px 10px', fontWeight: 700 }}>
+                        Active Scheme
+                      </span>
+                    )}
+                  </div>
+
+                  {newProd.scheme.enabled && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--gray-300)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--gray-500)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                          Quick Scheme Presets:
+                        </span>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {[
+                            { label: 'Buy 9 + 1 Free', min: 9, free: 1 },
+                            { label: 'Buy 5 + 1 Free', min: 5, free: 1 },
+                            { label: 'Buy 10 + 1 Free', min: 10, free: 1 },
+                            { label: 'Buy 20 + 2 Free', min: 20, free: 2 },
+                          ].map(preset => {
+                            const isSelected = Number(newProd.scheme.minQty) === preset.min && Number(newProd.scheme.freeQty) === preset.free;
+                            return (
+                              <button
+                                type="button"
+                                key={preset.label}
+                                onClick={() => setNewProd({
+                                  ...newProd,
+                                  scheme: { ...newProd.scheme, minQty: preset.min, freeQty: preset.free }
+                                })}
+                                style={{
+                                  fontSize: '0.78rem',
+                                  fontWeight: 600,
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  border: isSelected ? '1px solid var(--teal)' : '1px solid var(--gray-300)',
+                                  background: isSelected ? 'var(--teal)' : '#fff',
+                                  color: isSelected ? '#fff' : 'var(--navy)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                {preset.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-2" style={{ gap: '1rem' }}>
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label className="form-label" htmlFor="scheme-min-qty" style={{ fontSize: '0.84rem' }}>
+                            Buy Quantity (Eligible Pieces) *
+                          </label>
+                          <input
+                            id="scheme-min-qty"
+                            className="form-control"
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 9 or 5"
+                            value={newProd.scheme.minQty}
+                            onChange={e => setNewProd({
+                              ...newProd,
+                              scheme: { ...newProd.scheme, minQty: e.target.value }
+                            })}
+                            required={newProd.scheme.enabled}
+                          />
+                          <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', marginTop: '2px', display: 'block' }}>
+                            Customer must purchase this many pieces to qualify
+                          </span>
+                        </div>
+
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label className="form-label" htmlFor="scheme-free-qty" style={{ fontSize: '0.84rem' }}>
+                            Extra Free Quantity *
+                          </label>
+                          <input
+                            id="scheme-free-qty"
+                            className="form-control"
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 1"
+                            value={newProd.scheme.freeQty}
+                            onChange={e => setNewProd({
+                              ...newProd,
+                              scheme: { ...newProd.scheme, freeQty: e.target.value }
+                            })}
+                            required={newProd.scheme.enabled}
+                          />
+                          <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', marginTop: '2px', display: 'block' }}>
+                            Number of free extra pieces added automatically
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Live Preview Box */}
+                      <div style={{
+                        background: '#ecfdf5',
+                        border: '1px solid #a7f3d0',
+                        borderRadius: '6px',
+                        padding: '0.6rem 0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.84rem',
+                        color: '#065f46'
+                      }}>
+                        <Check size={16} color="#059669" />
+                        <span>
+                          <strong>Rule Preview:</strong> If a retailer buys <strong>{newProd.scheme.minQty || 1} pieces</strong>, they automatically get <strong>+{newProd.scheme.freeQty || 1} product extra</strong> for free (Total received: {(Number(newProd.scheme.minQty) || 1) + (Number(newProd.scheme.freeQty) || 1)} pieces).
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-2" style={{ gap:'1rem' }}>

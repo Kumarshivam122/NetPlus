@@ -5,6 +5,7 @@ function formatProduct(row) {
   const pricing = typeof row.pricing === 'string' ? JSON.parse(row.pricing) : row.pricing || null;
   const description = row.description || (pricing && pricing.description) || '';
   const deviceType = (pricing && pricing.deviceType) || '';
+  const scheme = row.scheme || (pricing && pricing.scheme) || null;
 
   return {
     ...row,
@@ -16,6 +17,7 @@ function formatProduct(row) {
     imageUrl: row.image_url,
     description,
     deviceType,
+    scheme,
     pricing
   };
 }
@@ -53,6 +55,9 @@ const Product = {
     }
     if (data.deviceType !== undefined && data.deviceType !== null) {
       pricingData.deviceType = String(data.deviceType).trim();
+    }
+    if (data.scheme !== undefined && data.scheme !== null) {
+      pricingData.scheme = data.scheme;
     }
 
     const insertData = {
@@ -107,7 +112,7 @@ const Product = {
     if (data.rx !== undefined) updateData.rx = data.rx;
     if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
 
-    if (data.pricing !== undefined || data.description !== undefined || data.deviceType !== undefined) {
+    if (data.pricing !== undefined || data.description !== undefined || data.deviceType !== undefined || data.scheme !== undefined) {
       let pricingData = {};
       if (data.pricing !== undefined) {
         pricingData = typeof data.pricing === 'object' ? { ...data.pricing } : JSON.parse(data.pricing);
@@ -121,6 +126,9 @@ const Product = {
       }
       if (data.deviceType !== undefined) {
         pricingData.deviceType = String(data.deviceType).trim();
+      }
+      if (data.scheme !== undefined) {
+        pricingData.scheme = data.scheme;
       }
       updateData.pricing = pricingData;
     }

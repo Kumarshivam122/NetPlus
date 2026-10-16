@@ -72,7 +72,10 @@ export default function InvoicePrint({ order, user }) {
                   <strong>{item.productName}</strong>
                   <div style={{ fontSize: '10px', color: '#666' }}>{item.manufacturer} | per {item.unit}</div>
                 </td>
-                <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {item.quantity}
+                  {item.freeQuantity > 0 && <span style={{ color: '#047857', fontWeight: 700, display: 'block', fontSize: '10px' }}>+{item.freeQuantity} Free</span>}
+                </td>
                 <td style={{ textAlign: 'right' }}>₹{item.price.toFixed(2)}</td>
                 <td style={{ textAlign: 'right', fontSize: '11px', color: '#666' }}>
                   {item.taxIncluded ? 'Incl.' : `+ ₹${itemTax.toFixed(2)} (${item.taxPercent || 0}%)`}

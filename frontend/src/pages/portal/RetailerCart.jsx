@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Trash2, CheckCircle, Package, Info, MapPin } from 'lucide-react';
+import { ShoppingCart, Trash2, CheckCircle, Package, Info, MapPin, Gift } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -28,6 +28,18 @@ export default function RetailerCart() {
     });
     return () => { active = false; };
   }, []);
+
+  const getItemFreeQty = (item) => {
+    const scheme = item.scheme;
+    if (scheme && (scheme.enabled !== false) && Number(scheme.minQty) > 0) {
+      const min = Number(scheme.minQty);
+      const free = Number(scheme.freeQty) || 1;
+      return Math.floor(Number(item.quantity) / min) * free;
+    }
+    return item.freeQuantity || 0;
+  };
+
+  const totalFreeItems = cart.reduce((acc, item) => acc + getItemFreeQty(item), 0);
 
   const subTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const totalTax = cart.reduce((acc, item) => {
@@ -64,8 +76,13 @@ export default function RetailerCart() {
     }
     setIsSubmitting(true);
     try {
+      const itemsWithFree = cart.map(item => ({
+        ...item,
+        freeQuantity: getItemFreeQty(item)
+      }));
+
       await apiSubmitOrder({
-        items: cart,
+        items: itemsWithFree,
         note,
         discountCode: discountPercent > 0 ? coupon.toUpperCase() : null,
         discountAmount,
@@ -104,12 +121,45 @@ export default function RetailerCart() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {cart.map((item, index) => (
+                {cart.map((item, index) => {
+                  const freeQty = getItemFreeQty(item);
+                  return (
                   <div key={index} className="cart-row">
                     <div>
                       <div style={{ fontWeight: 700, color: 'var(--navy)' }}>{item.productName}</div>
                       <div style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.manufacturer}</div>
                       <div style={{ fontSize: '.95rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{item.price.toFixed(2)} per {item.unit}</div>
+                      {freeQty > 0 ? (
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: '#ecfdf5',
+                          color: '#047857',
+                          border: '1px solid #a7f3d0',
+                          borderRadius: '4px',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          marginTop: '.35rem'
+                        }}>
+                          <Gift size={13} color="#059669" />
+                          Scheme: +{freeQty} Free Extra ({item.quantity + freeQty} {item.unit} total)
+                        </div>
+                      ) : (item.scheme && Number(item.scheme.minQty) > 0 && item.quantity < Number(item.scheme.minQty)) ? (
+                        <div style={{
+                          fontSize: '0.78rem',
+                          color: '#d97706',
+                          fontWeight: 500,
+                          marginTop: '.35rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <Gift size={12} />
+                          Add {Number(item.scheme.minQty) - item.quantity} more to get {item.scheme.freeQty || 1} Free!
+                        </div>
+                      ) : null}
                     </div>
                     <div className="cart-row-controls">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
@@ -126,7 +176,8 @@ export default function RetailerCart() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -189,6 +240,14 @@ export default function RetailerCart() {
                 <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--navy-light)' }}>
                   <span>Estimated Tax</span>
                   <span>+₹{totalTax.toFixed(2)}</span>
+                </div>
+              )}
+              {totalFreeItems > 0 && (
+                <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'#047857', fontWeight: 600 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Gift size={14} color="#059669" /> Free Scheme Bonus Items
+                  </span>
+                  <span>+{totalFreeItems} pieces</span>
                 </div>
               )}
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'1.2rem', fontWeight:800, color:'var(--navy)', marginTop:'.5rem', paddingTop:'.5rem', borderTop:'1px dashed var(--gray-200)' }}>

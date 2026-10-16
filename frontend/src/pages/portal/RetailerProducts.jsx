@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, X, ShoppingCart, CheckCircle, Package, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, SlidersHorizontal, Plus, Star, ChevronLeft, Tag, Building2, Layers, Beaker, ShieldCheck, Info } from 'lucide-react';
+import { Search, Filter, X, ShoppingCart, CheckCircle, Package, Activity, HeartPulse, Stethoscope, Pill, Wind, Smile, TestTube, Cross, SlidersHorizontal, Plus, Star, ChevronLeft, Tag, Building2, Layers, Beaker, ShieldCheck, Info, Gift } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import { CATEGORIES, PRODUCTS as INITIAL_PRODUCTS } from '../../data/store';
 import { apiGetProducts, apiSubmitOrder } from '../../services/api';
@@ -16,6 +16,14 @@ function OrderModal({ product, onClose, onAdd }) {
 
   const [qty, setQty]     = useState(1);
   const [unit, setUnit]   = useState(availableUnits[0] || 'Strips');
+
+  const scheme = product.scheme || product.pricing?.scheme;
+  const isSchemeActive = !!(scheme && (scheme.enabled !== false) && Number(scheme.minQty) > 0);
+  const minQty = isSchemeActive ? Number(scheme.minQty) : 0;
+  const freePerBatch = isSchemeActive ? (Number(scheme.freeQty) || 1) : 0;
+  const freeCount = (isSchemeActive && Number(qty) >= minQty)
+    ? Math.floor(Number(qty) / minQty) * freePerBatch
+    : 0;
 
   // Compute exact price and MRP
   const effectivePrice = product.pricing && product.pricing[unit] 
@@ -55,6 +63,8 @@ function OrderModal({ product, onClose, onAdd }) {
       taxIncluded: product.taxIncluded,
       taxPercent: product.taxPercent,
       quantity: Number(qty),
+      freeQuantity: freeCount,
+      scheme: isSchemeActive ? { enabled: true, minQty, freeQty: freePerBatch } : null,
       unit
     });
   };
@@ -112,11 +122,50 @@ function OrderModal({ product, onClose, onAdd }) {
                 </select>
               </div>
             </div>
+
+            {isSchemeActive && (
+              <div style={{
+                background: freeCount > 0 ? '#ecfdf5' : '#fffbeb',
+                border: freeCount > 0 ? '1px solid #a7f3d0' : '1px solid #fde68a',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.75rem 1rem',
+                marginTop: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <Gift size={20} color={freeCount > 0 ? '#059669' : '#d97706'} style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: '0.85rem', color: freeCount > 0 ? '#065f46' : '#92400e' }}>
+                  {freeCount > 0 ? (
+                    <>
+                      <strong style={{ display: 'block', fontSize: '0.88rem' }}>
+                        🎉 Scheme Applied: +{freeCount} Free {unit}!
+                      </strong>
+                      You will receive <strong>{Number(qty) + freeCount} {unit} total</strong> (paying for {qty}, getting {freeCount} extra free).
+                    </>
+                  ) : (
+                    <>
+                      <strong>Special Scheme: Buy {minQty} Get {freePerBatch} Free!</strong><br />
+                      Order <strong>{minQty - Number(qty)} more</strong> to automatically unlock {freePerBatch} extra free piece!
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div style={{ background:'var(--cyan)', borderRadius:'var(--radius-md)', padding:'1rem', marginTop:'1rem', display:'flex', flexDirection:'column', gap:'.4rem' }}>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--gray-500)' }}>
                 <span>Subtotal ({qty} {unit})</span>
                 <span>₹{subTotal.toFixed(2)}</span>
               </div>
+              {freeCount > 0 && (
+                <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'#047857', fontWeight: 600 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Gift size={13} color="#059669" /> Free Scheme Bonus:
+                  </span>
+                  <span>+{freeCount} {unit} (Free)</span>
+                </div>
+              )}
               {!product.taxIncluded && product.taxPercent > 0 && (
                 <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--gray-500)', marginTop: '.25rem' }}>
                   <span>Estimated Tax ({product.taxPercent}%)</span>
@@ -228,6 +277,26 @@ function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
               <Building2 size={14} style={{ flexShrink: 0 }} />
               {product.manufacturer}
             </p>
+
+            {/* Scheme Announcement if active */}
+            {((product.scheme?.enabled && Number(product.scheme?.minQty) > 0) || (product.pricing?.scheme?.enabled && Number(product.pricing?.scheme?.minQty) > 0)) && (
+              <div style={{
+                background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)',
+                border: '1px solid #a7f3d0',
+                borderRadius: '8px',
+                padding: '0.65rem 0.9rem',
+                marginTop: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: '#065f46',
+                fontWeight: 700,
+                fontSize: '0.88rem'
+              }}>
+                <Gift size={18} color="#059669" />
+                <span>Special Scheme: Buy {product.scheme?.minQty || product.pricing?.scheme?.minQty} Get {product.scheme?.freeQty || product.pricing?.scheme?.freeQty || 1} Free!</span>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="pdp-divider" />
@@ -481,6 +550,19 @@ export default function RetailerProducts() {
                     <div style={{ position: 'absolute', top: 0, left: 0, background: 'var(--cyan)', color: 'var(--teal-dark)', padding: '4px 10px', fontSize: '12px', fontWeight: 700, borderTopLeftRadius: '7px', borderBottomRightRadius: '8px' }}>
                       Best Price
                     </div>
+
+                    {/* Scheme Badge if active */}
+                    {((p.scheme?.enabled && Number(p.scheme?.minQty) > 0) || (p.pricing?.scheme?.enabled && Number(p.pricing?.scheme?.minQty) > 0)) && (
+                      <div style={{
+                        position: 'absolute', top: '6px', right: '6px',
+                        background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
+                        padding: '3px 8px', fontSize: '11px', fontWeight: 700,
+                        borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '3px',
+                        boxShadow: '0 2px 4px rgba(16,185,129,0.3)', zIndex: 1
+                      }}>
+                        <Gift size={11} /> Buy {p.scheme?.minQty || p.pricing?.scheme?.minQty}+{p.scheme?.freeQty || p.pricing?.scheme?.freeQty || 1} Free
+                      </div>
+                    )}
 
                     {/* Image Container */}
                     <div style={{ height: '160px', width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

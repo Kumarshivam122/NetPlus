@@ -210,7 +210,14 @@ export default function AdminOrders() {
                     <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'.5rem 0', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>{item.productName}</div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--gray-500)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                          <span>{item.quantity} {item.unit} × ₹{item.price.toFixed(2)}</span>
+                          {item.freeQuantity > 0 && (
+                            <span style={{ color: '#047857', fontWeight: 700, background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>
+                              +{item.freeQuantity} Free Bonus
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div style={{ fontWeight: 600, color: 'var(--navy)', fontSize:'.85rem' }}>
                         ₹{(item.quantity * item.price).toFixed(2)}
