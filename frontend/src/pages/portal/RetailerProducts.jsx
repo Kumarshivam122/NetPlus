@@ -8,12 +8,64 @@ import { useToast } from '../../context/ToastContext';
 import { useCart } from '../../context/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+// Extract only valid commercial unit names from product.pricing
+export const getValidUnits = (product) => {
+  if (!product) return ['Strips'];
+  const reservedKeys = new Set(['description', 'deviceType', 'scheme', 'active']);
+  if (product.pricing && typeof product.pricing === 'object') {
+    const units = Object.keys(product.pricing).filter(k => {
+      if (reservedKeys.has(k)) return false;
+      const val = product.pricing[k];
+      return val && typeof val === 'object' && (val.price !== undefined || val.mrp !== undefined || val.active !== undefined);
+    });
+    if (units.length > 0) return units;
+  }
+  if (product.unit) {
+    const cleanUnit = product.unit.split('/')[0].trim() || product.unit;
+    return [cleanUnit, 'Boxes', 'Pieces'];
+  }
+  return ['Strips', 'Bottles', 'Boxes', 'Pieces'];
+};
+
+// Compute safe effective price and MRP for a given unit
+export const getEffectivePricing = (product, unit) => {
+  if (!product) return { price: 0, mrp: 0 };
+  const basePrice = Number(product.price) || 0;
+  const baseMrp = Number(product.mrp) || 0;
+
+  const unitObj = (product.pricing && typeof product.pricing === 'object' && typeof product.pricing[unit] === 'object') 
+    ? product.pricing[unit] 
+    : null;
+
+  let price = basePrice;
+  let mrp = baseMrp;
+
+  if (unitObj && unitObj.price !== undefined && unitObj.price !== null && !isNaN(Number(unitObj.price))) {
+    price = Number(unitObj.price);
+  } else {
+    switch (unit) {
+      case 'Boxes': price = basePrice * 10; break;
+      case 'Pieces': price = basePrice * 0.1; break;
+      default: price = basePrice; break;
+    }
+  }
+
+  if (unitObj && unitObj.mrp !== undefined && unitObj.mrp !== null && !isNaN(Number(unitObj.mrp))) {
+    mrp = Number(unitObj.mrp);
+  } else {
+    switch (unit) {
+      case 'Boxes': mrp = baseMrp * 10; break;
+      case 'Pieces': mrp = baseMrp * 0.1; break;
+      default: mrp = baseMrp; break;
+    }
+  }
+
+  return { price, mrp };
+};
+
 function OrderModal({ product, onClose, onAdd }) {
   if (!product) return null;
-  // Determine available units from pricing JSONB or fallback to defaults
-  const availableUnits = product.pricing 
-    ? Object.keys(product.pricing) 
-    : ['Strips', 'Bottles', 'Boxes', 'Pieces'];
+  const availableUnits = getValidUnits(product);
 
   const [qty, setQty]     = useState(1);
   const [unit, setUnit]   = useState(availableUnits[0] || 'Strips');
@@ -22,48 +74,28 @@ function OrderModal({ product, onClose, onAdd }) {
   const isSchemeActive = !!(scheme && (scheme.enabled !== false) && Number(scheme.minQty) > 0);
   const minQty = isSchemeActive ? Number(scheme.minQty) : 0;
   const freePerBatch = isSchemeActive ? (Number(scheme.freeQty) || 1) : 0;
-  const freeCount = (isSchemeActive && Number(qty) >= minQty)
-    ? Math.floor(Number(qty) / minQty) * freePerBatch
+  const safeQty = Math.max(1, parseInt(qty, 10) || 1);
+  const freeCount = (isSchemeActive && safeQty >= minQty)
+    ? Math.floor(safeQty / minQty) * freePerBatch
     : 0;
 
-  // Compute exact price and MRP
-  const effectivePrice = product.pricing && product.pricing[unit] 
-    ? product.pricing[unit].price 
-    : (() => {
-        // Fallback calculation for legacy products
-        switch(unit) {
-          case 'Boxes':  return product.price * 10;
-          case 'Pieces': return product.price * 0.1;
-          default:       return product.price;
-        }
-      })();
+  const { price: effectivePrice, mrp: effectiveMrp } = getEffectivePricing(product, unit);
 
-  const effectiveMrp = product.pricing && product.pricing[unit]
-    ? product.pricing[unit].mrp
-    : (() => {
-        // Fallback calculation for legacy products
-        switch(unit) {
-          case 'Boxes':  return product.mrp * 10;
-          case 'Pieces': return product.mrp * 0.1;
-          default:       return product.mrp;
-        }
-      })();
-
-  const subTotal = qty * effectivePrice;
-  const taxAmount = !product.taxIncluded ? (subTotal * (product.taxPercent || 0) / 100) : 0;
+  const subTotal = safeQty * effectivePrice;
+  const taxAmount = !product.taxIncluded ? (subTotal * (Number(product.taxPercent) || 0) / 100) : 0;
   const itemTotal = subTotal + taxAmount;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onAdd({
-      productId: product.id,
+      productId: product.id || product._id,
       productName: product.name,
       manufacturer: product.manufacturer,
       price: effectivePrice,
       mrp: effectiveMrp,
-      taxIncluded: product.taxIncluded,
-      taxPercent: product.taxPercent,
-      quantity: Number(qty),
+      taxIncluded: !!product.taxIncluded,
+      taxPercent: Number(product.taxPercent) || 0,
+      quantity: safeQty,
       freeQuantity: freeCount,
       scheme: isSchemeActive ? { enabled: true, minQty, freeQty: freePerBatch } : null,
       unit
@@ -97,13 +129,13 @@ function OrderModal({ product, onClose, onAdd }) {
               </div>
               <div style={{ textAlign:'right' }}>
                 <div style={{ fontFamily:'var(--font-display)', fontSize:'1.4rem', fontWeight:800, color:'var(--teal)' }}>
-                  ₹{effectivePrice.toFixed(2)}
+                  ₹{(Number(effectivePrice) || 0).toFixed(2)}
                 </div>
                 <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginBottom: '2px' }}>per {unit}</div>
                 <div style={{ fontSize:'0.875rem', color: product.taxIncluded ? 'var(--green)' : 'var(--gray-500)', fontWeight: 600 }}>
                   {product.taxIncluded ? 'Tax Included' : `+ ${product.taxPercent || 0}% Tax`}
                 </div>
-                <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginTop: '4px' }}>MRP ₹{effectiveMrp.toFixed(2)}</div>
+                <div style={{ fontSize:'0.875rem', color:'var(--gray-400)', marginTop: '4px' }}>MRP ₹{(Number(effectiveMrp) || 0).toFixed(2)}</div>
               </div>
             </div>
           </div>
@@ -142,12 +174,12 @@ function OrderModal({ product, onClose, onAdd }) {
                       <strong style={{ display: 'block', fontSize: '0.88rem' }}>
                         🎉 Scheme Applied: +{freeCount} Free {unit}!
                       </strong>
-                      You will receive <strong>{Number(qty) + freeCount} {unit} total</strong> (paying for {qty}, getting {freeCount} extra free).
+                      You will receive <strong>{safeQty + freeCount} {unit} total</strong> (paying for {safeQty}, getting {freeCount} extra free).
                     </>
                   ) : (
                     <>
                       <strong>Special Scheme: Buy {minQty} Get {freePerBatch} Free!</strong><br />
-                      Order <strong>{minQty - Number(qty)} more</strong> to automatically unlock {freePerBatch} extra free piece!
+                      Order <strong>{minQty - safeQty} more</strong> to automatically unlock {freePerBatch} extra free piece!
                     </>
                   )}
                 </div>
@@ -156,8 +188,8 @@ function OrderModal({ product, onClose, onAdd }) {
 
             <div style={{ background:'var(--cyan)', borderRadius:'var(--radius-md)', padding:'1rem', marginTop:'1rem', display:'flex', flexDirection:'column', gap:'.4rem' }}>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--gray-500)' }}>
-                <span>Subtotal ({qty} {unit})</span>
-                <span>₹{subTotal.toFixed(2)}</span>
+                <span>Subtotal ({safeQty} {unit})</span>
+                <span>₹{(Number(subTotal) || 0).toFixed(2)}</span>
               </div>
               {freeCount > 0 && (
                 <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'#047857', fontWeight: 600 }}>
@@ -170,12 +202,12 @@ function OrderModal({ product, onClose, onAdd }) {
               {!product.taxIncluded && product.taxPercent > 0 && (
                 <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.85rem', color:'var(--gray-500)', marginTop: '.25rem' }}>
                   <span>Estimated Tax ({product.taxPercent}%)</span>
-                  <span>₹{taxAmount.toFixed(2)}</span>
+                  <span>₹{(Number(taxAmount) || 0).toFixed(2)}</span>
                 </div>
               )}
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'1.1rem', fontWeight:800, color:'var(--navy)', marginTop:'.25rem', paddingTop:'.4rem', borderTop:'1px dashed var(--gray-200)' }}>
                 <span>Item Total</span>
-                <span>₹{itemTotal.toFixed(2)}</span>
+                <span>₹{(Number(itemTotal) || 0).toFixed(2)}</span>
               </div>
             </div>
             
@@ -198,21 +230,15 @@ const catPhoto = (categoryId) => CATEGORIES.find(c => c.id === categoryId)?.imag
 /* ─── Product Detail Modal (Amazon / Flipkart style) ─── */
 function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
   if (!product) return null;
-  const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const pPrice = Number(product.price) || 0;
+  const pMrp = Number(product.mrp) || 0;
+  const discount = pMrp > pPrice && pMrp > 0 ? Math.round(((pMrp - pPrice) / pMrp) * 100) : 0;
   const photoSrc = product.imageUrl || catPhoto(product.category);
 
   // Available units from pricing JSONB
-  const availableUnits = product.pricing
-    ? Object.keys(product.pricing)
-    : ['Strips', 'Bottles', 'Boxes', 'Pieces'];
-
+  const availableUnits = getValidUnits(product);
   const defaultUnit = availableUnits[0] || 'Strips';
-  const effectivePrice = product.pricing && product.pricing[defaultUnit]
-    ? product.pricing[defaultUnit].price
-    : product.price;
-  const effectiveMrp = product.pricing && product.pricing[defaultUnit]
-    ? product.pricing[defaultUnit].mrp
-    : product.mrp;
+  const { price: effectivePrice, mrp: effectiveMrp } = getEffectivePricing(product, defaultUnit);
 
   return (
     <div className="pdp-overlay" onClick={onClose}>
@@ -242,7 +268,7 @@ function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
                 className="pdp-image-fallback"
                 style={{ display: photoSrc ? 'none' : 'flex' }}
               >
-                {categoryIconMap[product.category]
+                {categoryIconMap && categoryIconMap[product.category] && React.isValidElement(categoryIconMap[product.category])
                   ? React.cloneElement(categoryIconMap[product.category], { size: 80, strokeWidth: 1 })
                   : <Activity size={80} color="#333" strokeWidth={1} />}
               </div>
@@ -305,8 +331,8 @@ function ProductDetailModal({ product, onClose, onOrder, categoryIconMap }) {
 
             {/* Pricing */}
             <div className="pdp-pricing">
-              <span className="pdp-price">₹{effectivePrice.toFixed(2)}</span>
-              <span className="pdp-mrp">MRP ₹{effectiveMrp.toFixed(2)}</span>
+              <span className="pdp-price">₹{(Number(effectivePrice) || 0).toFixed(2)}</span>
+              <span className="pdp-mrp">MRP ₹{(Number(effectiveMrp) || 0).toFixed(2)}</span>
               {discount > 0 && (
                 <span className="pdp-discount-text">{discount}% off</span>
               )}
@@ -454,7 +480,13 @@ export default function RetailerProducts() {
     setSelected(null);
   };
 
-  const discount = (p) => Math.round(((p.mrp - p.price) / p.mrp) * 100);
+  const discount = (p) => {
+    const mrp = Number(p?.mrp) || 0;
+    const price = Number(p?.price) || 0;
+    return mrp > price && mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  };
+
+  const safeCartCount = Array.isArray(cart) ? cart.length : 0;
 
   return (
     <div className="portal-layout" id="retailer-products">
@@ -473,15 +505,15 @@ export default function RetailerProducts() {
               style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '.5rem', overflow: 'visible' }}
             >
               <ShoppingCart size={18} aria-hidden="true" /> Cart
-              {cart.length > 0 && (
-                <span aria-label={`${cart.length} item${cart.length === 1 ? '' : 's'} in cart`} style={{
+              {safeCartCount > 0 && (
+                <span aria-label={`${safeCartCount} item${safeCartCount === 1 ? '' : 's'} in cart`} style={{
                   position: 'absolute', top: '-8px', right: '-8px',
                   background: 'var(--red)', color: 'white', borderRadius: '50%',
                   minWidth: '22px', height: '22px', fontSize: '12px', fontWeight: 'bold',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: '2px solid #fff'
                 }}>
-                  {cart.length}
+                  {safeCartCount}
                 </span>
               )}
             </button>
@@ -592,8 +624,8 @@ export default function RetailerProducts() {
 
                     {/* Pricing Section */}
                     <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px 8px', marginTop: '1.25rem' }}>
-                      <span style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--navy)' }}>₹{p.price.toFixed(2)}</span>
-                      <span style={{ fontSize: '.9rem', color: 'var(--gray-500)', textDecoration: 'line-through' }}>MRP ₹{p.mrp.toFixed(2)}</span>
+                      <span style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--navy)' }}>₹{(Number(p.price) || 0).toFixed(2)}</span>
+                      <span style={{ fontSize: '.9rem', color: 'var(--gray-500)', textDecoration: 'line-through' }}>MRP ₹{(Number(p.mrp) || 0).toFixed(2)}</span>
                       <span style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--teal)' }}>{discount(p)}% off</span>
                     </div>
 

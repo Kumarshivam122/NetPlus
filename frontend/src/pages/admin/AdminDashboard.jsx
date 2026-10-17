@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Package, ClipboardList, Clock, CheckCircle, XCircle, TrendingUp, UserCheck, MessageSquare } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
+import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { useAuth } from '../../context/AuthContext';
+import { useAdminNotifications } from '../../context/AdminNotificationContext';
 import { apiGetAllUsers, apiGetOrders, apiGetProducts, apiGetEnquiries } from '../../services/api';
 import { PRODUCTS as FALLBACK_PRODUCTS } from '../../data/store';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { pendingOrdersCount, pendingVerificationsCount, pendingEnquiriesCount } = useAdminNotifications();
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [totalProducts, setTotalProducts] = useState(FALLBACK_PRODUCTS.length);
@@ -38,7 +41,7 @@ export default function AdminDashboard() {
 
   const safeOrders = Array.isArray(orders) ? orders : [];
   const pendingEnq = safeOrders.filter(e => e && e.status === 'pending').length;
-  const pendingEnquiriesCount = enquiries.filter(e => !e.status || e.status === 'pending').length;
+  const activeEnquiriesCount = pendingEnquiriesCount || enquiries.filter(e => !e.status || e.status === 'pending').length;
 
   const recentRegistrations = [...users].reverse().slice(0, 5);
 
@@ -71,14 +74,15 @@ export default function AdminDashboard() {
             <p style={{ fontSize:'0.9rem', color:'var(--gray-500)' }}>Welcome, {user?.name}</p>
           </div>
           <div style={{ display:'flex', gap:'.75rem', alignItems:'center' }}>
-            {pending > 0 && (
-              <Link to="/admin/users" className="badge badge-warning" id="pending-badge" style={{ textDecoration:'none', cursor:'pointer' }}>
-                <Clock size={14} aria-hidden="true" /> {pending} pending approval{pending>1?'s':''}
+            <AdminNotificationBell />
+            {(pendingVerificationsCount > 0 || pending > 0) && (
+              <Link to="/admin/verifications" className="badge badge-warning" id="pending-badge" style={{ textDecoration:'none', cursor:'pointer' }}>
+                <Clock size={14} aria-hidden="true" /> {pendingVerificationsCount || pending} pending approval{(pendingVerificationsCount || pending)>1?'s':''}
               </Link>
             )}
-            {pendingEnquiriesCount > 0 && (
+            {activeEnquiriesCount > 0 && (
               <Link to="/admin/enquiries" className="badge badge-accent" id="pending-enquiries-badge" style={{ textDecoration:'none', cursor:'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MessageSquare size={14} aria-hidden="true" /> {pendingEnquiriesCount} new request{pendingEnquiriesCount>1?'s':''}
+                <MessageSquare size={14} aria-hidden="true" /> {activeEnquiriesCount} new request{activeEnquiriesCount>1?'s':''}
               </Link>
             )}
             <span className="badge badge-primary">Admin</span>
@@ -91,8 +95,8 @@ export default function AdminDashboard() {
             {[
               { icon:Users,         label:'Total Retailers',  value:users.length,  color:'teal' },
               { icon:UserCheck,     label:'Approved',          value:approved,       color:'green' },
-              { icon:Clock,         label:'Pending Review',    value:pending,        color:'accent' },
-              { icon:ClipboardList, label:'New Orders',     value:pendingEnq,     color:'navy' },
+              { icon:Clock,         label:'Pending Review',    value:pendingVerificationsCount || pending, color:'accent' },
+              { icon:ClipboardList, label:'Pending Orders',    value:pendingOrdersCount || pendingEnq,     color:'navy' },
             ].map((s,i) => {
               const Icon = s.icon;
               return (

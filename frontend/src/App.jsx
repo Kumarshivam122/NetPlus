@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { CartProvider } from './context/CartContext';
+import { AdminNotificationProvider } from './context/AdminNotificationContext';
 import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -192,10 +193,12 @@ export default function App() {
       <AuthProvider>
         <CartProvider>
           <ToastProvider>
-            <BrowserRouter>
-              <ScrollToTop />
-              <AppRoutes />
-            </BrowserRouter>
+            <AdminNotificationProvider>
+              <BrowserRouter>
+                <ScrollToTop />
+                <AppRoutes />
+              </BrowserRouter>
+            </AdminNotificationProvider>
           </ToastProvider>
         </CartProvider>
       </AuthProvider>

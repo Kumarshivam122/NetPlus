@@ -32,15 +32,15 @@ export default function RetailerCart() {
   const getItemFreeQty = (item) => {
     if (!item) return 0;
     const scheme = item.scheme;
-    if (scheme && (scheme.enabled !== false) && Number(scheme.minQty) > 0) {
+    if (scheme && typeof scheme === 'object' && (scheme.enabled !== false) && Number(scheme.minQty) > 0) {
       const min = Number(scheme.minQty);
       const free = Number(scheme.freeQty) || 1;
-      return Math.floor(Number(item.quantity || 1) / min) * free;
+      return Math.floor((Number(item.quantity) || 1) / min) * free;
     }
-    return item.freeQuantity || 0;
+    return Number(item.freeQuantity) || 0;
   };
 
-  const safeCart = Array.isArray(cart) ? cart : [];
+  const safeCart = Array.isArray(cart) ? cart.filter(Boolean) : [];
   const totalFreeItems = safeCart.reduce((acc, item) => acc + (item ? getItemFreeQty(item) : 0), 0);
 
   const subTotal = safeCart.reduce((acc, item) => acc + ((Number(item?.price) || 0) * (Number(item?.quantity) || 0)), 0);
@@ -71,14 +71,14 @@ export default function RetailerCart() {
   };
 
   const handleSubmit = async () => {
-    if (cart.length === 0) return;
+    if (safeCart.length === 0) return;
     if (totalAmount < 1500) {
       addToast('Minimum order amount must be at least ₹1500', 'error');
       return;
     }
     setIsSubmitting(true);
     try {
-      const itemsWithFree = cart.map(item => ({
+      const itemsWithFree = safeCart.map(item => ({
         ...item,
         freeQuantity: getItemFreeQty(item)
       }));
@@ -117,7 +117,7 @@ export default function RetailerCart() {
         <div className="portal-topbar">
           <div>
             <h1 style={{ color:'var(--navy)', fontSize:'1.2rem' }}>Your Cart</h1>
-            <p style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>{cart.length} items in cart</p>
+            <p style={{ fontSize:'.9rem', color:'var(--gray-500)' }}>{safeCart.length} items in cart</p>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ export default function RetailerCart() {
           <div className="cart-items cart-panel">
             <h2 style={{ marginBottom: '1.5rem', color: 'var(--navy)', fontSize: '1.15rem', borderBottom: '1px solid var(--gray-200)', paddingBottom: '1rem' }}>Order Items</h2>
 
-            {cart.length === 0 ? (
+            {safeCart.length === 0 ? (
               <div style={{ textAlign:'center', padding:'3rem', color:'var(--gray-500)' }}>
                 <ShoppingCart size={48} style={{ opacity:.4, marginBottom:'.75rem' }} aria-hidden="true" />
                 <p>Your cart is empty.</p>
@@ -138,11 +138,12 @@ export default function RetailerCart() {
                   if (!item) return null;
                   const freeQty = getItemFreeQty(item);
                   const itemPrice = Number(item.price || 0);
+                  const itemQty = Math.max(1, parseInt(item.quantity, 10) || 1);
                   return (
                   <div key={index} className="cart-row">
                     <div>
-                      <div style={{ fontWeight: 700, color: 'var(--navy)' }}>{item.productName}</div>
-                      <div style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.manufacturer}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--navy)' }}>{item.productName || item.name || 'Medicine'}</div>
+                      <div style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.manufacturer || ''}</div>
                       <div style={{ fontSize: '.95rem', color: 'var(--teal)', fontWeight: 600, marginTop: '.25rem' }}>₹{itemPrice.toFixed(2)} per {item.unit || 'Unit'}</div>
                       {freeQty > 0 ? (
                         <div style={{
@@ -159,9 +160,9 @@ export default function RetailerCart() {
                           marginTop: '.35rem'
                         }}>
                           <Gift size={13} color="#059669" />
-                          Scheme: +{freeQty} Free Extra ({item.quantity + freeQty} {item.unit} total)
+                          Scheme: +{freeQty} Free Extra ({itemQty + freeQty} {item.unit || 'unit'} total)
                         </div>
-                      ) : (item.scheme && Number(item.scheme.minQty) > 0 && item.quantity < Number(item.scheme.minQty)) ? (
+                      ) : (item.scheme && typeof item.scheme === 'object' && Number(item.scheme.minQty) > 0 && itemQty < Number(item.scheme.minQty)) ? (
                         <div style={{
                           fontSize: '0.78rem',
                           color: '#d97706',
@@ -172,21 +173,21 @@ export default function RetailerCart() {
                           gap: '4px'
                         }}>
                           <Gift size={12} />
-                          Add {Number(item.scheme.minQty) - item.quantity} more to get {item.scheme.freeQty || 1} Free!
+                          Add {Number(item.scheme.minQty) - itemQty} more to get {item.scheme.freeQty || 1} Free!
                         </div>
                       ) : null}
                     </div>
                     <div className="cart-row-controls">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
                         <input type="number" min="1" className="form-control" style={{ width: '84px' }}
-                          aria-label={`Quantity of ${item.productName}`}
-                          value={item.quantity} onChange={(e) => updateQuantity(index, Number(e.target.value))} />
-                        <span style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.unit}</span>
+                          aria-label={`Quantity of ${item.productName || 'product'}`}
+                          value={itemQty} onChange={(e) => updateQuantity(index, Math.max(1, parseInt(e.target.value, 10) || 1))} />
+                        <span style={{ fontSize: '.9rem', color: 'var(--gray-500)' }}>{item.unit || 'Unit'}</span>
                       </div>
                       <div style={{ fontWeight: 700, color: 'var(--navy)', minWidth: '90px', textAlign: 'right' }}>
-                        ₹{(item.price * item.quantity).toFixed(2)}
+                        ₹{(itemPrice * itemQty).toFixed(2)}
                       </div>
-                      <button className="btn btn-ghost btn-sm" onClick={() => removeFromCart(index)} aria-label={`Remove ${item.productName} from cart`} style={{ color: 'var(--red)' }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => removeFromCart(index)} aria-label={`Remove ${item.productName || 'item'} from cart`} style={{ color: 'var(--red)' }}>
                         <Trash2 size={16} aria-hidden="true" /> Remove
                       </button>
                     </div>
@@ -287,7 +288,7 @@ export default function RetailerCart() {
             <button
               className="btn btn-cta btn-lg"
               style={{ width: '100%', marginTop: '1.5rem' }}
-              disabled={cart.length === 0 || isSubmitting || totalAmount < 1500}
+              disabled={safeCart.length === 0 || isSubmitting || totalAmount < 1500}
               onClick={handleSubmit}
             >
               <CheckCircle size={18} aria-hidden="true" /> {isSubmitting ? 'Placing Order...' : 'Place Order'}

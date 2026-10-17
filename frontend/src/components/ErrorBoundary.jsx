@@ -119,6 +119,28 @@ class ErrorBoundary extends React.Component {
               </button>
               <button 
                 onClick={() => {
+                  try {
+                    localStorage.removeItem('np_cart');
+                  } catch (_) {}
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                style={{
+                  padding: '0.7rem 1.4rem',
+                  fontSize: '0.95rem',
+                  backgroundColor: '#f1f5f9',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+                title="Clears any corrupted cart data and reloads"
+              >
+                Reset Cart &amp; Reload
+              </button>
+              <button 
+                onClick={() => {
                   this.setState({ hasError: false, error: null });
                   if (window.history.length > 1) {
                     window.history.back();
@@ -140,6 +162,18 @@ class ErrorBoundary extends React.Component {
                 Go Back
               </button>
             </div>
+
+            {this.state.error?.message && (
+              <details style={{ marginTop: '1.75rem', textAlign: 'left', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#64748b' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#475569' }}>
+                  Technical Error Details
+                </summary>
+                <pre style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontFamily: 'monospace', color: '#dc2626' }}>
+                  {this.state.error.toString()}
+                  {this.state.error.stack ? `\n\n${this.state.error.stack}` : ''}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       );

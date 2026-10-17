@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, Eye, Trash2, Clock, X, Phone, MapPin, FileText, Store, ExternalLink } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
+import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { apiGetAllUsers, apiUpdateUserStatus, apiDeleteUser } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
@@ -184,6 +185,9 @@ export default function AdminUsers() {
           <div>
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>All Users</h4>
             <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{users.length} total registered accounts</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <AdminNotificationBell />
           </div>
         </div>
         <div className="portal-content">

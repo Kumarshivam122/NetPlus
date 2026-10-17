@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useAdminNotifications } from '../context/AdminNotificationContext';
+import AdminNotificationBell from './AdminNotificationBell';
 
 const RETAILER_NAV = [
   { to: '/',                   icon: Home,             label: 'Back to Site' },
@@ -32,6 +34,11 @@ const ADMIN_NAV = [
 export default function PortalSidebar({ title }) {
   const { user, logout } = useAuth();
   const { cart } = useCart();
+  const {
+    pendingOrdersCount,
+    pendingVerificationsCount,
+    pendingEnquiriesCount
+  } = useAdminNotifications();
   const location  = useLocation();
   const navigate  = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -113,20 +120,26 @@ export default function PortalSidebar({ title }) {
           )}
         </div>
 
-        {/* User info */}
-        <div className="sb-user" id={isMobile ? 'mobile-sidebar-user' : 'sidebar-user'}>
-          <div className="sb-user-avatar">
-            {user?.role === 'admin' ? <Shield size={18} /> : <Store size={18} />}
-          </div>
-          {!isCollapsed && (
-            <div className="sb-user-info">
-              <div className="sb-user-name" title={user?.storeName || user?.name}>
-                {user?.storeName || user?.name || 'User'}
-              </div>
-              <div className={`sb-user-role ${user?.role || 'retailer'}`}>
-                {user?.role === 'admin' ? 'Administrator' : 'Retailer'}
-              </div>
+        {/* User info & Notification Bell */}
+        <div className="sb-user" id={isMobile ? 'mobile-sidebar-user' : 'sidebar-user'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
+            <div className="sb-user-avatar">
+              {user?.role === 'admin' ? <Shield size={18} /> : <Store size={18} />}
             </div>
+            {!isCollapsed && (
+              <div className="sb-user-info">
+                <div className="sb-user-name" title={user?.storeName || user?.name}>
+                  {user?.storeName || user?.name || 'User'}
+                </div>
+                <div className={`sb-user-role ${user?.role || 'retailer'}`}>
+                  {user?.role === 'admin' ? 'Administrator' : 'Retailer'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {user?.role === 'admin' && !isCollapsed && (
+            <AdminNotificationBell />
           )}
         </div>
 
@@ -135,6 +148,12 @@ export default function PortalSidebar({ title }) {
           {navItems.map(item => {
             const Icon = item.icon;
             const active = isActive(item.to);
+
+            // Notification counters for Admin
+            const adminOrderBadge = user?.role === 'admin' && item.to === '/admin/orders' && pendingOrdersCount > 0;
+            const adminVerifBadge = user?.role === 'admin' && item.to === '/admin/verifications' && pendingVerificationsCount > 0;
+            const adminEnqBadge = user?.role === 'admin' && item.to === '/admin/enquiries' && pendingEnquiriesCount > 0;
+
             return (
               <Link
                 key={item.to}
@@ -148,9 +167,59 @@ export default function PortalSidebar({ title }) {
               >
                 <Icon size={18} className="sb-link-icon" />
                 {!isCollapsed && <span>{item.label}</span>}
-                {!isCollapsed && item.to === '/portal/cart' && cart?.length > 0 && (
+
+                {/* Retailer Cart Badge */}
+                {!isCollapsed && item.to === '/portal/cart' && Array.isArray(cart) && cart.length > 0 && (
                   <span style={{ marginLeft:'auto', background:'var(--red)', color:'#fff', fontSize:'.8rem', fontWeight:800, padding:'.1rem .5rem', borderRadius:'20px' }}>
                     {cart.length}
+                  </span>
+                )}
+
+                {/* Admin Orders Notification Badge */}
+                {adminOrderBadge && (
+                  <span style={{
+                    marginLeft: isCollapsed ? '0' : 'auto',
+                    background: '#0284c7',
+                    color: '#fff',
+                    fontSize: isCollapsed ? '.65rem' : '.78rem',
+                    fontWeight: 800,
+                    padding: isCollapsed ? '2px 5px' : '.12rem .55rem',
+                    borderRadius: '20px',
+                    boxShadow: '0 1px 4px rgba(2, 132, 199, 0.4)'
+                  }} title={`${pendingOrdersCount} pending orders`}>
+                    {pendingOrdersCount}
+                  </span>
+                )}
+
+                {/* Admin Verifications Notification Badge */}
+                {adminVerifBadge && (
+                  <span style={{
+                    marginLeft: isCollapsed ? '0' : 'auto',
+                    background: '#d97706',
+                    color: '#fff',
+                    fontSize: isCollapsed ? '.65rem' : '.78rem',
+                    fontWeight: 800,
+                    padding: isCollapsed ? '2px 5px' : '.12rem .55rem',
+                    borderRadius: '20px',
+                    boxShadow: '0 1px 4px rgba(217, 119, 6, 0.4)'
+                  }} title={`${pendingVerificationsCount} pending retailer verification requests`}>
+                    {pendingVerificationsCount}
+                  </span>
+                )}
+
+                {/* Admin Enquiries & Requests Notification Badge */}
+                {adminEnqBadge && (
+                  <span style={{
+                    marginLeft: isCollapsed ? '0' : 'auto',
+                    background: '#16a34a',
+                    color: '#fff',
+                    fontSize: isCollapsed ? '.65rem' : '.78rem',
+                    fontWeight: 800,
+                    padding: isCollapsed ? '2px 5px' : '.12rem .55rem',
+                    borderRadius: '20px',
+                    boxShadow: '0 1px 4px rgba(22, 163, 74, 0.4)'
+                  }} title={`${pendingEnquiriesCount} pending customer enquiries/requests`}>
+                    {pendingEnquiriesCount}
                   </span>
                 )}
               </Link>

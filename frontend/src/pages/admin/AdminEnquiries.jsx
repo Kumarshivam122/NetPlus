@@ -5,11 +5,20 @@ import {
   ExternalLink, Send, Building, User, FileText, Check, ChevronDown
 } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
+import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { apiGetEnquiries, apiUpdateEnquiryStatus, apiDeleteEnquiry } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAdminNotifications } from '../../context/AdminNotificationContext';
 
 export default function AdminEnquiries() {
   const { addToast } = useToast();
+  const {
+    pendingEnquiriesCount,
+    latestEnquiry,
+    isLiveSyncing,
+    refreshAll
+  } = useAdminNotifications();
+
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all'); // all | medicine_request | contact | pending | resolved
@@ -40,6 +49,7 @@ export default function AdminEnquiries() {
       if (updated) {
         setEnquiries(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
         addToast(`Marked as ${newStatus}`, 'success');
+        refreshAll();
       } else {
         addToast('Failed to update status', 'danger');
       }
@@ -57,6 +67,7 @@ export default function AdminEnquiries() {
       if (ok) {
         setEnquiries(prev => prev.filter(item => item.id !== id));
         addToast('Enquiry deleted successfully', 'info');
+        refreshAll();
       } else {
         addToast('Failed to delete enquiry', 'danger');
       }
@@ -127,20 +138,63 @@ export default function AdminEnquiries() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <AdminNotificationBell />
             <button 
               className="btn btn-outline" 
-              onClick={fetchEnquiries}
+              onClick={() => { fetchEnquiries(); refreshAll(); }}
               disabled={loading}
               title="Refresh messages"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <RefreshCw size={15} className={loading ? 'spin' : ''} />
+              <RefreshCw size={15} className={loading || isLiveSyncing ? 'spin-icon' : ''} />
               <span>Refresh</span>
             </button>
           </div>
         </div>
 
         <div className="portal-content">
+          {/* Enquiry Notification Message Banner */}
+          {pendingEnquiriesCount > 0 && (
+            <div className="admin-notification-alert enquiry-alert" role="status" style={{ marginBottom: '1.5rem' }}>
+              <div className="alert-icon-wrapper pulse-icon">
+                <MessageSquare size={22} />
+              </div>
+              <div className="alert-content">
+                <div className="alert-title">
+                  <strong>New Enquiry & Medicine Request Alert</strong>
+                  <span className="alert-badge">{pendingEnquiriesCount} Unresolved</span>
+                  <span className="live-sync-badge"><span className="pulse-dot"></span> Live Sync Active</span>
+                </div>
+                <p className="alert-desc">
+                  {latestEnquiry ? (
+                    <>
+                      Latest {latestEnquiry.type === 'medicine_request' ? 'Medicine Request' : 'Customer Query'}: <strong>{latestEnquiry.medicineName || latestEnquiry.subject || latestEnquiry.name || 'Inquiry'}</strong> from <strong>{latestEnquiry.pharmacyName || latestEnquiry.name || 'User'}</strong> ({latestEnquiry.phone || latestEnquiry.email || 'Contact provided'}).
+                    </>
+                  ) : (
+                    'New customer contact inquiries or medicine availability requests have been submitted.'
+                  )}
+                </p>
+              </div>
+              <div className="alert-actions">
+                <button 
+                  type="button"
+                  className={`btn btn-sm ${filterType === 'pending' ? 'btn-primary' : 'btn-outline'}`}
+                  onClick={() => setFilterType(filterType === 'pending' ? 'all' : 'pending')}
+                >
+                  {filterType === 'pending' ? 'Show All Messages' : `View Pending Messages (${pendingEnquiriesCount})`}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-ghost btn-sm" 
+                  onClick={() => { fetchEnquiries(); refreshAll(); }}
+                  title="Sync enquiries and requests"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RefreshCw size={14} className={isLiveSyncing ? 'spin-icon' : ''} /> Sync
+                </button>
+              </div>
+            </div>
+          )}
           {/* Stats Cards */}
           <div className="grid grid-4" style={{ marginBottom: '1.5rem' }}>
             <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setFilterType('all')}>

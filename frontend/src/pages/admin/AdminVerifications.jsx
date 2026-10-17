@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Search, CheckCircle, XCircle, Eye, Trash2, Clock, X, Phone, MapPin, FileText, Store, ExternalLink } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Eye, Trash2, Clock, X, Phone, MapPin, FileText, Store, ExternalLink, ShieldCheck, RefreshCw } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
+import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { apiGetAllUsers, apiUpdateUserStatus, apiDeleteUser } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAdminNotifications } from '../../context/AdminNotificationContext';
 
 function UserDetailModal({ user: u, onClose, onStatusChange }) {
   return (
@@ -157,6 +159,13 @@ function UserDetailModal({ user: u, onClose, onStatusChange }) {
 
 export default function AdminVerifications() {
   const { addToast } = useToast();
+  const {
+    pendingVerificationsCount,
+    latestVerification,
+    isLiveSyncing,
+    refreshAll
+  } = useAdminNotifications();
+
   const [users, setUsers]     = useState([]);
   const [search, setSearch]   = useState('');
   const [filter, setFilter]   = useState('all');
@@ -177,14 +186,16 @@ export default function AdminVerifications() {
     await apiUpdateUserStatus(id, status);
     addToast(`User status updated to "${status}"`, status === 'approved' ? 'success' : 'warning');
     await reload();
+    refreshAll();
     setSelected(prev => prev ? { ...prev, status } : null);
-  }, [addToast, reload]);
+  }, [addToast, reload, refreshAll]);
 
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete retailer "${name}"? This cannot be undone.`)) return;
     await apiDeleteUser(id);
     addToast(`${name} has been deleted.`, 'info');
     reload();
+    refreshAll();
   };
 
   const filtered = users.filter(u => {
@@ -203,8 +214,63 @@ export default function AdminVerifications() {
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Verification Requests</h4>
             <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{users.length} retailers waiting for approval</p>
           </div>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <AdminNotificationBell />
+            <button 
+              type="button" 
+              className="btn btn-outline btn-sm" 
+              onClick={() => { reload(); refreshAll(); }}
+              title="Sync verification data"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RefreshCw size={14} className={isLiveSyncing ? 'spin-icon' : ''} /> Sync
+            </button>
+          </div>
         </div>
         <div className="portal-content">
+          {/* Verification Notification Message Banner */}
+          {pendingVerificationsCount > 0 && (
+            <div className="admin-notification-alert verification-alert" role="status">
+              <div className="alert-icon-wrapper pulse-icon">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="alert-content">
+                <div className="alert-title">
+                  <strong>Retailer Verification Alert</strong>
+                  <span className="alert-badge">{pendingVerificationsCount} Awaiting Review</span>
+                  <span className="live-sync-badge"><span className="pulse-dot"></span> Live Sync Active</span>
+                </div>
+                <p className="alert-desc">
+                  {latestVerification ? (
+                    <>
+                      Latest: <strong>{latestVerification.storeName || latestVerification.ownerName || 'New Retailer'}</strong> ({latestVerification.city || 'Location unlisted'}) submitted documents for license verification.
+                    </>
+                  ) : (
+                    'New retailers have registered and submitted pharmacy documents requiring admin verification.'
+                  )}
+                </p>
+              </div>
+              <div className="alert-actions">
+                <button 
+                  type="button"
+                  className={`btn btn-sm ${filter === 'pending' ? 'btn-primary' : 'btn-outline'}`}
+                  onClick={() => setFilter(filter === 'pending' ? 'all' : 'pending')}
+                >
+                  {filter === 'pending' ? 'Show All Requests' : `View Action Required (${pendingVerificationsCount})`}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-ghost btn-sm" 
+                  onClick={() => { reload(); refreshAll(); }}
+                  title="Sync verification data"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RefreshCw size={14} className={isLiveSyncing ? 'spin-icon' : ''} /> Sync
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Filters */}
           <div style={{ display:'flex', gap:'1rem', alignItems:'center', flexWrap:'wrap', marginBottom:'1.5rem' }}>
             <div className="search-bar" style={{ flex:1, maxWidth:'360px' }}>
@@ -256,7 +322,7 @@ export default function AdminVerifications() {
                       <td>
                         <span className={`badge badge-${
                           u.status === 'approved' ? 'success' : 
-                          u.status === 'pending' ? 'warning' : 
+                          u.status === 'pending' ? 'warning tag-pending-glow' : 
                           u.status === 'onboarding' ? 'info' : 'danger'
                         }`}>
                           {u.status}

@@ -64,7 +64,7 @@ export default function Navbar() {
 
   const portalLink = user?.role === 'admin' ? '/admin' : '/portal';
   const portalLabel = user?.role === 'admin' ? 'Admin Panel' : 'My Portal';
-  const cartCount = cartCtx?.cart?.length || 0;
+  const cartCount = Array.isArray(cartCtx?.cart) ? cartCtx.cart.length : 0;
   const showCart = user?.role !== 'admin';
 
   return (

@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck, Trash2 } from 'lucide-react';
+import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck, Trash2, BellRing, RefreshCw } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
+import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { apiGetOrders, apiUpdateOrderStatus, apiClearAllOrders } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAdminNotifications } from '../../context/AdminNotificationContext';
 import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
 
 export default function AdminOrders() {
   const { addToast } = useToast();
+  const {
+    pendingOrdersCount,
+    latestOrder,
+    isLiveSyncing,
+    refreshAll
+  } = useAdminNotifications();
+
   const [orders, setOrders] = useState([]);
   const [search, setSearch]       = useState('');
   const [filter, setFilter]       = useState('all');
@@ -24,7 +33,8 @@ export default function AdminOrders() {
   const handleStatus = async (id, status) => {
     await apiUpdateOrderStatus(id, status);
     addToast(`Order updated to "${status}"`, status === 'approved' ? 'success' : 'warning');
-    reload();
+    await reload();
+    refreshAll();
   };
 
   const handleClearAllOrders = async () => {
@@ -32,6 +42,7 @@ export default function AdminOrders() {
       await apiClearAllOrders();
       setOrders([]);
       setSelectedOrder(null);
+      refreshAll();
       addToast('All orders cleared for a fresh start', 'success');
     }
   };
@@ -52,18 +63,64 @@ export default function AdminOrders() {
             <h4 style={{ color:'var(--navy)', fontFamily:'var(--font-display)' }}>Retailer Orders</h4>
             <p style={{ fontSize:'0.875rem', color:'var(--gray-400)' }}>{orders.length} total orders</p>
           </div>
-          {orders.length > 0 && (
-            <button 
-              className="btn btn-outline btn-sm"
-              style={{ color: 'var(--red)', borderColor: 'var(--red)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              onClick={handleClearAllOrders}
-              id="clear-all-orders-btn"
-            >
-              <Trash2 size={14} /> Clear All Orders (Fresh Start)
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <AdminNotificationBell />
+            {orders.length > 0 && (
+              <button 
+                className="btn btn-outline btn-sm"
+                style={{ color: 'var(--red)', borderColor: 'var(--red)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                onClick={handleClearAllOrders}
+                id="clear-all-orders-btn"
+              >
+                <Trash2 size={14} /> Clear All Orders
+              </button>
+            )}
+          </div>
         </div>
+
         <div className="portal-content">
+          {/* Order Notification Message Banner */}
+          {pendingOrdersCount > 0 && (
+            <div className="admin-notification-alert order-alert" role="status">
+              <div className="alert-icon-wrapper pulse-icon">
+                <BellRing size={22} />
+              </div>
+              <div className="alert-content">
+                <div className="alert-title">
+                  <strong>New Order Notification</strong>
+                  <span className="alert-badge">{pendingOrdersCount} Pending Review</span>
+                  <span className="live-sync-badge"><span className="pulse-dot"></span> Live Sync Active</span>
+                </div>
+                <p className="alert-desc">
+                  {latestOrder ? (
+                    <>
+                      Latest: Order <strong>#{latestOrder.orderId}</strong> placed by <strong>{latestOrder.userName || 'Retailer'}</strong> for <strong>₹{(Number(latestOrder.totalAmount) || 0).toFixed(2)}</strong>.
+                    </>
+                  ) : (
+                    'New orders have been submitted by retailers and require your review and approval.'
+                  )}
+                </p>
+              </div>
+              <div className="alert-actions">
+                <button 
+                  type="button"
+                  className={`btn btn-sm ${filter === 'pending' ? 'btn-primary' : 'btn-outline'}`}
+                  onClick={() => setFilter(filter === 'pending' ? 'all' : 'pending')}
+                >
+                  {filter === 'pending' ? 'Show All Orders' : `View Pending Orders (${pendingOrdersCount})`}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-ghost btn-sm" 
+                  onClick={() => { reload(); refreshAll(); }}
+                  title="Sync orders from server"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RefreshCw size={14} className={isLiveSyncing ? 'spin-icon' : ''} /> Sync
+                </button>
+              </div>
+            </div>
+          )}
           <div style={{ display:'flex', gap:'1rem', alignItems:'center', flexWrap:'wrap', marginBottom:'1.5rem' }}>
             <div className="search-bar" style={{ flex:1, maxWidth:'360px' }}>
               <Search size={16} style={{ color:'var(--gray-400)' }} />
