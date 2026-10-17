@@ -41,12 +41,14 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+
     const enquiry = {
       id: 'ENQ-' + Date.now(),
       type: 'contact',
       name: String(name).trim(),
       email: String(email).trim(),
-      phone: String(phone).trim(),
+      phone: cleanPhone || String(phone).trim(),
       subject: (subject || 'General Inquiry').trim(),
       message: String(message).trim(),
       status: 'pending',

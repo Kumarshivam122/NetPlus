@@ -53,9 +53,9 @@ export default function ContactPage() {
       return;
     }
 
-    const phoneRegex = /^\+?[0-9\-\s]{10,15}$/;
-    if (!phoneRegex.test(form.phone)) {
-      setError("Please enter a valid phone number (10-15 digits).");
+    const cleanPhone = form.phone.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      setError("Please enter a valid 10-digit phone number.");
       return;
     }
 
@@ -65,7 +65,7 @@ export default function ContactPage() {
       const data = await apiSubmitContactQuery({
         name: form.name,
         email: form.email,
-        phone: form.phone,
+        phone: cleanPhone,
         subject: form.subject,
         message: form.message
       });
@@ -169,8 +169,19 @@ export default function ContactPage() {
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="contact-phone">Phone Number *</label>
-                        <input id="contact-phone" className="form-control" required placeholder="+91 XXXXX XXXXX" type="tel"
-                          value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                        <input 
+                          id="contact-phone" 
+                          className="form-control" 
+                          required 
+                          placeholder="10-digit mobile number" 
+                          type="tel"
+                          maxLength={10}
+                          value={form.phone} 
+                          onChange={e => setForm({...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})} 
+                        />
+                        <small style={{ color: 'var(--gray-500)', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                          Must be exactly 10 digits
+                        </small>
                       </div>
                     </div>
                     <div className="form-group">
