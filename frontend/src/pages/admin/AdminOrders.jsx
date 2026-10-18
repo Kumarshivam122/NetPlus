@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck, Trash2, BellRing, RefreshCw } from 'lucide-react';
+import { Search, X, CheckCircle, XCircle, Clock, RotateCcw, Truck, PackageCheck, BellRing, RefreshCw } from 'lucide-react';
 import PortalSidebar from '../../components/PortalSidebar';
 import AdminNotificationBell from '../../components/AdminNotificationBell';
-import { apiGetOrders, apiUpdateOrderStatus, apiClearAllOrders } from '../../services/api';
+import { apiGetOrders, apiUpdateOrderStatus } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAdminNotifications } from '../../context/AdminNotificationContext';
 import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
@@ -37,16 +37,6 @@ export default function AdminOrders() {
     refreshAll();
   };
 
-  const handleClearAllOrders = async () => {
-    if (window.confirm("Are you sure you want to delete ALL orders? This cannot be undone and will reset the portal for a completely fresh start.")) {
-      await apiClearAllOrders();
-      setOrders([]);
-      setSelectedOrder(null);
-      refreshAll();
-      addToast('All orders cleared for a fresh start', 'success');
-    }
-  };
-
   const filtered = orders.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q || e.userName?.toLowerCase().includes(q) || (e.items && e.items.some(item => item.productName?.toLowerCase().includes(q)));
@@ -65,16 +55,15 @@ export default function AdminOrders() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <AdminNotificationBell />
-            {orders.length > 0 && (
-              <button 
-                className="btn btn-outline btn-sm"
-                style={{ color: 'var(--red)', borderColor: 'var(--red)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                onClick={handleClearAllOrders}
-                id="clear-all-orders-btn"
-              >
-                <Trash2 size={14} /> Clear All Orders
-              </button>
-            )}
+            <button 
+              type="button" 
+              className="btn btn-outline btn-sm" 
+              onClick={() => { reload(); refreshAll(); }}
+              title="Sync orders from server"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <RefreshCw size={14} className={isLiveSyncing ? 'spin-icon' : ''} /> Sync
+            </button>
           </div>
         </div>
 

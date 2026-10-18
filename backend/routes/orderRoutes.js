@@ -109,14 +109,9 @@ router.put('/:id/cancel', protect, async (req, res) => {
 });
 
 // @route DELETE /api/orders
-// Admin: Delete all orders (Fresh start)
+// Bulk deletion disabled to protect retailer order history and transaction audit logs
 router.delete('/', protect, admin, async (req, res) => {
-  try {
-    await Order.deleteAll();
-    res.json({ message: 'All orders cleared successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  return res.status(403).json({ message: 'Bulk deletion of orders is permanently disabled to protect retailer history and transaction audit logs' });
 });
 
 module.exports = router;
