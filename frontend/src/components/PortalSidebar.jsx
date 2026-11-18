@@ -309,13 +309,15 @@ export default function PortalSidebar({ title }) {
         /* ── Desktop Sidebar ── */
         .portal-sidebar-desktop {
           width: 260px;
-          min-height: 100vh;
+          height: 100vh;
+          height: 100dvh;
           background: #ffffff;
           display: flex;
           flex-direction: column;
           position: fixed;
           top: 0;
           left: 0;
+          bottom: 0;
           z-index: 200;
           overflow: hidden;
           border-right: 1px solid var(--gray-200);
@@ -450,12 +452,23 @@ export default function PortalSidebar({ title }) {
 
         .sb-nav {
           flex: 1;
+          min-height: 0;
           padding: 1rem 0.75rem;
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
+        }
+        .sb-nav::-webkit-scrollbar {
+          width: 5px;
+        }
+        .sb-nav::-webkit-scrollbar-thumb {
+          background: var(--gray-300);
+          border-radius: 4px;
+        }
+        .sb-nav::-webkit-scrollbar-track {
+          background: transparent;
         }
         .sb-link {
           display: flex;
@@ -494,9 +507,13 @@ export default function PortalSidebar({ title }) {
         }
 
         .sb-footer {
+          flex-shrink: 0;
           padding: 0.85rem;
           border-top: 1px solid var(--gray-200);
           background: #ffffff;
+        }
+        .portal-sidebar-desktop.collapsed .sb-footer {
+          padding: 0.85rem 0.5rem;
         }
         .sb-logout {
           color: var(--red);
@@ -505,6 +522,9 @@ export default function PortalSidebar({ title }) {
           border-left-width: 1px;
           background: #fff;
           font-weight: 600;
+        }
+        .portal-sidebar-desktop.collapsed .sb-logout {
+          padding: 0.65rem 0.5rem;
         }
         .sb-logout:hover, .sb-logout:active {
           background: #fee2e2;
