@@ -32,6 +32,25 @@ function addIdAlias(row) {
     row.expectedDeliveryDate = row.expected_delivery_date || row.expectedDeliveryDate;
   }
 
+  const isDelivered = row.status === 'delivered' || row.status === 'completed';
+  const isCancelled = row.status === 'cancelled' || row.status === 'rejected';
+  row.isDelayed = false;
+  row.originalExpectedDeliveryDate = row.expectedDeliveryDate;
+
+  if (!isDelivered && !isCancelled && row.expectedDeliveryDate) {
+    const expDate = new Date(row.expectedDeliveryDate);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const expOnly = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+    if (expOnly.getTime() < today.getTime()) {
+      row.isDelayed = true;
+      const revised = new Date(today);
+      revised.setDate(revised.getDate() + 2);
+      if (revised.getDay() === 0) revised.setDate(revised.getDate() + 1);
+      row.expectedDeliveryDate = revised.toISOString();
+    }
+  }
+
   return row;
 }
 

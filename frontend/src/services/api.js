@@ -318,6 +318,24 @@ function normalizeOrder(o) {
 
   const isDelivered = o.status === 'delivered' || o.status === 'completed';
   const deliveredDate = o.deliveredAt || o.delivered_at || (isDelivered ? (o.updatedAt || o.updated_at || o.createdAt) : null);
+  const isCancelled = o.status === 'cancelled' || o.status === 'rejected';
+
+  // Check if delivery is overdue & increase expected date if not yet delivered
+  let originalExpectedDelivery = expectedDelivery;
+  let isDelayed = false;
+  if (!isDelivered && !isCancelled && expectedDelivery) {
+    const expDate = new Date(expectedDelivery);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const expOnly = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+    if (expOnly.getTime() < today.getTime()) {
+      isDelayed = true;
+      const revised = new Date(today);
+      revised.setDate(revised.getDate() + 2);
+      if (revised.getDay() === 0) revised.setDate(revised.getDate() + 1);
+      expectedDelivery = revised.toISOString();
+    }
+  }
 
   return {
     ...o,
@@ -325,7 +343,9 @@ function normalizeOrder(o) {
     _id: o.id || o._id || orderNum,
     orderId: orderNum,
     order_id: orderNum,
+    originalExpectedDeliveryDate: originalExpectedDelivery,
     expectedDeliveryDate: expectedDelivery,
+    isDelayed,
     deliveredAt: deliveredDate,
     createdAt: o.createdAt || o.created_at || new Date().toISOString(),
   };

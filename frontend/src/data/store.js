@@ -207,6 +207,96 @@ export function computeExpectedDelivery(createdDate) {
   return est;
 }
 
+/**
+ * Calculates delivery status and handles delivery rescheduling:
+ * If an active order is not delivered according to its expected delivery date,
+ * this increases/extends the expected delivery date and provides a professional apology message.
+ */
+export function getOrderDeliveryInfo(order) {
+  if (!order) {
+    const fallback = computeExpectedDelivery();
+    return {
+      isDelayed: false,
+      isDelivered: false,
+      isCancelled: false,
+      originalDelivery: fallback,
+      expectedDelivery: fallback,
+      revisedDelivery: null,
+      delayDays: 0,
+      apologyMessage: null
+    };
+  }
+
+  const isDelivered = order.status === 'delivered' || order.status === 'completed';
+  const isCancelled = order.status === 'cancelled' || order.status === 'rejected';
+
+  // Base expected delivery date from order record or calculated from creation date
+  const rawExpected = order.originalExpectedDeliveryDate || order.expectedDeliveryDate || order.expected_delivery_date;
+  const baseExpected = rawExpected ? new Date(rawExpected) : computeExpectedDelivery(order.createdAt || order.created_at);
+
+  if (isDelivered || isCancelled) {
+    return {
+      isDelayed: false,
+      isDelivered,
+      isCancelled,
+      originalDelivery: baseExpected,
+      expectedDelivery: baseExpected,
+      revisedDelivery: null,
+      delayDays: 0,
+      apologyMessage: null
+    };
+  }
+
+  // Check if expected delivery is in the past
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const expTarget = new Date(baseExpected.getFullYear(), baseExpected.getMonth(), baseExpected.getDate());
+
+  // If the scheduled delivery date has passed and order is not yet delivered
+  if (expTarget.getTime() < today.getTime()) {
+    const diffDays = Math.max(1, Math.round((today.getTime() - expTarget.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // Increased expected delivery date: 2 business days from today (skipping Sunday)
+    const revised = new Date(today);
+    revised.setDate(revised.getDate() + 2);
+    if (revised.getDay() === 0) {
+      revised.setDate(revised.getDate() + 1);
+    }
+
+    const formattedOriginal = baseExpected.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    const formattedRevised = formatDeliveryDate(revised);
+
+    const apologyMessage = `We sincerely apologize for the delay in your delivery. Your wholesale order was originally scheduled for delivery on ${formattedOriginal}, but has encountered transit delays. We have rescheduled and extended your expected delivery to ${formattedRevised}. Our Dhanbad central dispatch team has prioritized your shipment for urgent fulfillment.`;
+
+    return {
+      isDelayed: true,
+      isDelivered: false,
+      isCancelled: false,
+      originalDelivery: baseExpected,
+      expectedDelivery: revised, // Increased date
+      revisedDelivery: revised,
+      delayDays: diffDays,
+      apologyMessage
+    };
+  }
+
+  return {
+    isDelayed: false,
+    isDelivered: false,
+    isCancelled: false,
+    originalDelivery: baseExpected,
+    expectedDelivery: baseExpected,
+    revisedDelivery: null,
+    delayDays: 0,
+    apologyMessage: null
+  };
+}
+
 export function formatDeliveryDate(dateInput) {
   if (!dateInput) return 'Within 2 business days';
   const d = new Date(dateInput);

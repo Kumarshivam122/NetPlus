@@ -10,7 +10,7 @@ import PortalSidebar from '../../components/PortalSidebar';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { apiGetRetailerOrders, apiGetOrderById, apiCancelOrder } from '../../services/api';
-import { COMPANY, formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
+import { COMPANY, formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery, getOrderDeliveryInfo } from '../../data/store';
 import InvoicePrint from '../../components/InvoicePrint';
 
 const STATUS_MAP = {
@@ -228,7 +228,8 @@ export default function RetailerOrders() {
                     const firstItem = items[0] || {};
                     const orderId = e.orderId || e.id;
                     const { finalAmount, totalFreeQty } = calculateTotals(e);
-                    const expectedDelivery = e.expectedDeliveryDate || computeExpectedDelivery(e.createdAt);
+                    const deliveryInfo = getOrderDeliveryInfo(e);
+                    const expectedDelivery = deliveryInfo.expectedDelivery;
 
                     return (
                       <tr 
@@ -282,6 +283,16 @@ export default function RetailerOrders() {
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#991b1b', fontSize: '0.82rem', fontWeight: 600 }}>
                               <XCircle size={13} color="#dc2626" />
                               <span>Cancelled</span>
+                            </div>
+                          ) : deliveryInfo.isDelayed ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
+                                <Clock size={13} color="#d97706" />
+                                <span>Rescheduled: {formatDeliveryDate(deliveryInfo.expectedDelivery)}</span>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <AlertCircle size={11} color="#d97706" /> Delayed • We apologize
+                              </span>
                             </div>
                           ) : (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700 }}>
@@ -339,7 +350,8 @@ export default function RetailerOrders() {
       {selectedOrder && (() => {
         const orderId = selectedOrder.orderId || selectedOrder.id;
         const { subTotal, totalTax, totalFreeQty, discountAmount, finalAmount } = calculateTotals(selectedOrder);
-        const expectedDelivery = selectedOrder.expectedDeliveryDate || computeExpectedDelivery(selectedOrder.createdAt);
+        const deliveryInfo = getOrderDeliveryInfo(selectedOrder);
+        const expectedDelivery = deliveryInfo.expectedDelivery;
         const s = STATUS_MAP[selectedOrder.status] || STATUS_MAP.pending;
         const currentStep = s.step || 1;
         const isCancelled = selectedOrder.status === 'cancelled' || selectedOrder.status === 'rejected';
@@ -444,6 +456,68 @@ export default function RetailerOrders() {
               {/* Modal Body */}
               <div style={{ padding: '1.5rem 1.75rem', background: '#f8fafc' }}>
                 
+                {/* ─── APOLOGY & RESCHEDULED DELIVERY NOTICE ─── */}
+                {deliveryInfo.isDelayed && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
+                    border: '1px solid #fcd34d',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 12px rgba(217, 119, 6, 0.12)',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '14px'
+                  }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '10px',
+                      background: '#fef3c7',
+                      border: '1px solid #fde68a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      color: '#b45309'
+                    }}>
+                      <AlertCircle size={24} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <h4 style={{ margin: 0, color: '#92400e', fontSize: '1.05rem', fontWeight: 800 }}>
+                          We Sincerely Apologize for the Delivery Delay
+                        </h4>
+                        <span style={{
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          border: '1px solid #fde68a',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                          textTransform: 'uppercase'
+                        }}>
+                          Rescheduled
+                        </span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#78350f', lineHeight: 1.5 }}>
+                        {deliveryInfo.apologyMessage}
+                      </p>
+                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <Clock size={13} color="#d97706" />
+                          <span>Original: {formatDeliveryDate(deliveryInfo.originalDelivery)}</span>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#047857', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <Truck size={13} color="#059669" />
+                          <span>New Expected: {formatDeliveryDate(deliveryInfo.expectedDelivery)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* ─── PROMINENT DELIVERY CALLOUT CARD ─── */}
                 {selectedOrder.status === 'delivered' || selectedOrder.status === 'completed' ? (
                   <div style={{
@@ -499,7 +573,9 @@ export default function RetailerOrders() {
                   </div>
                 ) : !isCancelled ? (
                   <div style={{
-                    background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+                    background: deliveryInfo.isDelayed 
+                      ? 'linear-gradient(135deg, #1e1b4b, #312e81)'
+                      : 'linear-gradient(135deg, #0f172a, #1e293b)',
                     color: '#fff',
                     borderRadius: '12px',
                     padding: '1.25rem 1.5rem',
@@ -516,24 +592,26 @@ export default function RetailerOrders() {
                         width: '50px',
                         height: '50px',
                         borderRadius: '12px',
-                        background: 'rgba(56, 189, 248, 0.15)',
-                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        background: deliveryInfo.isDelayed ? 'rgba(251, 191, 36, 0.2)' : 'rgba(56, 189, 248, 0.15)',
+                        border: deliveryInfo.isDelayed ? '1px solid rgba(251, 191, 36, 0.4)' : '1px solid rgba(56, 189, 248, 0.3)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0
                       }}>
-                        <Truck size={26} color="#38bdf8" />
+                        <Truck size={26} color={deliveryInfo.isDelayed ? '#fbbf24' : '#38bdf8'} />
                       </div>
                       <div>
-                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                          Expected Delivery Date
+                        <div style={{ fontSize: '0.8rem', color: deliveryInfo.isDelayed ? '#fde68a' : '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          {deliveryInfo.isDelayed ? 'Revised Expected Delivery Date' : 'Expected Delivery Date'}
                         </div>
                         <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>
                           {formatDeliveryDate(expectedDelivery)}
                         </div>
                         <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '2px' }}>
-                          Direct Dispatch from NetPlus Central Depot, Dhanbad
+                          {deliveryInfo.isDelayed 
+                            ? 'Direct Dispatch from NetPlus Central Depot, Dhanbad • Rescheduled & Prioritized'
+                            : 'Direct Dispatch from NetPlus Central Depot, Dhanbad'}
                         </div>
                       </div>
                     </div>
@@ -545,8 +623,10 @@ export default function RetailerOrders() {
                       textAlign: 'right',
                       border: '1px solid rgba(255, 255, 255, 0.15)'
                     }}>
-                      <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Dispatch Schedule</div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#38bdf8' }}>24–48h Delivery Fleet</div>
+                      <div style={{ fontSize: '0.72rem', color: deliveryInfo.isDelayed ? '#fde68a' : '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Dispatch Schedule</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: deliveryInfo.isDelayed ? '#fbbf24' : '#38bdf8' }}>
+                        {deliveryInfo.isDelayed ? 'Priority Transit Fleet' : '24–48h Delivery Fleet'}
+                      </div>
                     </div>
                   </div>
                 ) : null}

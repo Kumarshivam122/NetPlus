@@ -5,7 +5,7 @@ import AdminNotificationBell from '../../components/AdminNotificationBell';
 import { apiGetOrders, apiUpdateOrderStatus } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAdminNotifications } from '../../context/AdminNotificationContext';
-import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery } from '../../data/store';
+import { formatDeliveryDate, formatDeliveredDate, computeExpectedDelivery, getOrderDeliveryInfo } from '../../data/store';
 
 export default function AdminOrders() {
   const { addToast } = useToast();
@@ -159,7 +159,8 @@ export default function AdminOrders() {
                     const firstItem = items[0] || {};
                     const totalAmt = e.totalAmount || items.reduce((acc, item) => acc + (Number(item?.price || item?.unitPrice || 0) * Number(item?.quantity || 0)), 0);
                     const orderId = e.orderId || e.id;
-                    const expectedDelivery = e.expectedDeliveryDate || computeExpectedDelivery(e.createdAt);
+                    const deliveryInfo = getOrderDeliveryInfo(e);
+                    const expectedDelivery = deliveryInfo.expectedDelivery;
 
                     return (
                     <tr key={orderId} style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(e)}>
@@ -193,6 +194,11 @@ export default function AdminOrders() {
                           </div>
                         ) : (e.status === 'cancelled' || e.status === 'rejected') ? (
                           <span style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600 }}>Cancelled</span>
+                        ) : deliveryInfo.isDelayed ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', padding: '2px 7px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 700 }}>
+                            <Clock size={12} color="#d97706" />
+                            <span>Exp: {formatDeliveryDate(expectedDelivery)} (Rescheduled)</span>
+                          </div>
                         ) : (
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 7px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 600 }}>
                             <Truck size={12} color="#15803d" />
@@ -317,18 +323,27 @@ export default function AdminOrders() {
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Truck size={20} color="#15803d" />
-                    <div>
-                      <div style={{ fontSize: '0.72rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Expected Delivery Date</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#14532d' }}>
-                        {formatDeliveryDate(selectedOrder.expectedDeliveryDate || computeExpectedDelivery(selectedOrder.createdAt))}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: '#15803d', fontWeight: 600, background: '#dcfce7', padding: '3px 8px', borderRadius: '4px' }}>
-                    NetPlus 24–48h Fleet
-                  </div>
+                  {(() => {
+                    const selDelivery = getOrderDeliveryInfo(selectedOrder);
+                    return (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Truck size={20} color={selDelivery.isDelayed ? '#d97706' : '#15803d'} />
+                          <div>
+                            <div style={{ fontSize: '0.72rem', color: selDelivery.isDelayed ? '#b45309' : '#166534', fontWeight: 700, textTransform: 'uppercase' }}>
+                              {selDelivery.isDelayed ? 'Revised Expected Delivery Date' : 'Expected Delivery Date'}
+                            </div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: selDelivery.isDelayed ? '#92400e' : '#14532d' }}>
+                              {formatDeliveryDate(selDelivery.expectedDelivery)}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: selDelivery.isDelayed ? '#b45309' : '#15803d', fontWeight: 600, background: selDelivery.isDelayed ? '#fef3c7' : '#dcfce7', padding: '3px 8px', borderRadius: '4px' }}>
+                          {selDelivery.isDelayed ? 'Rescheduled • Prioritized' : 'NetPlus 24–48h Fleet'}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
